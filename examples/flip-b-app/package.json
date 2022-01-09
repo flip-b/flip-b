@@ -1,7 +1,7 @@
 {
   "name": "@flip-b/app-example",
   "description": "Flip-B App Example",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "private": true,
   "homepage": "https://www.flip-b.com/",
@@ -24,7 +24,7 @@
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
-    "@flip-b/app": "~1.0.2"
+    "@flip-b/app": "^1.0.3"
   },
   "devDependencies": {
     "@types/jest": "~27.4.0",

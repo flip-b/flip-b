@@ -1,7 +1,7 @@
 {
   "name": "@flip-b/bot-plugin-dialogflow",
   "description": "Flip-B Bot Plugin Dialogflow",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "homepage": "https://www.flip-b.com/",
   "keywords": [
@@ -20,7 +20,7 @@
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
-    "@flip-b/bot": "~1.0.2",
+    "@flip-b/bot": "^1.0.3",
     "@google-cloud/dialogflow": "~4.6.0"
   },
   "devDependencies": {

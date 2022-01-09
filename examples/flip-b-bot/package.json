@@ -1,7 +1,7 @@
 {
   "name": "@flip-b/bot-example",
   "description": "Flip-B Bot Example",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "private": true,
   "homepage": "https://www.flip-b.com/",
@@ -24,9 +24,9 @@
     "lint": "eslint src/**/*.ts"
   },
   "dependencies": {
-    "@flip-b/bot": "~1.0.2",
-    "@flip-b/bot-plugin-chat": "~1.0.2",
-    "@flip-b/bot-plugin-tags": "~1.0.2"
+    "@flip-b/bot": "^1.0.3",
+    "@flip-b/bot-plugin-chat": "^1.0.3",
+    "@flip-b/bot-plugin-tags": "^1.0.3"
   },
   "devDependencies": {
     "@types/jest": "~27.4.0",
