@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ 'home.address' | i18n }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadCurrentPosition()">
+        <ion-icon slot="icon-only" name="locate"></ion-icon>
+      </ion-button>
+      <ion-button (click)="modal.dismiss(item)">
+        <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+      </ion-button>
+      <ion-button (click)="modal.dismiss()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <form (ngSubmit)="modal.dismiss(item)" (ionBlur)="geocodeAddress(item)">
+    <div class="control c-50">
+      <ion-item lines="full">
+        <ion-input type="text" name="street" [(ngModel)]="item.street" placeholder="{{ 'home.street' | i18n }}"></ion-input>
+      </ion-item>
+    </div>
+    <div class="control c-20">
+      <ion-item lines="full" class="ion-no-padding">
+        <ion-input type="text" name="city" [(ngModel)]="item.city" placeholder="{{ 'home.city' | i18n }}"></ion-input>
+      </ion-item>
+    </div>
+    <div class="control c-20">
+      <ion-item lines="full" class="ion-no-padding">
+        <ion-input type="text" name="state" [(ngModel)]="item.state" placeholder="{{ 'home.state' | i18n }}"></ion-input>
+      </ion-item>
+    </div>
+    <div class="control c-10">
+      <ion-item lines="full" class="ion-no-padding">
+        <ion-input type="text" name="zipcode" [(ngModel)]="item.zipcode" placeholder="{{ 'home.zipcode' | i18n }}"></ion-input>
+      </ion-item>
+    </div>
+    <input type="submit" />
+  </form>
+  <div #map tabindex="-1" style="position: relative; width: 100%; height: 100%"></div>
+</ion-content>

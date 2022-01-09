@@ -1,0 +1,46 @@
+{
+  "name": "@flip-b/app-example",
+  "description": "Flip-B App Example",
+  "version": "1.0.2",
+  "license": "MIT",
+  "private": true,
+  "homepage": "https://www.flip-b.com/",
+  "keywords": [
+    "flip-b",
+    "flip-b-app"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "start": "node lib/index.js",
+    "start:ts": "ts-node src/index.ts",
+    "serve": "rimraf lib && tsc -p . && (nodemon & tsc -w -p .)",
+    "watch": "rimraf lib && tsc -w -p .",
+    "build": "rimraf lib && tsc -p .",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "@flip-b/app": "~1.0.2"
+  },
+  "devDependencies": {
+    "@types/jest": "~27.4.0",
+    "@types/node": "~17.0.8",
+    "@types/rimraf": "~3.0.2",
+    "@typescript-eslint/eslint-plugin": "~5.9.0",
+    "@typescript-eslint/parser": "~5.9.0",
+    "eslint": "~8.6.0",
+    "eslint-config-prettier": "~8.3.0",
+    "eslint-plugin-prettier": "~4.0.0",
+    "jest": "~27.4.7",
+    "nodemon": "~2.0.15",
+    "prettier": "~2.5.1",
+    "rimraf": "~3.0.2",
+    "ts-jest": "~27.1.2",
+    "ts-node": "~10.4.0",
+    "typescript": "~4.5.4"
+  }
+}

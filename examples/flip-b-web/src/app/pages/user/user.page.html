@@ -1,0 +1,633 @@
+<flb-form *ngIf="context" [context]="context" [options]="this[context.view]"></flb-form>
+
+<!--
+  -- Profile
+<ion-card *ngIf="page.view === 'profile' && item">
+  <ion-item lines="full" [button]="pageService.authPage('user/change/name')" [detail]="pageService.authPage('user/change/name')" detailIcon="create" (click)="pageService.authPage('user/change/name') ? pageService.gotoPage('user/change/name', item) : null">
+    <ion-avatar slot="start">
+      <img *ngIf="item.image" [src]="item.image"><div *ngIf="!item.image"><ion-icon name="person"></ion-icon></div>
+    </ion-avatar>
+    <ion-label>
+      <h1>{{ item.name | text }}</h1>
+      <p>{{ 'user.access.value[' + item.access + ']' | i18n }}</p>
+    </ion-label>
+  </ion-item>
+  <div class="file">
+    <div [class]="item.image ? 'object' : 'object-empty'">
+      <img *ngIf="item.image" [src]="item.image"><div *ngIf="!item.image"><ion-icon name="person"></ion-icon></div>
+    </div>
+    <div [class]="item.image ? 'delete' : 'update'" (click)="pageService.showFile({name: 'image', type: 'image', item: item, data: dataService, call: 'profile'})">
+      <ion-icon [name]="item.image ? 'trash' : 'attach'"></ion-icon>
+    </div>
+  </div>
+  <ion-item lines="full" [button]="pageService.authPage('user/change/phone')" [detail]="pageService.authPage('user/change/phone')" detailIcon="call" (click)="pageService.authPage('user/change/phone') ? pageService.gotoPage('user/change/phone', item) : null">
+    <ion-grid class="ion-text-wrap ion-no-padding">
+      <ion-row>
+        <ion-col size-xs="12" size-sm="4" class="lead">
+          {{ 'user.phone' | i18n }}
+        </ion-col>
+        <ion-col size-xs="12" size-sm="8" [class]="item.phone ? 'data' : 'mute'">
+          {{ (item.phone | text:'phone') || ('user.phone.value' | i18n) }}
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
+  <ion-item lines="full" [button]="pageService.authPage('user/change/email')" [detail]="pageService.authPage('user/change/email')" detailIcon="mail" (click)="pageService.authPage('user/change/email') ? pageService.gotoPage('user/change/email', item) : null">
+    <ion-grid class="ion-text-wrap ion-no-padding">
+      <ion-row>
+        <ion-col size-xs="12" size-sm="4" class="lead">
+          {{ 'user.email' | i18n }}
+        </ion-col>
+        <ion-col size-xs="12" size-sm="8" [class]="item.email ? 'data' : 'mute'">
+          {{ (item.email | text:'email') || ('user.email.value' | i18n) }}
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
+  <ion-item lines="full" [button]="pageService.authPage('user/change/address')" [detail]="pageService.authPage('user/change/address')" detailIcon="location" (click)="pageService.authPage('user/change/address') ? pageService.gotoPage('user/change/address', item) : null">
+    <ion-grid class="ion-text-wrap ion-no-padding">
+      <ion-row>
+        <ion-col size-xs="12" size-sm="4" class="lead">
+          {{ 'user.address' | i18n }}
+        </ion-col>
+        <ion-col size-xs="12" size-sm="8" [class]="item.address ? 'data' : 'mute'">
+          {{ (item.address | text:'address') || ('user.address.value' | i18n) }}
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
+  <ion-item lines="full" [button]="pageService.authPage('user/change/website')" [detail]="pageService.authPage('user/change/website')" detailIcon="link" (click)="pageService.authPage('user/change/website') ? pageService.gotoPage('user/change/website', item) : null">
+    <ion-grid class="ion-text-wrap ion-no-padding">
+      <ion-row>
+        <ion-col size-xs="12" size-sm="4" class="lead">
+          {{ 'user.website' | i18n }}
+        </ion-col>
+        <ion-col size-xs="12" size-sm="8" [class]="item.website ? 'data' : 'mute'">
+          {{ (item.website | text:'link') || ('user.website.value' | i18n) }}
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
+</ion-card>
+
+<ion-card *ngIf="page.view === 'profile' && item">
+  <ion-item lines="full">
+    <ion-label>
+      <h1>{{ 'user.security.header' | i18n }}</h1>
+      <p>{{ 'user.security.legend' | i18n }}</p>
+    </ion-label>
+  </ion-item>
+  <ion-item lines="full" [button]="pageService.authPage('user/change/password')" [detail]="pageService.authPage('user/change/password')" detailIcon="lock-closed" (click)="pageService.authPage('user/change/password') ? pageService.gotoPage('user/change/password', item) : null">
+    <ion-grid class="ion-text-wrap ion-no-padding">
+      <ion-row>
+        <ion-col size-xs="12" size-sm="4" class="lead">
+          {{ 'user.password' | i18n }}
+        </ion-col>
+        <ion-col size-xs="12" size-sm="8" [class]="item.password ? 'data' : 'mute'">
+          {{ (item.password | text) || ('user.password.value' | i18n) }}
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
+  <ion-item lines="full" [button]="pageService.authPage('user/change/security')" [detail]="pageService.authPage('user/change/security')" detailIcon="finger-print" (click)="pageService.authPage('user/change/security') ? pageService.gotoPage('user/change/security', item) : null">
+    <ion-grid class="ion-text-wrap ion-no-padding">
+      <ion-row>
+        <ion-col size-xs="12" size-sm="4" class="lead">
+          {{ 'user.security' | i18n }}
+        </ion-col>
+        <ion-col size-xs="12" size-sm="8" [class]="item.security ? 'data' : 'mute'">
+          {{ ('user.security.value[' + (item.security || '') + ']' | i18n) || ('user.security.value' | i18n) }}
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-item>
+</ion-card>
+
+  -- Profile details
+<ng-container *ngIf="page.view === 'profile' && item">
+  <ion-card *ngIf="pageService.authPage('user/signout')">
+    <ion-item lines="none" button detail detailIcon="log-out" (click)="pageService.gotoPage('user/signout')">
+      <ion-text class="head" color="danger">
+        {{ 'user.profile.signout' | i18n }}
+      </ion-text>
+    </ion-item>
+  </ion-card>
+</ng-container>
+
+  -- Change name
+<ion-card *ngIf="page.view === 'changeName' && item && form">
+  <ion-item lines="full">
+    <ion-avatar slot="start">
+      <img *ngIf="item.image" [src]="item.image"><div *ngIf="!item.image"><ion-icon name="person"></ion-icon></div>
+    </ion-avatar>
+    <ion-label>
+      <h1>{{ item.name | text }}</h1>
+      <p>{{ 'user.access.value[' + item.access + ']' | i18n }}</p>
+    </ion-label>
+  </ion-item>
+  <form [formGroup]="form" (ngSubmit)="sendChangeName(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.name' | i18n }}</ion-label>
+        <ion-input type="text" formControlName="name"></ion-input>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'name')">
+        {{ 'user.name.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'name')">
+        {{ 'user.name.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'name')">
+        {{ 'user.name.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions c-70">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'home.button_submit' | i18n }}
+      </ion-button>
+    </div>
+    <div class="actions c-30">
+      <ion-button expand="block" fill="outline" strong="true" color="medium" (click)="pageService.gotoBack()">
+        {{ 'home.button_cancel' | i18n }}
+      </ion-button>
+    </div>
+    <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+  </form>
+</ion-card>
+
+  -- Change phone
+<ion-card *ngIf="page.view === 'changePhone' && item && form">
+  <ion-item lines="full">
+    <ion-avatar slot="start">
+      <img *ngIf="item.image" [src]="item.image"><div *ngIf="!item.image"><ion-icon name="person"></ion-icon></div>
+    </ion-avatar>
+    <ion-label>
+      <h1>{{ item.name | text }}</h1>
+      <p>{{ 'user.access.value[' + item.access + ']' | i18n }}</p>
+    </ion-label>
+  </ion-item>
+  <form [formGroup]="form" (ngSubmit)="sendChangePhone(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.phone' | i18n }}</ion-label>
+        <ion-input type="tel" formControlName="phone"></ion-input>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'phone')">
+        {{ 'user.phone.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'phone')">
+        {{ 'user.phone.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'phone')">
+        {{ 'user.phone.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions c-70">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'home.button_submit' | i18n }}
+      </ion-button>
+    </div>
+    <div class="actions c-30">
+      <ion-button expand="block" fill="outline" strong="true" color="medium" (click)="pageService.gotoBack()">
+        {{ 'home.button_cancel' | i18n }}
+      </ion-button>
+    </div>
+    <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+  </form>
+</ion-card>
+
+  -- Change email
+<ion-card *ngIf="page.view === 'changeEmail' && item && form">
+  <ion-item lines="full">
+    <ion-avatar slot="start">
+      <img *ngIf="item.image" [src]="item.image"><div *ngIf="!item.image"><ion-icon name="person"></ion-icon></div>
+    </ion-avatar>
+    <ion-label>
+      <h1>{{ item.name | text }}</h1>
+      <p>{{ 'user.access.value[' + item.access + ']' | i18n }}</p>
+    </ion-label>
+  </ion-item>
+  <form [formGroup]="form" (ngSubmit)="sendChangeEmail(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.email' | i18n }}</ion-label>
+        <ion-input type="email" formControlName="email"></ion-input>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'email')">
+        {{ 'user.email.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'email')">
+        {{ 'user.email.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'email')">
+        {{ 'user.email.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions c-70">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'home.button_submit' | i18n }}
+      </ion-button>
+    </div>
+    <div class="actions c-30">
+      <ion-button expand="block" fill="outline" strong="true" color="medium" (click)="pageService.gotoBack()">
+        {{ 'home.button_cancel' | i18n }}
+      </ion-button>
+    </div>
+    <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+  </form>
+</ion-card>
+<flb-form *ngIf="page.view === 'changeEmail'" [context]="{view: 'update', params: {}}" [options]="changeEmailOptions"></flb-form>
+
+  -- Change address
+<ion-card *ngIf="page.view === 'changeAddress' && item && form">
+  <ion-item lines="full">
+    <ion-avatar slot="start">
+      <img *ngIf="item.image" [src]="item.image"><div *ngIf="!item.image"><ion-icon name="person"></ion-icon></div>
+    </ion-avatar>
+    <ion-label>
+      <h1>{{ item.name | text }}</h1>
+      <p>{{ 'user.access.value[' + item.access + ']' | i18n }}</p>
+    </ion-label>
+  </ion-item>
+  <form [formGroup]="form" (ngSubmit)="sendChangeAddress(form.value)">
+    <div class="control">
+      <ion-item lines="full" button detail="false" (click)="pageService.showMaps({name: 'address', form: form})">
+        <ion-label position="stacked">{{ 'user.address' | i18n }}</ion-label>
+        <ion-input type="text" value="{{ form.value.address | text:'address' }}" readonly></ion-input>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'address')">
+        {{ 'user.address.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'address')">
+        {{ 'user.address.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'address')">
+        {{ 'user.address.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions c-70">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'home.button_submit' | i18n }}
+      </ion-button>
+    </div>
+    <div class="actions c-30">
+      <ion-button expand="block" fill="outline" strong="true" color="medium" (click)="pageService.gotoBack()">
+        {{ 'home.button_cancel' | i18n }}
+      </ion-button>
+    </div>
+    <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+  </form>
+</ion-card>
+
+  -- Change website
+<ion-card *ngIf="page.view === 'changeWebsite' && item && form">
+  <ion-item lines="full">
+    <ion-avatar slot="start">
+      <img *ngIf="item.image" [src]="item.image"><div *ngIf="!item.image"><ion-icon name="person"></ion-icon></div>
+    </ion-avatar>
+    <ion-label>
+      <h1>{{ item.name | text }}</h1>
+      <p>{{ 'user.access.value[' + item.access + ']' | i18n }}</p>
+    </ion-label>
+  </ion-item>
+  <form [formGroup]="form" (ngSubmit)="sendChangeWebsite(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.website' | i18n }}</ion-label>
+        <ion-input type="url" formControlName="website"></ion-input>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'website')">
+        {{ 'user.website.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'website')">
+        {{ 'user.website.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'website')">
+        {{ 'user.website.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions c-70">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'home.button_submit' | i18n }}
+      </ion-button>
+    </div>
+    <div class="actions c-30">
+      <ion-button expand="block" fill="outline" strong="true" color="medium" (click)="pageService.gotoBack()">
+        {{ 'home.button_cancel' | i18n }}
+      </ion-button>
+    </div>
+    <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+  </form>
+</ion-card>
+
+  -- Change password
+<ion-card *ngIf="page.view === 'changePassword' && item && form">
+  <ion-item lines="full">
+    <ion-avatar slot="start">
+      <img *ngIf="item.image" [src]="item.image"><div *ngIf="!item.image"><ion-icon name="person"></ion-icon></div>
+    </ion-avatar>
+    <ion-label>
+      <h1>{{ item.name | text }}</h1>
+      <p>{{ 'user.access.value[' + item.access + ']' | i18n }}</p>
+    </ion-label>
+  </ion-item>
+  <form [formGroup]="form" (ngSubmit)="sendChangePassword(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.password' | i18n }}</ion-label>
+        <ion-input [type]="item.showPassword ? 'text' : 'password'" formControlName="password"></ion-input>
+        <ion-button slot="end" fill="clear" color="medium" tabindex="-1" (click)="item.showPassword = !item.showPassword">
+          <ion-icon slot="icon-only" [name]="item.showPassword ? 'eye-off' : 'eye'"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'password')">
+        {{ 'user.password.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'password')">
+        {{ 'user.password.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'password')">
+        {{ 'user.password.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions c-70">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'home.button_submit' | i18n }}
+      </ion-button>
+    </div>
+    <div class="actions c-30">
+      <ion-button expand="block" fill="outline" strong="true" color="medium" (click)="pageService.gotoBack()">
+        {{ 'home.button_cancel' | i18n }}
+      </ion-button>
+    </div>
+    <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+  </form>
+</ion-card>
+
+  -- Change security
+<ion-card *ngIf="page.view === 'changeSecurity' && item && form">
+  <ion-item lines="full">
+    <ion-avatar slot="start">
+      <img *ngIf="item.image" [src]="item.image"><div *ngIf="!item.image"><ion-icon name="person"></ion-icon></div>
+    </ion-avatar>
+    <ion-label>
+      <h1>{{ item.name | text }}</h1>
+      <p>{{ 'user.access.value[' + item.access + ']' | i18n }}</p>
+    </ion-label>
+  </ion-item>
+  <form [formGroup]="form" (ngSubmit)="sendChangeSecurity(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.security' | i18n }}</ion-label>
+        <ion-select interface="popover" formControlName="security">
+          <ion-select-option *ngFor="let security of security.values" [value]="security">{{ 'user.security.value[' + security + ']' | i18n }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'security')">
+        {{ 'user.security.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'security')">
+        {{ 'user.security.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'security')">
+        {{ 'user.security.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions c-70">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'home.button_submit' | i18n }}
+      </ion-button>
+    </div>
+    <div class="actions c-30">
+      <ion-button expand="block" fill="outline" strong="true" color="medium" (click)="pageService.gotoBack()">
+        {{ 'home.button_cancel' | i18n }}
+      </ion-button>
+    </div>
+    <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+  </form>
+</ion-card>
+
+  -- Signout
+<ion-card *ngIf="page.view === 'signout' && item && form && pageService.user">
+  <ion-item lines="full">
+    <ion-avatar slot="start">
+      <img *ngIf="item.image" [src]="item.image"><div *ngIf="!item.image"><ion-icon name="person"></ion-icon></div>
+    </ion-avatar>
+    <ion-label>
+      <h1>{{ item.name | text }}</h1>
+      <p>{{ 'user.access.value[' + item.access + ']' | i18n }}</p>
+    </ion-label>
+  </ion-item>
+   <form [formGroup]="form" (ngSubmit)="sendSignout(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-text color="danger" [innerHTML]="'user.signout.legend' | i18n:item"></ion-text>
+      </ion-item>
+    </div>
+    <div class="actions c-70">
+      <ion-button expand="block" fill="solid" strong="true" color="danger" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'home.button_accept' | i18n }}
+      </ion-button>
+    </div>
+    <div class="actions c-30">
+      <ion-button expand="block" fill="outline" strong="true" color="medium" (click)="pageService.gotoBack()">
+        {{ 'home.button_cancel' | i18n }}
+      </ion-button>
+    </div>
+    <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+  </form>
+</ion-card>
+
+  -- Signin
+<ion-card *ngIf="page.view === 'signin' && item && form && !pageService.user">
+  <ion-card-header>
+    <ion-card-title>{{ pageService.config.name }}</ion-card-title>
+    <ion-card-subtitle>{{ 'user.signin' | i18n }}</ion-card-subtitle>
+  </ion-card-header>
+  <form [formGroup]="form" (ngSubmit)="sendSignin(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.email' | i18n }}</ion-label>
+        <ion-input type="email" formControlName="email"></ion-input>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'email')">
+        {{ 'user.email.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'email')">
+        {{ 'user.email.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'email')">
+        {{ 'user.email.valid' | i18n }}
+      </div>
+    </div>
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.password' | i18n }}</ion-label>
+        <ion-input [type]="item.showPassword ? 'text' : 'password'" formControlName="password"></ion-input>
+        <ion-button slot="end" fill="clear" color="medium" tabindex="-1" (click)="item.showPassword = !item.showPassword">
+          <ion-icon slot="icon-only" [name]="item.showPassword ? 'eye-off' : 'eye'"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'password')">
+        {{ 'user.password.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'password')">
+        {{ 'user.password.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'password')">
+        {{ 'user.password.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions">
+      <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'user.signin.submit' | i18n }}
+      </ion-button>
+      <ion-button expand="block" fill="clear" color="medium" *ngIf="pageService.authPage('user/forgot')" (click)="pageService.gotoPage('user/forgot', null, {animated: false})">
+        {{ 'user.signin.forgot' | i18n }}
+      </ion-button>
+      <ion-button expand="block" fill="clear" color="medium" *ngIf="pageService.authPage('user/signup')" (click)="pageService.gotoPage('user/signup', null, {animated: false})">
+        {{ 'user.signin.signup' | i18n }}
+      </ion-button>
+    </div>
+  </form>
+</ion-card>
+
+  -- Signup
+<ion-card *ngIf="page.view === 'signup' && item && form && !pageService.user">
+  <ion-card-header>
+    <ion-card-title>{{ pageService.config.name }}</ion-card-title>
+    <ion-card-subtitle>{{ 'user.signup' | i18n }}</ion-card-subtitle>
+  </ion-card-header>
+  <form [formGroup]="form" (ngSubmit)="sendSignup(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.email' | i18n }}</ion-label>
+        <ion-input type="email" formControlName="email"></ion-input>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'email')">
+        {{ 'user.email.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'email')">
+        {{ 'user.email.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'email')">
+        {{ 'user.email.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions">
+      <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'user.signup.submit' | i18n }}
+      </ion-button>
+      <ion-button expand="block" fill="clear" color="medium" (click)="pageService.gotoPage('user/signin', null, {animated: false})">
+        {{ 'user.signup.signin' | i18n }}
+      </ion-button>
+    </div>
+  </form>
+</ion-card>
+
+  -- Forgot
+<ion-card *ngIf="page.view === 'forgot' && item && form && !pageService.user">
+  <ion-card-header>
+    <ion-card-title>{{ pageService.config.name }}</ion-card-title>
+    <ion-card-subtitle>{{ 'user.forgot' | i18n }}</ion-card-subtitle>
+  </ion-card-header>
+  <form [formGroup]="form" (ngSubmit)="sendForgot(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.email' | i18n }}</ion-label>
+        <ion-input type="email" formControlName="email"></ion-input>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'email')">
+        {{ 'user.email.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'email')">
+        {{ 'user.email.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'email')">
+        {{ 'user.email.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions">
+      <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'user.forgot.submit' | i18n }}
+      </ion-button>
+      <ion-button expand="block" fill="clear" color="medium" (click)="pageService.gotoPage('user/signin', null, {animated: false})">
+        {{ 'user.forgot.signin' | i18n }}
+      </ion-button>
+    </div>
+  </form>
+</ion-card>
+
+  -- Verify
+<ion-card *ngIf="page.view === 'verify' && item && form && !pageService.user">
+  <ion-card-header>
+    <ion-card-title>{{ pageService.config.name }}</ion-card-title>
+    <ion-card-subtitle>{{ 'user.verify' | i18n }}</ion-card-subtitle>
+  </ion-card-header>
+  <form [formGroup]="form" (ngSubmit)="sendVerify(form.value)">
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.email' | i18n }}</ion-label>
+        <ion-input type="email" formControlName="email"></ion-input>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'email')">
+        {{ 'user.email.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'email')">
+        {{ 'user.email.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'email')">
+        {{ 'user.email.valid' | i18n }}
+      </div>
+    </div>
+    <div class="control">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.recovery' | i18n }}</ion-label>
+        <ion-input [type]="item.showRecovery ? 'text' : 'password'" formControlName="recovery"></ion-input>
+        <ion-button slot="end" fill="clear" color="medium" tabindex="-1" (click)="item.showRecovery = !item.showRecovery">
+          <ion-icon slot="icon-only" [name]="item.showRecovery ? 'eye-off' : 'eye'"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'recovery')">
+        {{ 'user.recovery.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'recovery')">
+        {{ 'user.recovery.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'recovery')">
+        {{ 'user.recovery.valid' | i18n }}
+      </div>
+    </div>
+    <div class="control" *ngIf="item.change_password">
+      <ion-item lines="full">
+        <ion-label position="stacked">{{ 'user.password.valid' | i18n }}</ion-label>
+        <ion-input [type]="item.showPassword ? 'text' : 'password'" formControlName="password"></ion-input>
+        <ion-button slot="end" fill="clear" color="medium" tabindex="-1" (click)="item.showPassword = !item.showPassword">
+          <ion-icon slot="icon-only" [name]="item.showPassword ? 'eye-off' : 'eye'"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <div class="warn" *ngIf="pageService.getFormValueIsRequired(form, 'password')">
+        {{ 'user.password.required' | i18n }}
+      </div>
+      <div class="warn" *ngIf="pageService.getFormValueIsInvalid(form, 'password')">
+        {{ 'user.password.invalid' | i18n }}
+      </div>
+      <div class="hint" *ngIf="pageService.getFormValueIsValid(form, 'password')">
+        {{ 'user.password.valid' | i18n }}
+      </div>
+    </div>
+    <div class="actions">
+      <input type="submit" [disabled]="!pageService.getFormIsValid(form)">
+      <ion-button expand="block" fill="solid" strong="true" color="medium" type="submit" [disabled]="!pageService.getFormIsValid(form)">
+        {{ 'user.verify.submit' | i18n }}
+      </ion-button>
+      <ion-button expand="block" fill="clear" color="medium" (click)="pageService.gotoPage('user/signin', null, {animated: false})">
+        {{ 'user.verify.signin' | i18n }}
+      </ion-button>
+    </div>
+  </form>
+</ion-card>
+    -->

@@ -1,0 +1,59 @@
+{
+  "name": "@flip-b/create",
+  "description": "Flip-B Create",
+  "version": "1.0.2",
+  "license": "MIT",
+  "homepage": "https://www.flip-b.com/",
+  "keywords": [
+    "flip-b",
+    "flip-b-project"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "watch": "rimraf lib && tsc -w -p .",
+    "build": "rimraf lib && tsc -p .",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "commander": "~8.3.0",
+    "prompts": "~2.4.2",
+    "tar": "~6.1.11"
+  },
+  "devDependencies": {
+    "@types/jest": "~27.4.0",
+    "@types/node": "~17.0.8",
+    "@types/prompts": "~2.0.14",
+    "@types/rimraf": "~3.0.2",
+    "@types/tar": "6.1.1",
+    "@typescript-eslint/eslint-plugin": "~5.9.0",
+    "@typescript-eslint/parser": "~5.9.0",
+    "eslint": "~8.6.0",
+    "eslint-config-prettier": "~8.3.0",
+    "eslint-plugin-prettier": "~4.0.0",
+    "jest": "~27.4.7",
+    "prettier": "~2.5.1",
+    "rimraf": "~3.0.2",
+    "ts-jest": "~27.1.2",
+    "ts-node": "~10.4.0",
+    "typescript": "~4.5.4"
+  },
+  "bin": {
+    "create-flip-b-project": "lib/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/flip-b/flip-b/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flip-b/flip-b.git",
+    "directory": "packages/create"
+  }
+}

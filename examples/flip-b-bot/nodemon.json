@@ -1,0 +1,15 @@
+{
+  "exec": "node lib/index.js",
+  "ext": "js",
+  "watch": [
+    "**/*.js"
+  ],
+  "ignore": [
+    "**/*.js.map",
+    "**/*.d.ts",
+    "**/*.d.ts.map"
+  ],
+  "ignoreRoot": [
+    ".git"
+  ]
+}
