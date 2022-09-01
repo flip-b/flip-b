@@ -1,0 +1,31 @@
+<ng-container *ngIf="modal">
+  <ion-item lines="none">
+    <ng-container *ngIf="item._config.text.title">
+      <ion-label>
+        <div class="flb-item-title">{{ item._config.text.title }}</div>
+      </ion-label>
+    </ng-container>
+    <ng-container *ngIf="!item._config.readonly">
+      <ion-button slot="end" fill="clear" color="medium" title="{{ 'page.apply.title' | i18n }}" (click)="onApply($event)">
+        <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+      </ion-button>
+    </ng-container>
+    <ng-container *ngIf="item._config.readonly">
+      <ion-button slot="end" fill="clear" color="medium" title="{{ 'page.close.title' | i18n }}" (click)="onClose($event)">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ng-container>
+  </ion-item>
+</ng-container>
+
+<ng-container *ngIf="modal && !item._config.readonly">
+  <ion-item lines="none">
+    <ion-input type="text" [value]="item._config.search" placeholder="{{ 'page.input_select.title' | i18n }}"></ion-input>
+  </ion-item>
+</ng-container>
+
+<ng-container *ngIf="items">
+  <ion-item lines="none" *ngFor="let data of items" (click)="onChange($event, data)">
+    {{ data }}
+  </ion-item>
+</ng-container>

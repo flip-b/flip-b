@@ -1,198 +1,128 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpEventType } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { ConfigService } from './config.service';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {lastValueFrom} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HttpService {
-  private config: any;
-  private auth: BehaviorSubject<any> = new BehaviorSubject(null);
-  private authK: string;
-  private authV: any;
+  // Definitions
 
-  constructor(private httpClient: HttpClient, private configService: ConfigService) {
-    this.config = configService.values;
-    this.authK = `${this.config.name}AuthValue`;
+  /**
+   * Config
+   * @attribute {Object}
+   */
+  config: any = {};
+
+  /**
+   * Constructor
+   */
+  constructor(private httpClient: HttpClient) {
+    this.onInit();
   }
 
   /**
-   * Auth methods
+   * Init event handler
    */
-
-  async verifyValue(): Promise<any> {
-    const result = sessionStorage.getItem(this.authK) ? JSON.parse(sessionStorage.getItem(this.authK) || '') : false;
-    this.auth.next(result);
-    this.authV = result;
-    return result;
-  }
-
-  async updateValue(value: any): Promise<any> {
-    sessionStorage.setItem(this.authK, value ? JSON.stringify(value) : '');
-    this.auth.next(value);
-    this.authV = value;
-  }
-
-  async removeValue(): Promise<any> {
-    sessionStorage.setItem(this.authK, '');
-    this.auth.next(false);
-    this.authV = null;
-  }
-
-  async update(action: string, params?: any): Promise<any> {
-    const result = await this.post(action, params);
-    if (result && result._id && result.token) {
-      await this.updateValue(result);
-    } else {
-      await this.removeValue();
-    }
-    return result;
-  }
-
-  getValueAsObservable(): Observable<any> {
-    return this.auth.asObservable();
+  async onInit(): Promise<any> {
   }
 
   /**
-   * HTTP restful methods
+   * Request
    */
-
-  get(uri: string, qs: any = null): Promise<any> {
-    return this.request({
-      method: 'GET',
-      uri: uri,
-      qs: qs
-    });
-  }
-
-  put(uri: string, body: any = {}): Promise<any> {
-    return this.request({
-      method: 'PUT',
-      uri: uri,
-      body: body
-    });
-  }
-
-  post(uri: string, body: any = {}): Promise<any> {
-    return this.request({
-      method: 'POST',
-      uri: uri,
-      body: body
-    });
-  }
-
-  delete(uri: string): Promise<any> {
-    return this.request({
-      method: 'DELETE',
-      uri: uri
-    });
-  }
-
-  /**
-   * HTTP request methods
-   */
-
   async request(params: any): Promise<any> {
     const method = this.formatMethod(params.method);
-    const url = this.formatUri(params.url || this.config.url);
+    const url = this.formatUrl(params.url);
     const uri = this.formatUri(params.uri);
     const qs = this.formatQs(params.qs);
     const body = this.formatBody(params.body);
+    const form = this.formatForm(params.form);
     const headers = this.formatHeaders(params.headers);
-
-    const result: any = await this.httpClient
-      .request(method, `${url}/${uri}${qs}`, {
-        body: body,
-        headers: new HttpHeaders(headers),
-        responseType: params.responseType || undefined
-      })
-      .toPromise();
-
-    if (result && result.token) {
-      await this.updateValue(result);
-    }
-
-    return result;
-  }
-
-  async requestReportProgress(params: any): Promise<any> {
-    const method = this.formatMethod(params.method);
-    const url = this.formatUri(params.url || this.config.url);
-    const uri = this.formatUri(params.uri);
-    const qs = this.formatQs(params.qs);
-    const body = this.formatBody(params.body);
-    const headers = this.formatHeaders(params.headers);
-
-    return new Promise((resolve) => {
-      this.httpClient
-        .request(method, `${url}/${uri}${qs}`, {
-          body: body,
-          headers: new HttpHeaders(headers),
-          observe: 'events',
-          reportProgress: true
-        })
-        .subscribe((event: any) => {
-          if (event.type == HttpEventType.Sent) {
-            console.log('upload file progress', 0);
-          }
-          if (event.type == HttpEventType.UploadProgress) {
-            const progress = Math.round((100 * event.loaded) / event.total);
-            console.log('upload file progress', progress);
-          }
-          if (event.type == HttpEventType.Response) {
-            console.log('upload file progress', 100, event.body);
-            resolve({ data: event.body || null });
-          }
-        });
-    });
+    const observe = params.observe || undefined;
+    const responseType = params.type || undefined;
+    const response$ = this.httpClient.request(method, `${url}${uri}${qs}`, {body: body || form, headers, observe, responseType});
+    return lastValueFrom(response$);
   }
 
   /**
-   * HTTP private methods
+   * Format method
    */
-
   private formatMethod(method: any): string {
-    return method || 'GET';
+    return `${method || 'GET'}`.toUpperCase().trim();
   }
 
+  /**
+   * Format URL
+   */
+  private formatUrl(url: any): string {
+    return `${url || this.config.url || ''}`.trim();
+  }
+
+  /**
+   * Format URI
+   */
   private formatUri(uri: any): string {
-    return (uri || '').trim().replace(/^\//, '').replace(/\/$/, '');
+    return `${uri || this.config.uri || ''}`.trim();
   }
 
+  /**
+   * Format QS
+   */
   private formatQs(qs: any): string {
-    return qs ? '?' + this.formatObjectToQs(qs) : '';
+    return qs ? '?' + this.transformObjectToQs(qs) : '';
   }
 
+  /**
+   * Format body
+   */
   private formatBody(body: any): any {
+    if (typeof body !== 'object' || Object.keys(body).length === 0) {
+      return undefined;
+    }
     return body;
   }
 
+  /**
+   * Format form
+   */
+  private formatForm(body: any): any {
+    if (typeof body !== 'object' || Object.keys(body).length === 0) {
+      return undefined;
+    }
+    const form: FormData = new FormData();
+    for (const i in body) {
+      form.append(i, body[i]);
+    }
+    return form;
+  }
+
+  /**
+   * Format Headers
+   */
   private formatHeaders(headers: any): any {
-    headers = headers || {};
+    headers = {...(headers || {}), ...(this.config.headers || {})};
     for (const h in headers) {
       if (!headers[h]) {
         delete headers[h];
       }
     }
-    if (this.authV?.token) {
-      headers['authorization'] = `Bearer ${this.authV.token}`;
-    }
-    return headers;
+    return new HttpHeaders(headers);
   }
 
-  private formatObjectToQs(params: any, prefix: any = ''): any {
+  /**
+   * Transform object to QS
+   */
+  private transformObjectToQs(params: any, prefix: any = ''): any {
     const result = [];
     for (const p in params) {
       if (params.hasOwnProperty(p)) {
         const k = prefix ? prefix + '[' + p + ']' : p;
         const v = params[p];
-        if (v === undefined) {
-          continue;
+        if (v !== null && v !== false && v !== undefined) {
+          result.push(typeof v === 'object' ? this.transformObjectToQs(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v));
         }
-        result.push(v !== null && v !== false && typeof v === 'object' ? this.formatObjectToQs(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v));
       }
     }
-    return result.join('&');
+    return result.filter((v: any) => !!v).join('&');
   }
 }

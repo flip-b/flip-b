@@ -1,18 +1,21 @@
-import { Plugin, Message, Request, Response } from '@flip-b/bot';
+import {Plugin, Message, Request, Response} from '@flip-b/bot';
 import * as dialogflow from '@google-cloud/dialogflow';
 
 /**
  * Dialogflow plugin
  */
-export class DialogFlowPlugin extends Plugin {
+export class DialogflowPlugin extends Plugin {
   override status: any = ['agent side', 'outgoing', 'transfer'];
 
   /**
    * Register
    */
   override async register(): Promise<any> {
-    this.bot.server.router.get(`/${this.plugin}/status`, (req: Request, res: Response) => {
-      res.send({ plugin: this.plugin, status: this.status, method: req.method });
+    // Define plugin methods
+
+    // Define server route
+    this.bot.server.router.get(`${this.bot.config.server.path}/${this.plugin}/status`, (req: Request, res: Response) => {
+      res.send({plugin: this.plugin, status: this.status, method: req.method});
     });
   }
 
@@ -20,43 +23,46 @@ export class DialogFlowPlugin extends Plugin {
    * Dispatch incoming message
    */
   override async dispatchIncomingMessage(message: Message): Promise<any> {
-    const client = new dialogflow.SessionsClient({
-      credentials: this.config.credentials
-    });
-    const input: any = {
-      session: client.projectAgentSessionPath(this.config.projectId, message.ticketId),
-      queryInput: {},
-      queryParams: {
-        payload: {
-          fields: {
-            source: {
-              stringValue: `${message.source}`,
-              kind: 'stringValue'
-            }
-          }
-        }
-      }
-    };
+    const client: any = new dialogflow.SessionsClient({credentials: {private_key: this.config.privateKey, client_email: this.config.clientEmail}});
+
+    let session: string;
+    if (this.config.environment) {
+      session = `projects/${this.config.projectId}/agent/environments/${this.config.environment}/users/-/sessions/${message.ticket}:detectIntent`;
+    } else {
+      session = client.projectAgentSessionPath(this.config.projectId, message.ticket);
+    }
+
+    const input: any = {session: session, queryParams: {}, queryInput: {}};
     if (message.text) {
-      input.queryInput.text = {
-        text: `${message.text}`,
-        languageCode: this.config.options.languageCode
-      };
+      input.queryInput.text = {text: `${message.text}`, languageCode: `${message.language}`};
     }
     if (message.file) {
-      input.queryInput.event = {
-        name: 'file',
-        parameters: jsonToStructProto({ file: `${message.file}` }),
-        languageCode: this.config.options.languageCode
-      };
+      input.queryInput.text = {text: `${message.file}`, languageCode: `${message.language}`};
     }
+
+    if (message.action && !['show_dialog', 'hide_dialog', 'quit_dialog', 'talking', 'silence', 'waiting', 'disconnect'].includes(message.action)) {
+      input.queryInput.event = {name: `${message.action}`, languageCode: `${message.language}`};
+      if (message.data.length) {
+        input.queryInput.event.parameters = jsonToStructProto(message.getDataObject());
+      }
+    }
+
+    if (message.settings?.contexts?.length > 0) {
+      input.queryParams.contexts = message.settings.contexts;
+    }
+    if (!input.queryInput.text && !input.queryInput.event) {
+      return;
+    }
+
     const result = await client.detectIntent(input);
-    const intent = `${(result[0]?.queryResult?.intent?.displayName || '').toLowerCase().trim()}`;
-    message.intent = intent;
+    if (result[0]?.queryResult?.intent?.displayName) {
+      message.intent = result[0]?.queryResult?.intent?.displayName;
+    }
+    if (result[0]?.queryResult?.outputContexts) {
+      message.settings.contexts = result[0].queryResult.outputContexts;
+    }
 
-    // Define outgoing messages on array of messages
     const outgoingMessages: any[] = [];
-
     if (result[0]?.queryResult?.fulfillmentMessages) {
       for (const m in result[0].queryResult.fulfillmentMessages) {
         const textItems = result[0].queryResult.fulfillmentMessages[m].text?.text || [];
@@ -65,13 +71,21 @@ export class DialogFlowPlugin extends Plugin {
             const text = textItems[t];
             if (text) {
               const outgoingMessage: any = {};
-              outgoingMessage.ticketId = message.ticketId;
-              //outgoingMessage.intent(intent);
+              outgoingMessage.parent = message.id;
+              outgoingMessage.ticket = message.ticket;
+              outgoingMessage.source = message.source;
+              outgoingMessage.target = message.target;
+              outgoingMessage.action = message.action;
+              outgoingMessage.intent = message.intent;
+              outgoingMessage.language = message.language;
+              outgoingMessage.settings = message.settings;
+              outgoingMessage.incoming = message.toObject();
               outgoingMessage.text = `${text}`;
               outgoingMessages.push(outgoingMessage);
             }
           }
         }
+
         const listItems = result[0].queryResult.fulfillmentMessages[m].payload?.fields?.richContent?.listValue?.values || [];
         if (listItems.length > 0) {
           for (const m in listItems) {
@@ -79,44 +93,113 @@ export class DialogFlowPlugin extends Plugin {
             const _file = [];
             const _menu = [];
             const _form = [];
-            const _event = [];
-            const _other = [];
 
             for (const item of listItems[m].listValue?.values || []) {
               const r = structProtoToJson(item.structValue);
-              if (r.type == 'text') {
-                _text.push(`${r.text || r.title || r.subtitle || ''}`);
-              } else if (r.type == 'file' || r.type == 'image' || r.type == 'audio' || r.type == 'document') {
-                _file.push(`${r.rawUrl}`);
-              } else if (r.type == 'list') {
-                _menu.push({ text: r.title, help: r.subtitle });
-              } else if (r.type == 'form') {
-                _form.push({ text: r.title, help: r.subtitle });
-              } else if (r.type == 'event') {
-                _event.push({ name: r.event.name, parameters: r.event.parameters, subscriber: r.event.subscribeTo });
-              } else {
-                _other.push(r);
+
+              // Text object
+              if (typeof r.type === 'undefined' && typeof r.text !== 'undefined') {
+                if (typeof r.text === 'object') {
+                  r.text = r.text[Math.floor(Math.random() * r.text.length)];
+                }
+                _text.push(`${r.text || ''}`);
+                continue;
+              }
+
+              // File object
+              if (typeof r.type === 'undefined' && typeof r.file !== 'undefined') {
+                if (typeof r.file === 'object') {
+                  r.file = r.file[Math.floor(Math.random() * r.file.length)];
+                }
+                _file.push(`${r.file || ''}`);
+                continue;
+              }
+
+              // Menu object
+              if (typeof r.type === 'undefined' && typeof r.menu !== 'undefined') {
+                if (typeof r.menu === 'object') {
+                  r.menu = r.menu[Math.floor(Math.random() * r.menu.length)];
+                }
+                for (const x of r.menu) {
+                  _menu.push(x);
+                }
+                continue;
+              }
+
+              // Form object
+              if (typeof r.type === 'undefined' && typeof r.form !== 'undefined') {
+                if (typeof r.form === 'object') {
+                  r.form = r.form[Math.floor(Math.random() * r.form.length)];
+                }
+                for (const x of r.form) {
+                  _form.push(x);
+                }
+                continue;
+              }
+
+              // Type object (old format)
+              if (typeof r.type !== 'undefined') {
+                if (typeof r.rawUrl === 'object') {
+                  r.rawUrl = r.rawUrl[Math.floor(Math.random() * r.rawUrl.length)];
+                }
+                if (typeof r.display === 'string') {
+                  r.attr = r.attr || {};
+                  r.attr.display = r.display;
+                }
+
+                if (r.type == 'text') {
+                  _text.push(`${r.text || r.title || r.subtitle || ''}`);
+                }
+                if (r.type == 'file' || r.type == 'image' || r.type == 'video' || r.type == 'audio' || r.type == 'document') {
+                  _file.push(`${r.file || r.rawUrl || ''}`);
+                }
+                if (r.type == 'menu' || r.type == 'list') {
+                  _menu.push({
+                    text: `${r.text || r.title || ''}`,
+                    help: `${r.help || r.subtitle || ''}`,
+                    file: `${r.file || ''}`,
+                    attr: r.attr || r.attributes,
+                    action: r.action || r.event,
+                    intent: r.intent
+                  });
+                }
+                if (r.type == 'form') {
+                  _form.push({
+                    text: `${r.text || r.title || ''}`,
+                    help: `${r.help || r.subtitle || ''}`,
+                    file: `${r.file || ''}`,
+                    attr: r.attr || r.attributes,
+                    action: r.action || r.event,
+                    intent: r.intent
+                  });
+                }
               }
             }
-            if (_text.length > 0 || _file.length > 0 || _menu.length > 0 || _form.length > 0 || _event.length > 0) {
+
+            if (_text.length > 0 || _file.length > 0 || _menu.length > 0 || _form.length > 0) {
               const outgoingMessage: any = {};
-              outgoingMessage.ticketId = message.ticketId;
-              //outgoingMessage.setIntent(intent);
+              outgoingMessage.parent = message.id;
+              outgoingMessage.ticket = message.ticket;
+              outgoingMessage.source = message.source;
+              outgoingMessage.target = message.target;
+              outgoingMessage.action = message.action;
+              outgoingMessage.intent = message.intent;
+              outgoingMessage.language = message.language;
+              outgoingMessage.settings = message.settings;
+              outgoingMessage.incoming = message.toObject();
+
               if (_text.length > 0) {
                 outgoingMessage.text = _text[0];
               }
               if (_file.length > 0) {
                 outgoingMessage.file = _file[0];
               }
-              //if (_menu.length > 0) {
-              //  outgoingMessage.setMenu(_menu);
-              //}
-              //if (_form.length > 0) {
-              //  outgoingMessage.setForm(_form);
-              //}
-              //if (_event.length > 0) {
-              //  outgoingMessage.setEvent(_event[0]);
-              //}
+              if (_menu.length > 0) {
+                outgoingMessage.menu = _menu;
+              }
+              if (_form.length > 0) {
+                outgoingMessage.form = _form;
+              }
               outgoingMessages.push(outgoingMessage);
             }
           }
@@ -142,7 +225,7 @@ function jsonToStructProto(json: any) {
   for (const k in json) {
     fields[k] = jsonValueToProto(json[k]);
   }
-  return { fields };
+  return {fields};
 }
 
 function jsonValueToProto(value: any) {
@@ -152,7 +235,7 @@ function jsonValueToProto(value: any) {
     valueProto.nullValue = 'NULL_VALUE';
   } else if (value instanceof Array) {
     valueProto.kind = 'listValue';
-    valueProto.listValue = { values: value.map(jsonValueToProto) };
+    valueProto.listValue = {values: value.map(jsonValueToProto)};
   } else if (typeof value === 'object') {
     valueProto.kind = 'structValue';
     valueProto.structValue = jsonToStructProto(value);

@@ -1,4 +1,4 @@
-import { App } from './app';
+import {App} from './app';
 import mongoose from 'mongoose';
 
 /**
@@ -6,6 +6,8 @@ import mongoose from 'mongoose';
  */
 export abstract class Model {
   app: App;
+  name: string;
+  path: string;
 
   /**
    * Fields
@@ -13,63 +15,42 @@ export abstract class Model {
   abstract fields: Fields;
 
   /**
-   * Getters
+   * Define getters, setters and plugins
    */
   getters: any = {};
-
-  /**
-   * Setters
-   */
   setters: any = {};
+  plugins: any = {};
 
   /**
    * Constructor
    */
   constructor(app: App) {
     this.app = app;
+    this.name = this.app.helper.changeCase.snakeCase(`${this.constructor.name}`).replace(/_model$/, '');
+    this.path = this.app.helper.changeCase.paramCase(`${this.constructor.name}`).replace(/-model$/, '');
   }
 
   /**
    * Get model
    */
   getModel(): any {
-    return this.getSchema();
-  }
-
-  /**
-   * Get model name
-   */
-  getModelName(): any {
-    return this.app.helper.changeCase.snakeCase(`${this.constructor.name}`).replace(/_model$/, '');
-  }
-
-  /**
-   * Get model path
-   */
-  getModelPath(): any {
-    return this.app.helper.changeCase.paramCase(`${this.constructor.name}`).replace(/-model$/, '');
-  }
-
-  /**
-   * Get schema
-   */
-  private getSchema(): any {
-    const schema = new mongoose.Schema<Fields>(this.fields);
+    const schema: any = new mongoose.Schema<Fields>(this.fields);
     for (const v in this.getters) {
       schema.virtual(`${v}`).get(this.getters[`${v}`]);
     }
     for (const v in this.setters) {
       schema.virtual(`${v}`).set(this.setters[`${v}`]);
     }
-    schema.pre('save', function save(this: Fields, next: any) {
-      this.created_at = this.created_at || new Date().getTime();
-      this.updated_at = new Date().getTime();
-      next();
-    });
-    return this.app.database.model(`${this.getModelName()}`, schema);
+    for (const v in this.plugins) {
+      schema.plugin(this.plugins[`${v}`]);
+    }
+    return this.app.database.model(`${this.name}`, schema);
   }
 }
 
+/**
+ * Fields interface
+ */
 export interface Fields {
   [index: string]: any;
 }

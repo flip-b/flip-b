@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import { camelCase } from 'change-case';
+import {camelCase} from 'change-case';
 import errorHandler from './middleware/error-handler';
 import filesHandler from './middleware/files-handler';
 import mountHandler from './middleware/mount-handler';
@@ -59,13 +59,14 @@ export class App {
     if (this.database) {
       await this.database.disconnect();
     }
+    process.exit(0);
   }
 
   /**
    * Debug
    */
   async debug(...args: any): Promise<any> {
-    if (this.config.env == 'development') {
+    if (this.config.env === 'development') {
       console.info(...args);
     }
   }
@@ -77,7 +78,7 @@ export class App {
     this.debug(`> initializing config`);
     const file = path.resolve(`${this.config.src}/config/${this.config.env.toLowerCase()}`);
     const data = await import(file);
-    this.config = { ...this.config, ...data.default };
+    this.config = {...this.config, ...data.default};
   }
 
   /**
@@ -95,14 +96,8 @@ export class App {
    */
   private async initializeHelper(): Promise<any> {
     this.debug(`> initializing helper`);
-    const main = ['crypto', 'fs', 'path', 'http', 'https', 'mime-types'];
-    const pkg1 = await import(path.resolve(`${__dirname}/../../package`));
-    const pkg2 = await import(path.resolve(`${this.config.cwd}/package`));
-    const list = [...main, ...Object.keys(pkg1?.default?.dependencies || {}), ...Object.keys(pkg2?.default?.dependencies || {})];
+    const list = ['bcryptjs', 'busboy', 'change-case', 'crypto', 'ejs', 'fs', 'path', 'http', 'https', 'jsonwebtoken', 'mime-types'];
     for (const l of list) {
-      if (l.match(/^@/)) {
-        continue;
-      }
       const helper = await import(`${l}`);
       this.helper[`${camelCase(l)}`] = helper.default || helper;
     }
@@ -159,15 +154,18 @@ export class App {
     this.debug(`> initializing router`);
     this.router = express();
     this.server = http.createServer(this.router);
+
     this.router.set('trust proxy', true);
     this.router.set('views', `${this.config.var}/views`);
     this.router.set('view engine', 'ejs');
     this.router.set('etag', false);
     this.router.set('x-powered-by', false);
+
     this.router.use(compression(this.config.router.compression));
     this.router.use(cors(this.config.router.cors));
     this.router.use(express.json(this.config.router.json));
     this.router.use(express.urlencoded(this.config.router.urlencoded));
+
     this.router.use(routeHandler(this));
     this.router.use(filesHandler(this));
     this.router.use(mountHandler(this));
@@ -183,8 +181,17 @@ export class App {
       return;
     }
     if (process.argv.includes('test')) {
+      await this.runTest(process.argv.slice(process.argv.indexOf('test') + 1));
       return;
     }
+    process.on('SIGINT', () => {
+      this.debug('> sigint received, shutting down');
+      this.stop();
+    });
+    process.on('SIGTERM', () => {
+      this.debug('> sigterm received, shutting down');
+      this.stop();
+    });
     this.debug(`> initializing server`);
     this.server.listen(this.config.server?.port).on('listening', () => {
       this.debug(`> listening server on port ${this.config.server.port} (#${process.pid})`);
@@ -198,6 +205,15 @@ export class App {
     const task = camelCase(args.shift() || '');
     this.debug(`> initializing ${task}`);
     await this.tasks[`${task}`].run(...args);
+    await this.stop();
+  }
+
+  /**
+   * Run test
+   */
+  private async runTest(args: string[]): Promise<any> {
+    const test = camelCase(args.shift() || '');
+    this.debug(`> initializing ${test}`);
     await this.stop();
   }
 

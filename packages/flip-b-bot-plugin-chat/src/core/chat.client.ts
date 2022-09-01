@@ -1,54 +1,10 @@
-import UglifyJS from 'uglify-js';
-
 /**
  * Chat client
  */
-export function client(params: any = {}, config: any = {}) {
+export function client(bot: any, params: any = {}, config: any = {}) {
   const version = '1.0.0';
   const author = params.author || 'Flip-B';
   const prefix = params.prefix || 'Bot';
-
-  // Define i18n
-  const i18n: any = {
-    en: {
-      title: 'Chat',
-      write: 'Escribí un mensaje aquí',
-      share_attach_message: 'Seleccioná un archivo o soltalo aquí',
-      share_attach_link: 'Download file',
-      share_attach_name: 'File',
-      share_camera_message: 'Enviá una captura',
-      quit_dialog_message: '¿Querés salir del chat?',
-      quit_dialog_negative: 'No',
-      quit_dialog_positive: 'Yes'
-    },
-    es: {
-      title: 'Chat',
-      write: 'Escribe un mensaje aquí',
-      share_attach_message: 'Selecciona un archivo o suéltalo aquí',
-      share_attach_link: 'Descargar archivo',
-      share_attach_name: 'Archivo',
-      share_camera_message: 'Envia una captura',
-      quit_dialog_message: '¿Quieres salir del chat?',
-      quit_dialog_negative: 'No',
-      quit_dialog_positive: 'Si'
-    },
-    pt: {
-      title: 'Chat',
-      write: 'Escribí un mensaje aquí',
-      share_attach_message: 'Seleccioná un archivo o soltalo aquí',
-      share_attach_link: 'Descargar archivo',
-      share_attach_name: 'Archivo',
-      share_camera_message: 'Enviá una captura',
-      quit_dialog_message: '¿Querés salir del chat?',
-      quit_dialog_negative: 'No',
-      quit_dialog_positive: 'Si'
-    }
-  };
-
-  // Define default language, country and locales
-  const language = (params.language || 'en').substr(0, 2).toLowerCase();
-  const country = (params.country || 'US').substr(0, 2).toUpperCase();
-  const locales = i18n[language] ? i18n[language] : i18n['en'];
 
   // Define default colors values
   const colors: any = {
@@ -82,7 +38,7 @@ export function client(params: any = {}, config: any = {}) {
   // Define default buttom values
   const button: any = {
     style: 'responsive',
-    title: `${locales.title}`,
+    title: 'Chat',
     align: 'right',
     quit_button: true,
     ...(params.button || {})
@@ -91,25 +47,26 @@ export function client(params: any = {}, config: any = {}) {
   // Define default dialog values
   const dialog: any = {
     style: 'responsive',
-    title: `${locales.title}`,
-    write: `${locales.write}`,
-    share_attach_message: `${locales.share_attach_message}`,
-    share_attach_link: `${locales.share_attach_link}`,
-    share_attach_name: `${locales.share_attach_name}`,
-    share_camera_message: `${locales.share_camera_message}`,
+    title: 'Chat',
+    write: 'Type a message here',
+    share_attach_message: 'Select an file or drop it here',
+    share_attach_link: 'Download file',
+    share_attach_name: 'File',
+    share_camera_message: 'Send a capture',
     emojis: true,
     attach: true,
     camera: true,
     dictate: true,
-    dictate_lang: `${language}-${country}`,
+    dictate_lang: 'en-US',
     hide_button: true,
     quit_button: true,
     quit_dialog: true,
-    quit_dialog_message: `${locales.quit_dialog_message}`,
-    quit_dialog_negative: `${locales.quit_dialog_negative}`,
-    quit_dialog_positive: `${locales.quit_dialog_positive}`,
+    quit_dialog_message: 'Do you want to leave the chat?',
+    quit_dialog_negative: 'Cancel',
+    quit_dialog_positive: 'Exit',
     logo: true,
     time: true,
+    timeout: 0,
     ...(params.dialog || {})
   };
 
@@ -186,7 +143,8 @@ window.${prefix}Chat = {
       quit_dialog_negative: '${dialog.quit_dialog_negative}',
       quit_dialog_positive: '${dialog.quit_dialog_positive}',
       logo: ${dialog.logo},
-      time: ${dialog.time}
+      time: ${dialog.time},
+      timeout: ${dialog.timeout}
     },
 
     // Define emojis
@@ -257,7 +215,7 @@ window.${prefix}Chat = {
   //
 
   //
-  // Define system init method
+  // Define system init
   //
   // @private
   // @return void
@@ -656,7 +614,7 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define client init method
+  // Define client init
   //
   // @private
   // @return void
@@ -674,25 +632,12 @@ window.${prefix}Chat = {
     // Define status
     self.client = true;
 
-    // Verify session
-    if (!self.session) {
-
-      // Define session
-      self.session = self.system_storage.getItem('session');
-    }
-
-    // Verify session
-    if (!self.session) {
-
-      // Define session
-      self.session = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-
-      // Save session
-      self.system_storage.setItem('session', self.session);
-    }
+    // Define session
+    self.session = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+    self.system_storage.setItem('session', self.session);
 
     // Define session interval
     var sessionInterval = setInterval(function() {
@@ -701,10 +646,22 @@ window.${prefix}Chat = {
         clearInterval(sessionInterval);
       }
     }, 1000);
+
+    var timeoutInterval = setInterval(function() {
+      if (self.params.dialog.timeout && self.last && (new Date().getTime() - self.last) > self.params.dialog.timeout) {
+        self.last = 0;
+        self.sendAction('timeout');
+        clearInterval(sessionInterval);
+        clearInterval(timeoutInterval);
+        setTimeout(function() {
+          self.__close();
+        }, 5000);
+      }
+    }, 1000);
   },
 
   //
-  // Define socket init method
+  // Define socket init
   //
   // @private
   // @return void
@@ -736,7 +693,7 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define send message method
+  // Define send message
   //
   // @private
   // @param {Object} update
@@ -780,7 +737,7 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define draw message method
+  // Define draw message
   //
   // @private
   // @param {Object} update
@@ -798,7 +755,10 @@ window.${prefix}Chat = {
     var self = this;
 
     // Define date
-    var date = new Date(update.datetime || new Date().getTime());
+    var date = new Date(update.time || new Date().getTime());
+
+    // Define last
+    self.last = new Date().getTime();
 
     // Define from
     var type = '';
@@ -835,7 +795,18 @@ window.${prefix}Chat = {
     // Delete forms
     var forms = document.getElementsByClassName('form');
     for (var f = 0; f < forms.length; f++) {
-      forms[b].remove();
+      //forms[f].remove();
+      forms[f].style.display = 'none';
+    }
+
+    // Verify language
+    if (update.language) {
+      self.params.language = update.language;
+    }
+
+    // Verify settings
+    if (update.settings) {
+      self.params.settings = update.settings;
     }
 
     // Verify show button
@@ -887,13 +858,24 @@ window.${prefix}Chat = {
     }
 
     // Verify file
-    if (update.file && (update.file.substr(0, 10) == 'data:image' || update.file.match(/\.(bmp|cur|gif|ico|jpe?g|png|raw|svgz?|tiff|webp)$/i))) {
-      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="text file" onclick="${prefix}Chat.__downloadFile(\'' + update.file + '\', \'' + self.params.dialog.share_attach_name + '\');"><img src="' + update.file + '">' + time + '</div></div>');
-    }
-
-    // Verify file
-    if (update.file && (update.file.substr(0, 10) != 'data:image' && !update.file.match(/\.(bmp|cur|gif|ico|jpe?g|png|raw|svgz?|tiff|webp)$/i))) {
-      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="text file" onclick="${prefix}Chat.__downloadFile(\'' + update.file + '\', \'' + self.params.dialog.share_attach_name + '\');">' + self.params.dialog.share_attach_link + '' + time + '</div></div>');
+    if (update.file && update.file.substr(0, 10) == 'data:image') {
+      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="file file-image"><img src="' + update.file + '">' + time + '</div></div>');
+    } else if (update.file && update.file.match(/\.(bmp|cur|gif|ico|jpe?g|png|raw|svgz?|tiff|webp)$/i)) {
+      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="file file-image"><img src="' + update.file + '">' + time + '</div></div>');
+    } else if (update.file && update.file.match(/\.mp3$/i)) {
+      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="file file-audio"><audio controls controlsList="nodownload"><source src="' + update.file + '" type="audio/mp3"></audio>' + time + '</div></div>');
+    } else if (update.file && update.file.match(/\.mp4$/i)) {
+      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="file file-video"><video controls controlsList="nodownload"><source src="' + update.file + '" type="video/mp4"></video>' + time + '</div></div>');
+    } else if (update.file && update.file.match(/\.ogg$/i)) {
+      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="file file-video"><video controls controlsList="nodownload"><source src="' + update.file + '" type="video/ogg"></video>' + time + '</div></div>');
+    } else if (update.file && update.file.match(/^https:\/\/drive\.google\.com\/file\/d\//)) {
+      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="file file-video"><video controls controlsList="nodownload"><source src="https://drive.google.com/u/0/uc?id=' + update.file.split('/file/d/')[1].split('/')[0] + '&export=download" type="video/mp4"></video>' + time + '</div></div>');
+    } else if (update.file && update.file.match(/^iframe:\/\//)) {
+      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="file file-frame"><iframe src="' + update.file.replace(/^iframe/, 'https') + '" allow="autoplay" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true" encrypted-media="true"></iframe>' + time + '</div></div>');
+    } else if (update.file && update.file.match(/^https:\/\/docs\.google\.com\/presentation\//)) {
+      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="file file-frame"><iframe src="' + update.file + '" allow="autoplay" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true" encrypted-media="true"></iframe>' + time + '</div></div>');
+    } else if (update.file) {
+      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="file" onclick="${prefix}Chat.__downloadFile(\'' + update.file + '\', \'' + self.params.dialog.share_attach_name + '\');">' + self.params.dialog.share_attach_link + '' + time + '</div></div>');
     }
 
     // Verify mask
@@ -905,43 +887,114 @@ window.${prefix}Chat = {
 
     // Verify menu
     if (update.menu && update.menu.length) {
-
-      // Define menu
       var menu = '';
-      var menu_header = '';
-      var menu_footer = '';
       var menu_prefix = 'menu_' + new Date().getTime();
+      var menu_format = 'buttons';
       var menu_number;
-      var menu_lg = false;
-
-      // Verify menu sizes
-      for (menu_number = 0; menu_number < update.menu.length; menu_number++) {
-        if (update.menu[menu_number] && update.menu[menu_number].text.length > 3) {
-          menu_lg = true;
-          break;
-        }
-      }
 
       // Define menu items
       for (menu_number = 0; menu_number < update.menu.length; menu_number++) {
         if (update.menu[menu_number]) {
-          menu += '<button id="' + menu_prefix + '.' + menu_number + '" type="button" title="' + (update.menu[menu_number].help != update.menu[menu_number].text ? update.menu[menu_number].help : '') + '" class="' + (menu_lg ? 'lg' : 'sm') + '">' + update.menu[menu_number].text + '</button>';
+          var item = update.menu[menu_number];
+
+          if (item.text && item.attr && item.attr.display == 'onetime') {
+            self.onetime = self.onetime || {};
+            if (self.onetime[item.text]) {
+              item.attr.display = 'none';
+            } else {
+              item.attr.display = 'block';
+            }
+            item.onetime = 'yes';
+          }
+
+          var attr = '';
+          attr += (item.attr && item.attr.fontFamily ? 'font-family: ' + item.attr.fontFamily + ' !important;' : '');
+          attr += (item.attr && item.attr.fontSize ? 'font-size: ' + item.attr.fontSize + ' !important;' : '');
+          attr += (item.attr && item.attr.background ? 'background: ' + item.attr.background + ' !important;' : '');
+          attr += (item.attr && item.attr.backgroundColor ? 'background-color: ' + item.attr.backgroundColor + ' !important;' : '');
+          attr += (item.attr && item.attr.backgroundImage ? 'background-image: ' + item.attr.backgroundImage + ' !important;' : '');
+          attr += (item.attr && item.attr.color ? 'color: ' + item.attr.color + ' !important;' : '');
+          attr += (item.attr && item.attr.width ? 'width: ' + item.attr.width + ' !important;' : '');
+          attr += (item.attr && item.attr.height ? 'height: ' + item.attr.height + ' !important;' : '');
+          attr += (item.attr && item.attr.border ? 'border: ' + item.attr.border + ' !important;' : '');
+          attr += (item.attr && item.attr.borderRadius ? 'border-radius: ' + item.attr.borderRadius + ' !important;' : '');
+          attr += (item.attr && item.attr.margin ? 'margin: ' + item.attr.margin + ' !important;' : '');
+          attr += (item.attr && item.attr.padding ? 'padding: ' + item.attr.padding + ' !important;' : '');
+          attr += (item.attr && item.attr.display ? 'display: ' + item.attr.display + ' !important;' : '');
+
+          if (item.text) {
+            menu += '<button id="' + menu_prefix + '.' + menu_number + '" type="button" onetime="' + (item.onetime || '') + '" action="' + (item.action || '') + '" intent="' + (item.intent || '') + '" title="' + (item.help || item.text) + '" style="' + attr + '">' + item.text + '</button>';
+          }
+
+          if (item.file) {
+            menu_format = 'slides';
+            if (item.file.substr(0, 10) == 'data:image') {
+              menu += '<div class="slide file file-slide"><img src="' + item.file + '"></div>';
+            } else if (item.file.match(/\.(bmp|cur|gif|ico|jpe?g|png|raw|svgz?|tiff|webp)$/i)) {
+              menu += '<div class="slide file file-slide"><img src="' + item.file + '"></div>';
+            } else if (item.file.match(/\.mp3$/i)) {
+              menu += '<div class="slide file file-slide"><audio controls controlsList="nodownload"><source src="' + item.file + '" type="audio/mp3"></audio></div>';
+            } else if (item.file.match(/\.mp4$/i)) {
+              menu += '<div class="slide file file-slide"><video controls controlsList="nodownload"><source src="' + item.file + '" type="video/mp4"></video></div>';
+            } else if (item.file.match(/\.ogg$/i)) {
+              menu += '<div class="slide file file-slide"><video controls controlsList="nodownload"><source src="' + item.file + '" type="video/ogg"></video></div>';
+            } else if (item.file.match(/^https:\/\/drive\.google\.com\/file\/d\//)) {
+              menu += '<div class="slide file file-slide"><video controls controlsList="nodownload"><source src="https://drive.google.com/u/0/uc?id=' + item.file.split('/file/d/')[1].split('/')[0] + '&export=download" type="video/mp4"></video></div>';
+            } else if (item.file.match(/^iframe:\/\//)) {
+              menu += '<div class="slide file file-slide"><iframe src="' + item.file.replace(/^iframe/, 'https') + '" allow="autoplay" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true" encrypted-media="true"></iframe></div>';
+            } else if (item.file.match(/^https:\/\/docs\.google\.com\/presentation\//)) {
+              menu += '<div class="slide file file-slide"><iframe src="' + item.file + '" allow="autoplay" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true" encrypted-media="true"></iframe></div>';
+            }
+          }
         }
       }
 
       // Create menu
-      self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + menu_prefix + '" class="' + type + ' buttons"><div class="icon"></div>' + menu_header + '<div class="menu">' + menu + '</div>' + menu_footer + '</div>');
+      if (menu_format === 'slides') {
+        var arrows = '';
+        arrows += '<button id="' + menu_prefix + '.slide-arrow-prev" class="slide-arrow slide-arrow-prev">&#8249;</button>';
+        arrows += '<button id="' + menu_prefix + '.slide-arrow-next" class="slide-arrow slide-arrow-next">&#8250;</button>';
 
-      // Create menu events
-      for (menu_number = 0; menu_number < update.menu.length; menu_number++) {
-        if (update.menu[menu_number]) {
-          document.getElementById(menu_prefix + '.' + menu_number).addEventListener('click', function(event) {
-            event.preventDefault();
-            var text = event.target.innerText.trim();
-            if (text) {
-              self.sendText(text);
-            }
-          });
+        self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + menu_prefix + '" class="' + type  + ' slides">' + arrows + '<div id="' + menu_prefix + '.slides-container" class="menu slides-container" id="slides-container">' + menu + '</div></div>');
+
+        document.getElementById(menu_prefix + '.slide-arrow-next').addEventListener('click', function() {
+          var slidesContainer = document.getElementById(menu_prefix + '.slides-container');
+          slidesContainer.scrollLeft += slidesContainer.clientWidth;
+          self.dialog_form_text_control.focus();
+        });
+        document.getElementById(menu_prefix + '.slide-arrow-prev').addEventListener('click', function() {
+          var slidesContainer = document.getElementById(menu_prefix + '.slides-container');
+          slidesContainer.scrollLeft -= slidesContainer.clientWidth;
+          self.dialog_form_text_control.focus();
+        });
+      }
+
+      // Create menu
+      if (menu_format === 'buttons') {
+        self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + menu_prefix + '" class="' + type  + ' buttons"><div class="icon"></div><div class="menu">' + menu + '</div></div>');
+
+        // Create menu events
+        for (menu_number = 0; menu_number < update.menu.length; menu_number++) {
+          if (update.menu[menu_number]) {
+            document.getElementById(menu_prefix + '.' + menu_number).addEventListener('click', function(event) {
+              event.preventDefault();
+              if (event.target.getAttribute('onetime')) {
+                var text = event.target.innerText;
+                self.onetime = self.onetime || {};
+                self.onetime[text] = true;
+              }
+              if (event.target.getAttribute('action')) {
+                return self.sendAction(event.target.getAttribute('action'));
+              }
+              if (event.target.getAttribute('intent')) {
+                return self.sendIntent(event.target.getAttribute('intent'));
+              }
+              var text = event.target.innerText.trim();
+              if (text) {
+                self.sendText(text);
+              }
+            });
+          }
         }
       }
     }
@@ -951,8 +1004,6 @@ window.${prefix}Chat = {
 
       // Define form
       var form = '';
-      var form_header = '';
-      var form_footer = '';
       var form_prefix = 'form_' + new Date().getTime();
       var form_number;
 
@@ -1010,6 +1061,10 @@ window.${prefix}Chat = {
         item_values += (item.attr && item.attr.ondkeydown ? ' ondkeydown="' + item.attr.ondkeydown + '"' : '');
         item_values += (item.attr && item.attr.ondkeypress ? ' ondkeypress="' + item.attr.ondkeypress + '"' : '');
 
+        if (item.action && (item.type == 'submit' || item.type == 'button')) {
+          item_values += ' onclick="${prefix}Chat.__submitForm(\'' + form_prefix + '\', \'' + item.action + '\', \'' + item.type + '\');"';
+        }
+
         // Define form item: custom
         if (item.type == 'custom') {
           form += item_header;
@@ -1062,30 +1117,7 @@ window.${prefix}Chat = {
       }
 
       // Create form
-      self.dialog.insertAdjacentHTML('beforeend', '<form id="' + form_prefix + '" class="form" novalidate="true">' + form_header + '<div style="padding: 0 32px !important;">' + form + '</div>' + form_footer + '</form>');
-
-      // Create form submit event
-      document.getElementById(form_prefix).addEventListener('submit', function(event) {
-        event.preventDefault();
-        var inputs = event.currentTarget.elements;
-        var values = [];
-        for (var i = 0; i < inputs.length; i++) {
-          if (inputs[i].style.display != 'none' && !inputs[i].checkValidity()) {
-            inputs[i].focus();
-            return;
-          }
-          if (inputs[i].style.display == 'none') {
-            continue;
-          }
-          if (inputs[i].name) {
-            values.push({
-              index: inputs[i].name,
-              value: inputs[i].value
-            });
-          }
-        }
-        self.sendData(values);
-      });
+      self.dialog.insertAdjacentHTML('beforeend', '<form id="' + form_prefix + '" class="form" novalidate="true" onsubmit="return false;"><div style="padding: 0 32px !important;">' + form + '</div></form>');
 
       // Create form events
       for (form_number = 0; form_number < update.form.length; form_number++) {
@@ -1136,10 +1168,49 @@ window.${prefix}Chat = {
     setTimeout(function() {
       self.dialog_body.scrollTop = self.dialog_body.scrollHeight;
     }, 100)
+    setTimeout(function() {
+      self.dialog_body.scrollTop = self.dialog_body.scrollHeight;
+    }, 500)
+    setTimeout(function() {
+      self.dialog_body.scrollTop = self.dialog_body.scrollHeight;
+    }, 1000)
   },
 
   //
-  // Define download file method
+  // Define submit form
+  //
+  // @private
+  // @param {String} target
+  // @param {String} action
+  // @return void
+  //
+  __submitForm: function(target, action, type) {
+    var inputs = document.getElementById(target);
+    var values = [];
+    if (type === 'submit') {
+      for (var i = 0; i < inputs.length; i++) {
+        if (inputs[i].style.display != 'none' && !inputs[i].checkValidity()) {
+          inputs[i].focus();
+          return;
+        }
+        if (inputs[i].style.display == 'none' || inputs[i].type == 'submit' || inputs[i].type ==  'button') {
+          continue;
+        }
+        if (inputs[i].name) {
+          values.push({
+            index: inputs[i].name,
+            value: inputs[i].value
+          });
+        }
+      }
+    }
+    this.__drawMessage({action: 'refresh'});
+    this.__drawMessage({action: 'talking'});
+    this.sendActionWithData(action, values);
+  },
+
+  //
+  // Define download file
   //
   // @private
   // @param {String} data
@@ -1163,7 +1234,7 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define get storage method
+  // Define get storage
   //
   // @private
   // @return {Object}
@@ -1754,11 +1825,16 @@ window.${prefix}Chat = {
       // Define dialog bubble styles
       '    #' + this.id + '_dialog .bubble {',
       '      display: table !important;',
-      '      max-width: 95% !important;',
       '      border: 0 !important;',
       '      margin: 0 !important;',
       '      padding: 10px !important;',
       '      box-sizing: border-box !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .time {',
+      '      font-size: 13px !important;',
+      '      text-align: right !important;',
+      '      margin-top: 5px !important;',
+      '      opacity: 0.8 !important;',
       '    }',
       '    #' + this.id + '_dialog .bubble .icon {',
       '      display: table-cell !important;',
@@ -1778,6 +1854,7 @@ window.${prefix}Chat = {
       '      padding: 0 !important;',
       '      box-sizing: border-box !important;',
       '    }',
+
       '    #' + this.id + '_dialog .bubble .text {',
       '      display: table-cell !important;',
       '      font-size: 100% !important;',
@@ -1797,18 +1874,141 @@ window.${prefix}Chat = {
       '           -ms-hyphens: auto;',
       '               hyphens: auto;',
       '    }',
-      '    #' + this.id + '_dialog .bubble .text img {',
-      '      max-width: 100px !important;',
-      '      max-height: 50px !important;',
-      '    }',
+
       '    #' + this.id + '_dialog .bubble .file {',
+      '      display: table-cell !important;',
+      '      width: auto !important;',
       '      cursor: pointer;',
+      '      border: 0 !important;',
+      '      border-radius: ' + this.params.styles.radius + 'px !important;',
+      '      margin: 0 !important;',
+      '      margin-right: auto !important;',
+      '      padding: 0 !important;',
+      '      box-sizing: border-box !important;',
       '    }',
-      '    #' + this.id + '_dialog .bubble .time {',
-      '      font-size: 13px !important;',
-      '      text-align: right !important;',
-      '      margin-top: 5px !important;',
-      '      opacity: 0.8 !important;',
+      '    #' + this.id + '_dialog .bubble .file.file-image {',
+      '      position: relative !important;',
+      '      width: 100% !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .file.file-image img {',
+      '      width: 100% !important;',
+      '      height: 100% !important;',
+      '      border: 0 !important;',
+      '      border-radius: 5px !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .file.file-audio {',
+      '      position: relative !important;',
+      '      width: 100% !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .file.file-audio audio {',
+      '      position: absolute !important;',
+      '      width: 100% !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .file.file-video {',
+      '      position: relative !important;',
+      '      width: 100% !important;',
+      '      padding-bottom: 56.25% !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .file.file-video video {',
+      '      position: absolute !important;',
+      '      top: 0 !important;',
+      '      left: 0 !important;',
+      '      width: 100% !important;',
+      '      height: 100% !important;',
+      '      border: 0 !important;',
+      '      border-radius: 5px !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .file.file-frame {',
+      '      position: relative !important;',
+      '      width: 100% !important;',
+      '      padding-bottom: 56.25% !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .file.file-frame iframe {',
+      '      position: absolute !important;',
+      '      top: 0 !important;',
+      '      left: 0 !important;',
+      '      width: 100% !important;',
+      '      height: 100% !important;',
+      '      border: 0 !important;',
+      '      border-radius: 5px !important;',
+      '    }',
+
+      '    #' + this.id + '_dialog .bubble .file.file-slide {',
+      '      position: relative !important;',
+      '      width: 100% !important;',
+      '      padding-bottom: 56.25% !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .file.file-slide img,',
+      '    #' + this.id + '_dialog .bubble .file.file-slide audio,',
+      '    #' + this.id + '_dialog .bubble .file.file-slide video,',
+      '    #' + this.id + '_dialog .bubble .file.file-slide iframe {',
+      '      position: absolute !important;',
+      '      top: 0 !important;',
+      '      left: 0 !important;',
+      '      width: 100% !important;',
+      '      height: 100% !important;',
+      '      border: 0 !important;',
+      '      border-radius: 5px !important;',
+      '    }',
+
+      '    #' + this.id + '_dialog .bubble.slides {',
+      '      position: relative !important;',
+      '      overflow: hidden !important;',
+      '      display: table !important;',
+      '      width: 100% !important;',
+      '      border: 0 !important;',
+      '      margin: 0 !important;',
+      '      padding: 10px !important;',
+      '      box-sizing: border-box !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble.slides .slides-container {',
+      '      overflow: scroll;',
+      '      display: flex;',
+      '      width: 100%;',
+      '      border: 0 !important;',
+      '      margin: 0 !important;',
+      '      padding: 0 !important;',
+      '      box-sizing: border-box !important;',
+      '      scroll-behavior: smooth !important;',
+      '      scrollbar-width: none !important;',
+      '      -ms-overflow-style: none !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble.slides .slides-container::-webkit-scrollbar {',
+      '      width: 0 !important;',
+      '      height: 0 !important;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble.slides .slide {',
+      '      flex: 1 0 100%;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble.slides .slide-arrow {',
+      '      position: absolute;',
+      '      display: flex;',
+      '      top: 0 !important;',
+      '      width: 30px !important;',
+      '      bottom: 10px !important;',
+      '      background: transparent !important;',
+      '      align-items: center;',
+      '      font-size: 3rem !important;',
+      '      border: 0 !important;',
+      '      margin: 0 !important;',
+      '      padding: 10px !important;',
+      '      cursor: pointer !important;',
+      '      z-index: 1;',
+      '      opacity: 0.1;',
+      '      outline: 0 !important;',
+      '      transition: opacity 100ms;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble.slides .slide-arrow:hover,',
+      '    #' + this.id + '_dialog .bubble.slides .slide-arrow:focus {',
+      '      background-color: ' + this.params.colors.dialog_bg + ' !important;',
+      '      color: ' + this.params.colors.dialog_fg + ' !important;',
+      '      opacity: 1;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .slide-arrow-prev {',
+      '      left: 0;',
+      '    }',
+      '    #' + this.id + '_dialog .bubble .slide-arrow-next {',
+      '      right: 0;',
       '    }',
 
       // Define dialog bubble left styles
@@ -1881,8 +2081,6 @@ window.${prefix}Chat = {
       '      font-size: 90% !important;',
       '      font-weight: bold !important;',
       '      text-align: center !important;',
-      '      min-width: 60px !important;',
-      '      max-width: 130px !important;',
       '      border: 0 !important;',
       '      border-radius: ' + this.params.styles.radius + 'px !important;',
       '      margin: 0 !important;',
@@ -1890,10 +2088,6 @@ window.${prefix}Chat = {
       '      margin-bottom: 5px !important;',
       '      padding: 10px !important;',
       '      box-sizing: border-box !important;',
-      '    }',
-      '    #' + this.id + '_dialog .menu button.lg {',
-      '      min-width: 100% !important;',
-      '      max-width: none !important;',
       '    }',
       '    #' + this.id + '_dialog .menu button:focus,',
       '    #' + this.id + '_dialog .menu button:hover {',
@@ -2381,39 +2575,6 @@ window.${prefix}Chat = {
       '      }',
       '    }',
 
-      // Define dialog head-opaque styles
-      '    #' + this.id + '_dialog.head-opaque #' + this.id + '_dialog_head {',
-      '      background-color: ' + this.params.colors.dialog_bg + ' !important;',
-      '    }',
-      '    #' + this.id + '_dialog.head-opaque #' + this.id + '_dialog_head_text {',
-      '      color: ' + this.params.colors.dialog_fg + ' !important;',
-      '    }',
-      '    #' + this.id + '_dialog.head-opaque #' + this.id + '_dialog_head_hide_control .icon {',
-      '      fill: ' + this.params.colors.dialog_fg + ' !important;',
-      '    }',
-      '    #' + this.id + '_dialog.head-opaque #' + this.id + '_dialog_head_hide_control:hover .icon {',
-      '      fill: ' + this.params.colors.dialog_fg_active + ' !important;',
-      '    }',
-      '    #' + this.id + '_dialog.head-opaque #' + this.id + '_dialog_head_quit_control .icon {',
-      '      fill: ' + this.params.colors.dialog_fg + ' !important;',
-      '    }',
-      '    #' + this.id + '_dialog.head-opaque #' + this.id + '_dialog_head_quit_control:hover .icon {',
-      '      fill: ' + this.params.colors.dialog_fg_active + ' !important;',
-      '    }',
-
-      // Define dialog link-underline styles
-      '    #' + this.id + '_dialog.link-underline .bubble.bubble-left .text a {',
-      '      color: ' + this.params.colors.dialog_bg + ' !important;',
-      '      font-weight: bold !important;',
-      '      text-decoration: underline !important;',
-      '    }',
-      '    #' + this.id + '_dialog.link-underline .bubble.bubble-left .text a:focus,',
-      '    #' + this.id + '_dialog.link-underline .bubble.bubble-left .text a:hover {',
-      '      color: #000 !important;',
-      '      font-weight: bold !important;',
-      '      text-decoration: underline !important;',
-      '    }',
-
       // Define custom styles
 
 
@@ -2526,7 +2687,41 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define quit method
+  // Define close
+  //
+  // @private
+  // @return void
+  //
+  __close: function() {
+
+    // Verify socket
+    if (this.socket) {
+
+      // Disconnect
+      this.socket.disconnect();
+
+      // Remove all listeners
+      this.socket.removeAllListeners();
+    }
+
+    // Define welcome
+    this.welcome = false;
+
+    // Define session
+    this.session = null;
+
+    // Remove session
+    this.system_storage.removeItem('session');
+
+    // Define client
+    this.client = null;
+
+    // Define socket
+    this.socket = null;
+  },
+
+  //
+  // Define quit
   //
   // @private
   // @return void
@@ -2586,7 +2781,7 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define show button method
+  // Define show button
   //
   // @public
   // @return boolean
@@ -2603,7 +2798,7 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define hide button method
+  // Define hide button
   //
   // @public
   // @return boolean
@@ -2620,7 +2815,7 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define show dialog method
+  // Define show dialog
   //
   // @public
   // @return boolean
@@ -2637,7 +2832,7 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define hide dialog method
+  // Define hide dialog
   //
   // @public
   // @return boolean
@@ -2654,7 +2849,7 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define quit dialog method
+  // Define quit dialog
   //
   // @public
   // @return boolean
@@ -2667,7 +2862,7 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define send method
+  // Define send
   //
   // @public
   // @param {Object} data
@@ -2681,78 +2876,105 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define send text method
+  // Define send text
   //
   // @public
   // @param {String} text
+  // @param {String} language
   // @param {Object} settings
   // @return void
   //
-  sendText: function(text, settings) {
-    this.__drawMessage({ action: 'talking' });
+  sendText: function(text, language, settings) {
     this.send({
       text: text,
-      settings: settings
+      language: language || this.params.language,
+      settings: settings || this.params.settings
     });
   },
 
   //
-  // Define send file method
+  // Define send file
   //
   // @public
   // @param {String} file
+  // @param {String} language
   // @param {Object} settings
   // @return void
   //
-  sendFile: function(file, settings) {
+  sendFile: function(file, language, settings) {
     this.send({
       file: file,
-      settings: settings
+      language: language || this.params.language,
+      settings: settings || this.params.settings
     });
   },
 
   //
-  // Define send form method
+  // Define send form
   //
   // @public
   // @param {Array} data
+  // @param {String} language
   // @param {Object} settings
   // @return void
   //
-  sendData: function(data, settings) {
+  sendData: function(data, language, settings) {
     this.send({
       data: data,
-      settings: settings
+      language: language || this.params.language,
+      settings: settings || this.params.settings
     });
   },
 
   //
-  // Define send action method
+  // Define send action
   //
   // @public
   // @param {String} action
+  // @param {String} language
   // @param {Object} settings
   // @return void
   //
-  sendAction: function(action, settings) {
+  sendAction: function(action, language, settings) {
     this.send({
       action: action,
-      settings: settings
+      language: language || this.params.language,
+      settings: settings || this.params.settings
     });
   },
 
   //
-  // Define send intent method
+  // Define send action with data
   //
   // @public
-  // @param {String} intent
+  // @param {String} action
+  // @param {String} language
   // @param {Object} settings
   // @return void
   //
-  sendIntent: function(intent, settings) {
+  sendActionWithData: function(action, data, language, settings) {
+    this.send({
+      action: action,
+      data: data,
+      language: language || this.params.language,
+      settings: settings || this.params.settings
+    });
+  },
+
+  //
+  // Define send intent
+  //
+  // @public
+  // @param {String} intent
+  // @param {String} language
+  // @param {Object} settings
+  // @return void
+  //
+  sendIntent: function(intent, language, settings) {
     this.send({
       intent: intent,
-      settings: settings
+      language: language || this.params.language,
+      settings: settings || this.params.settings
     });
   }
 };
@@ -2807,7 +3029,7 @@ window.${prefix}Mask = {
 `;
 
   if (config.minify) {
-    result = UglifyJS.minify(result).code;
+    result = bot.helper.uglifyJs.minify(result).code;
   }
   return result;
 }

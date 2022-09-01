@@ -1,16 +1,20 @@
-import { App } from './app';
+import {App} from './app';
 
 /**
  * Task
  */
 export abstract class Task {
   app: App;
+  name: string;
+  path: string;
 
   /**
    * Constructor
    */
   constructor(app: App) {
     this.app = app;
+    this.name = this.app.helper.changeCase.snakeCase(`${this.constructor.name}`).replace(/_task$/, '');
+    this.path = this.app.helper.changeCase.paramCase(`${this.constructor.name}`).replace(/-task$/, '');
   }
 
   /**
@@ -18,19 +22,5 @@ export abstract class Task {
    */
   getTask(): any {
     return this;
-  }
-
-  /**
-   * Get task name
-   */
-  getTaskName(): any {
-    return this.app.helper.changeCase.snakeCase(`${this.constructor.name}`).replace(/_task$/, '');
-  }
-
-  /**
-   * Get task path
-   */
-  getTaskPath(): any {
-    return this.app.helper.changeCase.paramCase(`${this.constructor.name}`).replace(/-task$/, '');
   }
 }

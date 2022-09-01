@@ -1,36 +1,22 @@
-import { Bot } from './bot';
-import { Message } from './message';
+import {Bot} from './bot';
+import {Message} from './message';
 
 /**
  * Plugin
  */
 export abstract class Plugin {
   bot: Bot;
-  plugin: any;
+  plugin: string;
   config: any;
   status: any;
 
   /**
    * Constructor
    */
-  constructor(bot: Bot, plugin: string) {
-    if (!bot.config.plugin) {
-      throw new Error(`Plugin config value is invalid.`);
-    }
-    if (!bot.config.plugin[`${plugin}`]) {
-      throw new Error(`Plugin config value is invalid, "${plugin}" is required.`);
-    }
+  constructor(bot: Bot, plugin: string, config: any) {
     this.bot = bot;
-    this.plugin = `${plugin}`;
-    this.config = this.bot.config.plugin[`${plugin}`];
-
-    this.register()
-      .then(() => {
-        console.info(`> listening plugin ${this.plugin}`);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    this.plugin = plugin;
+    this.config = config;
   }
 
   /**

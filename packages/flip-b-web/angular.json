@@ -1,14 +1,13 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
-  "defaultProject": "web",
-  "newProjectRoot": "",
+  "newProjectRoot": "projects",
   "projects": {
     "web": {
       "projectType": "library",
-      "root": "./",
-      "sourceRoot": "./src",
       "prefix": "flb",
+      "root": "",
+      "sourceRoot": "src",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
@@ -37,8 +36,8 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "**/*.ts",
-              "**/*.html"
+              "src/**/*.ts",
+              "src/**/*.html"
             ]
           }
         }
@@ -46,6 +45,6 @@
     }
   },
   "cli": {
-    "defaultCollection": "@angular-eslint/schematics"
+    "analytics": false
   }
 }

@@ -5,10 +5,10 @@ import fs from 'fs';
 import path from 'path';
 import https from 'https';
 import prompts from 'prompts';
-import { Command } from 'commander';
+import {Command} from 'commander';
 
 (async () => {
-  const packageJson = await import(path.resolve(`./package`));
+  const packageJson = await import(path.resolve(`${__dirname}/../package`));
   const options: any = {
     type: '',
     name: ''
@@ -55,10 +55,10 @@ import { Command } from 'commander';
   process.chdir(root);
 
   const url = `https://codeload.github.com/flip-b/flip-b/tar.gz/main`;
-  const dir = `flip-b-main/examples/flip-b-{$options.type}`;
+  const dir = `flip-b-main/examples/flip-b-${options.type}`;
 
   https.get(url, (res: any) => {
-    res.pipe(tar.extract({ cwd: root, strip: dir.split('/').length }, [dir]));
+    res.pipe(tar.extract({cwd: root, strip: dir.split('/').length}, [dir]));
     console.log(`Success!`);
   });
 })();

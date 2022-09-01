@@ -1,10 +1,7 @@
 {
   "name": "@flip-b/monorepo",
   "private": true,
-  "scripts": {
-    "publish-ci": "lerna publish --contents dist"
-  },
   "devDependencies": {
-    "lerna": "~4.0.0"
+    "lerna": "~5.4.3"
   }
 }

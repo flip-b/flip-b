@@ -1,41 +1,49 @@
 <ion-app>
-  <ion-split-pane contentId="main-content" id="main-menu">
-    <ion-menu #menu contentId="main-content" [disabled]="!pageService.user">
-      <ion-header *ngIf="pageService.user">
-        <ion-item lines="none" button="false" detail="false">
-          <img *ngIf="pageService.user.account?.image" [src]="pageService.user.account.image" />
-          <ion-label class="ion-text-wrap ion-text-center">
-            <h1>{{ (pageService.user.account?.name || '').split(', ').pop() || pageService.config.name }}</h1>
-            <h2>{{ (pageService.user.place?.name || '').split(', ').pop() || ((pageService.user.account ? 'home.select_place' : 'home.select_account') | i18n) }}</h2>
-          </ion-label>
-          <ion-button slot="end" fill="clear" color="medium" tabindex="-1" (click)="showUserPlaceSelector();">
-            <ion-icon slot="icon-only" name="refresh"></ion-icon>
-          </ion-button>
-        </ion-item>
-      </ion-header>
+  <ion-split-pane contentId="main">
+    <ion-menu #ctrl contentId="main" type="overlay" [disabled]="!_context.user">
+      <ng-container *ngIf="_context.user && _context.menu">
 
-      <ion-content *ngIf="pageService.user">
-        <ion-item lines="none" button detail="false" (click)="menu.toggle()" routerDirection="root" routerLinkActive="active" [routerLink]="[m.path]" *ngFor="let m of pageService.menu">
-          <ion-icon slot="start" [name]="m.icon"></ion-icon>
-          <ion-label>{{ m.name | i18n }}</ion-label>
-        </ion-item>
-      </ion-content>
+        <ion-header>
+          <ion-item lines="none" button detail="false" (click)="ctrl.toggle(); _context.goto(_context.menu.route_1)">
+            <ion-thumbnail slot="start">
+              <img class="flb-item-image" *ngIf="_context.menu.image" [src]="_context.menu.image" [alt]="_context.menu.title" (error)="_context.page.onLoadImageError($event)">
+              <div class="flb-item-icon" *ngIf="!_context.menu.image"><ion-icon name="infinite"></ion-icon></div>
+            </ion-thumbnail>
+            <ion-label>
+              <div class="flb-item-title" *ngIf="_context.menu.title">{{ _context.menu.title }}</div>
+              <div class="flb-item-label" *ngIf="_context.menu.label">{{ _context.menu.label }}</div>
+            </ion-label>
+          </ion-item>
+        </ion-header>
 
-      <ion-footer *ngIf="pageService.user">
-        <ion-item lines="none" button detail="false" (click)="menu.toggle()" routerDirection="root" routerLinkActive="active" [routerLink]="['user', 'profile']">
-          <ion-avatar slot="start">
-            <img *ngIf="pageService.user.image" [src]="pageService.user.image" />
-            <div *ngIf="!pageService.user.image">
-              <ion-icon name="person"></ion-icon>
-            </div>
-          </ion-avatar>
-          <ion-label>{{ pageService.user.name }}</ion-label>
-          <ion-button slot="end" fill="clear" color="medium" tabindex="-1" (click)="$event.preventDefault(); $event.stopPropagation(); pageService.dark = !pageService.dark; httpService.verifyValue();">
-            <ion-icon slot="icon-only" name="{{ pageService.dark ? 'sunny' : 'moon' }}"></ion-icon>
-          </ion-button>
-        </ion-item>
-      </ion-footer>
+        <ion-content>
+          <ion-item lines="none" button detail="false" (click)="ctrl.toggle(); _context.goto(item.path)" *ngFor="let item of _context.menu.items">
+            <ion-icon slot="start" name="{{ item.icon }}"></ion-icon>
+            <ion-label>
+              <div class="flb-item-title" *ngIf="item.title">{{ item.title }}</div>
+              <div class="flb-item-label" *ngIf="item.label">{{ item.label }}</div>
+            </ion-label>
+          </ion-item>
+        </ion-content>
+
+        <ion-footer>
+          <ion-item lines="none" button detail="false" (click)="ctrl.toggle(); _context.goto(_context.menu.route_2)">
+            <ion-avatar slot="start">
+              <img class="flb-item-image" *ngIf="_context.user.image" [src]="_context.user.image" [alt]="_context.user.name" (error)="_context.page.onLoadImageError($event)">
+              <div class="flb-item-icon" *ngIf="!_context.user.image"><ion-icon name="person"></ion-icon></div>
+            </ion-avatar>
+            <ion-label>
+              <div class="flb-item-title">{{ _context.user.name }}</div>
+              <div class="flb-item-label">{{ _context.user.username }}</div>
+            </ion-label>
+            <ion-button slot="end" fill="clear" color="medium" title="{{ 'global.night' }}" (click)="ctrl.toggle(); $event.preventDefault(); $event.stopPropagation(); _context.menu.toggleNight({$event})">
+              <ion-icon slot="icon-only" [name]="_context.menu.night ? 'sunny' : 'moon'"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-footer>
+
+      </ng-container>
     </ion-menu>
-    <ion-router-outlet id="main-content"></ion-router-outlet>
+    <ion-router-outlet id="main"></ion-router-outlet>
   </ion-split-pane>
 </ion-app>

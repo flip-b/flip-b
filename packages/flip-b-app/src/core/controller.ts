@@ -1,16 +1,20 @@
-import { App } from './app';
+import {App} from './app';
 
 /**
  * Controller
  */
-export class Controller {
+export abstract class Controller {
   app: App;
+  name: string;
+  path: string;
 
   /**
    * Constructor
    */
   constructor(app: App) {
     this.app = app;
+    this.name = this.app.helper.changeCase.snakeCase(`${this.constructor.name}`).replace(/_controller$/, '');
+    this.path = this.app.helper.changeCase.paramCase(`${this.constructor.name}`).replace(/-controller$/, '');
   }
 
   /**
@@ -18,19 +22,5 @@ export class Controller {
    */
   getController(): any {
     return this;
-  }
-
-  /**
-   * Get controller name
-   */
-  getControllerName(): any {
-    return this.app.helper.changeCase.snakeCase(`${this.constructor.name}`).replace(/_controller$/, '');
-  }
-
-  /**
-   * Get controller path
-   */
-  getControllerPath(): any {
-    return this.app.helper.changeCase.paramCase(`${this.constructor.name}`).replace(/-controller$/, '');
   }
 }

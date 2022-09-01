@@ -1,1 +1,12 @@
+*~
+*.sw[mnpcod]
+*.tmp
+*.tmp.*
+*.log
+*.log.*
+log.txt
+
+.DS_Store
+Thumbs.db
+
 node_modules

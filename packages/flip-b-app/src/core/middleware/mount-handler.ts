@@ -1,4 +1,4 @@
-import { Request, Response, Next, Router, Static } from '../route';
+import express from 'express';
 
 /**
  * Mount handler
@@ -10,25 +10,31 @@ export default function mountHandler(app: any): any {
   app.config.router.mount.path = app.config.router.mount.path || '';
   app.config.router.mount.dest = app.config.router.mount.dest || `${app.config.var}/public`;
   app.config.router.mount.cache = app.config.router.mount.cache || '30 days';
+  return getRouter(app);
+}
 
-  const router: any = Router();
-  router.use(`${app.config.server.path}${app.config.router.mount.path}/`, getPublicPathHandler(app));
-  router.get(`${app.config.server.path}${app.config.router.mount.path}/*`, getPublicFileHandler(app));
+/**
+ * Get router
+ */
+function getRouter(app: any): any {
+  const router: any = express.Router();
+  router.use(`${app.config.server.path}${app.config.router.mount.path}/`, getPathHandler(app));
+  router.get(`${app.config.server.path}${app.config.router.mount.path}/*`, getFileHandler(app));
   return router;
 }
 
 /**
- * Get public path handler
+ * Get path handler
  */
-function getPublicPathHandler(app: any): any {
-  return Static(`${app.config.router.mount.dest}`, { dotfiles: 'deny', maxAge: `${app.config.router.mount.cache}`, etag: false });
+function getPathHandler(app: any): any {
+  return express.static(`${app.config.router.mount.dest}`, {dotfiles: 'deny', maxAge: `${app.config.router.mount.cache}`, etag: false});
 }
 
 /**
- * Get public file handler
+ * Get file handler
  */
-function getPublicFileHandler(app: any): any {
-  return (req: Request, res: Response, next: Next) => {
+function getFileHandler(app: any): any {
+  return (req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (req.is('json')) {
       return next(new Error('#404 Not found'));
     }
@@ -36,7 +42,6 @@ function getPublicFileHandler(app: any): any {
     if (!app.helper.fs.existsSync(file)) {
       return next(new Error('#404 Not found'));
     }
-    console.log(file);
     res.sendFile(file);
   };
 }

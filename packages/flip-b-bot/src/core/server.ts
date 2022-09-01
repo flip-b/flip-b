@@ -1,4 +1,4 @@
-import { Bot } from './bot';
+import {Bot} from './bot';
 import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
@@ -16,26 +16,14 @@ export class Server {
    * Constructor
    */
   constructor(bot: Bot) {
-    if (!bot.config.server) {
-      throw new Error(`Server config value is invalid.`);
-    }
-    if (!bot.config.server.host) {
-      throw new Error(`Server config value is invalid, "host" is required.`);
-    }
-    if (!bot.config.server.port) {
-      throw new Error(`Server config value is invalid, "port" is required.`);
-    }
-    if (!bot.config.router) {
-      throw new Error(`Router config value is invalid.`);
-    }
     this.bot = bot;
-    this.initializeServer();
+    this.initialize();
   }
 
   /**
-   * Initialize server
+   * Initialize
    */
-  private async initializeServer() {
+  private async initialize(): Promise<any> {
     this.router = express();
     this.server = http.createServer(this.router);
     this.router.set('trust proxy', true);
@@ -47,16 +35,22 @@ export class Server {
     this.router.use(cors(this.bot.config.router.cors));
     this.router.use(express.json(this.bot.config.router.json));
     this.router.use(express.urlencoded(this.bot.config.router.urlencoded));
+    this.router.use(this.bot.config.router.public.path, express.static(this.bot.config.router.public.dest));
   }
 
   /**
    * Start
    */
   async start(): Promise<any> {
-    this.router.use(this.bot.config.router.public.path, express.static(this.bot.config.router.public.dest));
-    this.server.listen(this.bot.config.server.port).on('listening', () => {
-      console.info(`> listening server on ${this.bot.config.server.host}:${this.bot.config.server.port} (#${process.pid})`);
-    });
+    console.info(`> listening server on ${this.bot.config.server.host}:${this.bot.config.server.port} (#${process.pid})`);
+    this.server.listen(this.bot.config.server.port);
+  }
+
+  /**
+   * Stop
+   */
+  async stop(): Promise<any> {
+    console.info(`> stopping server`);
   }
 }
 

@@ -1,76 +1,39 @@
-import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
-import { HttpService } from '../core/http.service';
-import { PageService } from '../core/page.service';
-import { FormComponent } from '../form/form.component';
+import {Component, OnInit, Input, HostBinding, ElementRef} from '@angular/core';
+import {Menu} from '../core/classes/menu';
+import {ContextService} from '../core/context.service';
 
 @Component({
   selector: 'flb-menu',
-  templateUrl: './menu.component.html',
-  styleUrls: ['./menu.component.css']
+  templateUrl: './menu.component.html'
 })
 export class MenuComponent implements OnInit {
-  constructor(public modalController: ModalController, public httpService: HttpService, public pageService: PageService) {}
+  // Definitions
 
-  ngOnInit(): void {}
+  @HostBinding('class') _elementClass: any;
+  @HostBinding('style') _elementStyle: any;
 
-  async showForm(params: any): Promise<any> {
-    const modal = await this.modalController.create({
-      cssClass: 'view',
-      component: FormComponent,
-      componentProps: params
-    });
-    await modal.present();
-    const result = await modal.onDidDismiss();
-    if (result && result.data) {
-      if (params.data && params.data.where) {
-        params.data.where[params.name] = result.data._id || undefined;
-      }
-      if (params.data && params.data.names) {
-        params.data.names[params.name] = result.data.name || undefined;
-      }
-      return result.data;
-    } else {
-      if (params.data && params.data.where) {
-        params.data.where[params.name] = undefined;
-      }
-      if (params.data && params.data.names) {
-        params.data.names[params.name] = undefined;
-      }
-      return null;
-    }
-  }
+  /**
+   * Modal
+   * @attribute {Object}
+   */
+  @Input() modal: any;
 
-  async showUserPlaceSelector(): Promise<any> {
-    let profile = await this.httpService.update('/api/v1/users/profile');
-    if (profile && profile.accounts?.length != 1) {
-      const result = await this.showForm({
-        context: { view: 'search' },
-        options: {
-          name: 'accounts',
-          path: '/api/v1/accounts',
-          onSelect: 'return'
-        }
-      });
-      if (!result?._id) {
-        return profile;
-      }
-      profile = await this.httpService.update('/api/v1/users/profile', {
-        account: result._id
-      });
-    }
-    if (profile && profile.places?.length != 1) {
-      const result = await this.showForm({
-        context: { view: 'search' },
-        options: { name: 'places', path: '/api/v1/places', onSelect: 'return' }
-      });
-      if (!result?._id) {
-        return profile;
-      }
-      profile = await this.httpService.update('/api/v1/users/profile', {
-        place: result._id
-      });
-    }
-    return profile;
+  /**
+   * Menu
+   * @attribute {Menu}
+   */
+  @Input() menu: Menu | any;
+
+  /**
+   * Constructor
+   */
+  constructor(public _context: ContextService, public _element: ElementRef) {}
+
+  /**
+   * Init angular handler
+   */
+  ngOnInit() {
+    this.menu = this.menu?.constructor?.name !== 'Menu' ? new Menu(this.menu) : this.menu;
+    this.menu.setComponent(this);
   }
 }
