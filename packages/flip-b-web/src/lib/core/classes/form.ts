@@ -8,15 +8,21 @@ export class Form extends Base {
   // Definitions
 
   /**
-   * Value
-   * @attribute {Object}
+   * Error
+   * @attribute {Mixed}
    */
-  value: {[key: string]: Item} = {};
+  error: any | undefined;
 
   /**
-   * Init event handler
+   * Value
+   * @attribute {Mixed}
    */
-  async onInit(): Promise<any> {
+  value: any | undefined;
+
+  /**
+   * Setup
+   */
+  setup() {
     const attributes = ['elementClass', 'elementStyle', 'fields', 'values'];
     const attributesEvents = ['onSetup', 'onClick', 'onEnter', 'onLeave', 'onInput', 'onChange', 'onReload', 'onSearch', 'onSelect', 'onSubmit', 'onCancel'];
     for (const a of attributes) {
@@ -39,24 +45,24 @@ export class Form extends Base {
     }
 
     // Define value
+    this.value = {};
     for (const field of this._config.fields) {
-      const item = new Item(field, this);
-      await item.onInit();
+      const item: Item = new Item(field, this);
       this.value[`${field.name}`] = item;
     }
-    if (this._config.values) {
-      await this.setValue(this._config.values);
+    if (typeof this._config.values !== 'undefined') {
+      this.setValue(this._config.values);
     }
   }
 
   /**
    * Get value
    */
-  async getValue(): Promise<any> {
+  getValue(): any {
     const result: any = {};
     for (const field of this._config.fields) {
       const item = this.value[`${field.name}`];
-      result[`${field.name}`] = await item.getValue();
+      result[`${field.name}`] = item.getValue();
     }
     return result;
   }
@@ -64,10 +70,10 @@ export class Form extends Base {
   /**
    * Set value
    */
-  async setValue(value: any = {}): Promise<any> {
+  setValue(value: any = {}): any {
     for (const field of this._config.fields) {
       const item = this.value[`${field.name}`];
-      await item.setValue(value[`${field.name}`]);
+      item.setValue(value[`${field.name}`]);
     }
   }
 }

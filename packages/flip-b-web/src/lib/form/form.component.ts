@@ -32,15 +32,8 @@ export class FormComponent implements OnInit {
   /**
    * Init angular handler
    */
-  async ngOnInit(): Promise<any> {
-    if (this.form?.constructor?.name !== 'Form') {
-      this.form = new Form(this.form);
-      await this.form.onInit();
-    }
-    await this.form.setComponent(this);
-
-    //console.log('FORM', this.form?.constructor?.name);
-    //this.form = this.form?.constructor?.name !== 'Form' ? new Form(this.form) : this.form;
-    //this.form.setComponent(this);
+  ngOnInit() {
+    this.form = this.form?.constructor?.name !== 'Form' ? new Form(this.form) : this.form;
+    this.form.setComponent(this);
   }
 }

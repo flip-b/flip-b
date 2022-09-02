@@ -8,39 +8,25 @@ export abstract class Base {
    * Component
    * @attribute {Component}
    */
-  public _component: any = {};
+  public _component: any | undefined;
 
   /**
    * Constructor
    */
-  constructor(public _config: any = {}, public _parent: any = {}) {}
+  constructor(public _config: any = {}, public _parent: any = {}) {
+    this.setup();
+  }
 
   /**
-   * Clone
+   * Setup
    */
-  clone(value: any): any {
-    if (typeof value !== 'object' || value === null || value instanceof RegExp) {
-      return value;
-    }
-    let clone: any;
-    if (Array.isArray(value)) {
-      clone = [...value];
-    } else {
-      clone = {...value};
-    }
-    for (const k in clone) {
-      clone[k] = this.clone(clone[k]);
-    }
-    return clone;
-  }
+  abstract setup(): void;
 
   /**
    * Set component
    */
   async setComponent(_component: any): Promise<any> {
     this._component = _component;
-    //await this.onInit();
-    //await this.onSetup(new CustomEvent('onSetup'));
     this._component._elementClass = this._config.elementClass || `flb-${this.constructor.name.toLowerCase()}`;
     this._component._elementStyle = this._config.elementStyle || {};
     if (this._config.type) {
@@ -59,15 +45,24 @@ export abstract class Base {
   }
 
   /**
-   * Init event handler
+   * Setup event handler
    */
-  abstract onInit(): Promise<any>;
+  async onInit($event: any): Promise<any> {
+    await this.dispatchEvent($event, 'onInit');
+  }
 
   /**
    * Setup event handler
    */
   async onSetup($event: any): Promise<any> {
     await this.dispatchEvent($event, 'onSetup');
+  }
+
+  /**
+   * Error event handler
+   */
+  async onError($event: any): Promise<any> {
+    await this.dispatchEvent($event, 'onError');
   }
 
   /**
@@ -95,7 +90,6 @@ export abstract class Base {
    * Input event handler
    */
   async onInput($event: any): Promise<any> {
-    console.log(this.constructor.name, this._config.name || '');
     await this.dispatchEvent($event, 'onInput');
   }
 
@@ -159,6 +153,8 @@ export abstract class Base {
         }
         $event = new CustomEvent(type, {detail: {_flb: true, $event}});
       }
+
+      // Define detail
       $event.detail[`${this.constructor.name.toLowerCase()}`] = this;
       if (typeof this._config.name !== 'undefined' && !$event.detail.name) {
         $event.detail.name = this._config.name;
@@ -166,18 +162,52 @@ export abstract class Base {
       if (typeof this._config.type !== 'undefined' && !$event.detail.type) {
         $event.detail.type = this._config.type;
       }
+
+      // Execute internal trigger
       if (typeof this._config[`_${$event.type}`] === 'function') {
         await this._config[`_${$event.type}`]($event);
       }
+
+      // Execute config trigger
       if (typeof this._config[`${$event.type}`] === 'function') {
         await this._config[`${$event.type}`]($event);
       }
+
+      // Execute parent trigger
       if (typeof this._parent[`${$event.type}`] === 'function') {
         await this._parent[`${$event.type}`]($event);
       }
-      this._component._element.nativeElement.dispatchEvent($event);
+
+      // Execute internal trigger
+      if (typeof this._config[`${$event.type}_`] === 'function') {
+        await this._config[`${$event.type}_`]($event);
+      }
+
+      // Dispatch native element
+      if (this._component) {
+        this._component._element.nativeElement.dispatchEvent($event);
+      }
     } catch (error: any) {
       console.error(`${error}`, $event);
     }
+  }
+
+  /**
+   * Clone
+   */
+  clone(value: any): any {
+    if (typeof value !== 'object' || value === null || value instanceof RegExp) {
+      return value;
+    }
+    let clone: any;
+    if (Array.isArray(value)) {
+      clone = [...value];
+    } else {
+      clone = {...value};
+    }
+    for (const k in clone) {
+      clone[k] = this.clone(clone[k]);
+    }
+    return clone;
   }
 }

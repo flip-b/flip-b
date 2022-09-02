@@ -49,7 +49,7 @@ export class PageService {
   }
 
   /**
-   * onLoadImageError method
+   * onLoadImageError
    */
   async onLoadImageError($event: any): Promise<any> {
     $event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII=';

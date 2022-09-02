@@ -37,28 +37,41 @@ export class PageComponent implements OnInit {
    * Init angular handler
    */
   async ngOnInit(): Promise<any> {
-
     if (this.page?.constructor?.name !== 'Page') {
       const snap: any = this._context.page.router.routerState.snapshot.root.firstChild;
-      const page: any = snap.data['page'] || {};
-      this.page = this.page || {};
-      this.page.name = this.page.name || page.name || undefined;
-      this.page.type = this.page.type || page.type || undefined;
-      this.page.mode = this.page.mode || page.mode || undefined;
-      this.page.load = this.page.load || page.load || undefined;
-      this.page.params = {...snap.params, ...snap.queryParams, ...history.state};
-      delete this.page.params.navigationId;
+      const data: any = snap.data['page'] || {};
+      const page: any = {...this.page || {}};
+      page.name = page.name || data.name || undefined;
+      page.type = page.type || data.type || undefined;
+      page.mode = page.mode || data.mode || undefined;
+      page.load = page.load || data.load || undefined;
+      page.params = this.clone({...snap.params, ...snap.queryParams, ...history.state});
+      delete page.params.navigationId;
+
+      if (typeof page.load === 'function') {
+        this.page = {...this.clone(page), ...this.clone((await page.load()))};
+      }
     }
+    this.page = this.page?.constructor?.name !== 'Page' ? new Page(this.page) : this.page;
+    this.page.setComponent(this);
+  }
 
-    if (this.page?.constructor?.name !== 'Page') {
-      this.page = new Page(this.page);
-      await this.page.onInit();
+  /**
+   * Clone
+   */
+  clone(value: any): any {
+    if (typeof value !== 'object' || value === null || value instanceof RegExp) {
+      return value;
     }
-
-    await this.page.setComponent(this);
-
-    //console.log('PAGE', this.page?.constructor?.name);
-    //this.page = this.page?.constructor?.name !== 'Page' ? new Page(this.page) : this.page;
-    //this.page.setComponent(this);
+    let clone: any;
+    if (Array.isArray(value)) {
+      clone = [...value];
+    } else {
+      clone = {...value};
+    }
+    for (const k in clone) {
+      clone[k] = this.clone(clone[k]);
+    }
+    return clone;
   }
 }

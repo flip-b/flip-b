@@ -1,6 +1,5 @@
-
 <!-- Input -->
-<ng-container *ngIf="item && item._config.init && item._config.mode === 'input'">
+<ng-container *ngIf="item?._config?.init && item._config.mode === 'input'">
   <ion-item lines="none">
     <ng-container *ngIf="item._config.text.title">
       <ion-label position="stacked">
@@ -53,7 +52,7 @@
 </ng-container>
 
 <!-- Group -->
-<ng-container *ngIf="item && item._config.init && item._config.mode === 'group'">
+<ng-container *ngIf="item?._config?.init && item._config.mode === 'group'">
   <ion-item lines="none">
     <ng-container *ngIf="item._config.text.title || item._config.text.label">
       <ion-label>
@@ -83,7 +82,7 @@
 </ng-container>
 
 <!-- Array -->
-<ng-container *ngIf="item && item._config.init && item._config.mode === 'array'">
+<ng-container *ngIf="item?._config?.init && item._config.mode === 'array'">
   <ion-item lines="none">
     <ng-container *ngIf="item._config.text.title || item._config.text.label">
       <ion-label>
@@ -117,7 +116,7 @@
 </ng-container>
 
 <!-- Value -->
-<ng-container *ngIf="item && item._config.init && item._config.mode === 'value'">
+<ng-container *ngIf="item?._config?.init && item._config.mode === 'value'">
   <ion-item lines="none" [button]="true" [detail]="false" (click)="item.onSelect($event)">
     <ng-container *ngIf="item._config.text.title">
       <ion-label position="stacked">
@@ -149,7 +148,7 @@
 </ng-container>
 
 <!-- Field -->
-<ng-container *ngIf="item && item._config.init && item._config.mode === 'field'">
+<ng-container *ngIf="item?._config?.init && item._config.mode === 'field'">
   <ng-container *ngIf="item._config.type === 'upload'">
     <ion-thumbnail (click)="item.onClick($event)">
       <img class="flb-item-image" *ngIf="item.value" [src]="item.value" (error)="item._context.page.onLoadImageError($event)">

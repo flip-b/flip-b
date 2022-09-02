@@ -8,32 +8,21 @@ export class Page extends Base {
   // Definitions
 
   /**
-   * Value
-   * @attribute {Array}
+   * Error
+   * @attribute {Mixed}
    */
-  value: List[] = [];
+  error: any | undefined;
 
   /**
-   * Init event handler
+   * Value
+   * @attribute {Mixed}
    */
-  async onInit(): Promise<any> {
-    //if (!this._component.modal) {
-    //  const router: any = this._component._context.page.router.routerState.snapshot.root.firstChild;
-    //  const config: any = router.data['page'] || {};
-    //  this._config = this._config || {};
-    //  this._config.name = this._config.name || config.name || undefined;
-    //  this._config.type = this._config.type || config.type || undefined;
-    //  this._config.mode = this._config.mode || config.mode || undefined;
-    //  this._config.load = this._config.load || config.load || undefined;
-    //  this._config.params = {...router.params, ...router.queryParams, ...history.state};
-    //  delete this._config.params.navigationId;
-    //}
-    if (typeof this._config.load === 'function') {
-      const config: any = await this._config.load();
-      this._config = {...this.clone(this._config), ...this.clone(config)};
-    }
+  value: any | undefined;
 
-    // Define attributes
+  /**
+   * Setup
+   */
+  setup() {
     const attributes = ['elementClass', 'elementStyle', 'name', 'type', 'mode', 'text', 'path', 'show', 'form', 'params'];
     const attributesEvents = ['onSetup', 'onClick', 'onEnter', 'onLeave', 'onInput', 'onChange', 'onReload', 'onSearch', 'onSelect', 'onSubmit', 'onCancel', 'onScroll'];
     for (const a of attributes) {
@@ -160,23 +149,24 @@ export class Page extends Base {
         const max: number = $el.scrollHeight;
         if (pos > 0 && pos >= max && !this._config.searching) {
           console.log('Call infinity scroll', pos, max, {$event});
-          this._config.searching = true;
-          setTimeout(() => {
-            this.addValues(10);
-            this._config.searching = false;
-          }, 500);
         }
       };
       this._config._onSelect = async ($event: any): Promise<any> => {
-        this._component._context.goto(`${this._config.type}/select/123`);
+        if (this._component) {
+          this._component._context.goto(`${this._config.type}/select/123`);
+        }
       };
     } else {
       this._config._onCancel = async ($event: any): Promise<any> => {
-        this._component._context.goto(`${this._config.type}/search`);
+        if (this._component) {
+          this._component._context.goto(`${this._config.type}/search`);
+        }
       };
       this._config._onSubmit = async ($event: any): Promise<any> => {
-        console.log('Submit', await $event.detail.form.getValue());
-        this._component._context.goto(`${this._config.type}/search`);
+        if (this._component) {
+          this._component._context.goto(`${this._config.type}/search`);
+          console.log($event.detail.form.getValue())
+        }
       };
     }
 
@@ -310,7 +300,6 @@ export class Page extends Base {
     };
     events['export'] = ($event: any) => {
       $event.detail.item._component._context.goto(`${this._config.type}/export`);
-      console.log()
     };
     events['cancel'] = ($event: any) => {
       $event.detail.item._component._context.goto(`${this._config.type}/search`);
@@ -417,50 +406,39 @@ export class Page extends Base {
     this.value = [];
     if (header.fields.length) {
       this._parent.header = new List(header, this);
-      await this._parent.header.onInit();
       this.value.push(this._parent.header);
     }
     if (navbar.fields.length) {
       this._parent.navbar = new List(navbar, this);
-      await this._parent.navbar.onInit();
       this.value.push(this._parent.navbar);
     }
     if (filter.fields.length) {
       this._parent.filter = new List(filter, this);
-      await this._parent.filter.onInit();
       this.value.push(this._parent.filter);
     }
     if (metric.fields.length) {
       this._parent.metric = new List(metric, this);
-      await this._parent.metric.onInit();
       this.value.push(this._parent.metric);
     }
     if (result.fields.length) {
       this._parent.result = new List(result, this);
-      await this._parent.result.onInit();
       this.value.push(this._parent.result);
     }
     if (footer.fields.length) {
       this._parent.footer = new List(footer, this);
-      await this._parent.footer.onInit();
       this.value.push(this._parent.footer);
     }
-
-    setTimeout(() => {
-      if (this._config.showFields) {
-        this.addValues(1);
-      } else {
-        this.addValues(10);
-      }
-    }, 100);
-    console.log(this);
+    if (this._config.showFields) {
+      this.addValue(1);
+    } else {
+      this.addValue(100);
+    }
   }
 
-  addValues(limit: number) {
-    const values: any = [];
+  addValue(limit: number, value: any = []) {
     for (let i = 1; i <= limit; i++) {
-      values.push({name: `My row ${i}`, group: 'My group!'});
+      value.push({name: `My row ${i}`, group: 'My group!'});
     }
-    this._parent.result.setValue(values);
+    this._parent.result.setValue(value);
   }
 }

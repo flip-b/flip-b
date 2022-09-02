@@ -32,15 +32,8 @@ export class ListComponent implements OnInit {
   /**
    * Init angular handler
    */
-  async ngOnInit(): Promise<any> {
-    if (this.list?.constructor?.name !== 'List') {
-      this.list = new List(this.list);
-      await this.list.onInit();
-    }
-    await this.list.setComponent(this);
-
-    //console.log('LIST', this.list?.constructor?.name);
-    //this.list = this.list?.constructor?.name !== 'List' ? new List(this.list) : this.list;
-    //this.list.setComponent(this);
+  ngOnInit() {
+    this.list = this.list?.constructor?.name !== 'List' ? new List(this.list) : this.list;
+    this.list.setComponent(this);
   }
 }

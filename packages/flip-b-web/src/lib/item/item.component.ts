@@ -32,19 +32,10 @@ export class ItemComponent implements OnInit {
   /**
    * Init angular handler
    */
-  async ngOnInit(): Promise<any> {
-    if (this.item?.constructor?.name !== 'Item') {
-      this.item = new Item(this.item);
-      await this.item.onInit();
-    }
-    await this.item.setComponent(this);
-
-    //console.log('ITEM', this.item?.constructor?.name);
-    //this.item = this.item?.constructor?.name !== 'Item' ? new Item(this.item) : this.item;
-    //this.item.setComponent(this);
+  ngOnInit() {
+    this.item = this.item?.constructor?.name !== 'Item' ? new Item(this.item) : this.item;
+    this.item.setComponent(this);
   }
-
-
 
   /**
    * Using

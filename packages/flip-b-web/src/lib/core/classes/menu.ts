@@ -8,18 +8,19 @@ export class Menu extends Base {
   // Definitions
 
   /**
-   * Value
-   * @attribute {Object}
+   * Error
+   * @attribute {Mixed}
    */
-  value: {[key: string]: Item} = {};
+  error: any | undefined;
 
   /**
-   * Init event handler
+   * Value
+   * @attribute {Mixed}
    */
-  async onInit(): Promise<any> {
-    if (typeof this._config.load === 'function') {
-      const config: any = await this._config.load();
-      this._config = {...this.clone(this._config), ...this.clone(config)};
-    }
-  }
+  value: any | undefined;
+
+  /**
+   * Setup
+   */
+  setup() {}
 }

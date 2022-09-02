@@ -1,4 +1,4 @@
-<ng-container *ngIf="page && page._config.init">
+<ng-container *ngIf="page?._config?.init">
   <ng-container *ngFor="let list of page.value">
     <flb-list [list]="list">
       <ng-content></ng-content>

@@ -8,15 +8,21 @@ export class List extends Base {
   // Definitions
 
   /**
-   * Value
-   * @attribute {Array}
+   * Error
+   * @attribute {Mixed}
    */
-  value: Form[] = [];
+  error: any | undefined;
 
   /**
-   * Init event handler
+   * Value
+   * @attribute {Mixed}
    */
-  async onInit(): Promise<any> {
+  value: any | undefined;
+
+  /**
+   * Setup
+   */
+  setup() {
     const attributes = ['elementClass', 'elementStyle', 'fields', 'values'];
     const attributesEvents = ['onSetup', 'onClick', 'onEnter', 'onLeave', 'onInput', 'onChange', 'onReload', 'onSearch', 'onSelect', 'onSubmit', 'onCancel'];
     for (const a of attributes) {
@@ -39,18 +45,16 @@ export class List extends Base {
     }
 
     // Define values
-    if (this._config.values?.length) {
-      await this.setValue(this._config.values);
-    }
+    this.setValue(this._config.values);
   }
 
   /**
    * Get value
    */
-  async getValue(): Promise<any> {
+  getValue(): any {
     const result: any = [];
     for (const form of this.value) {
-      result.push(await form.getValue());
+      result.push(form.getValue());
     }
     return result;
   }
@@ -58,13 +62,12 @@ export class List extends Base {
   /**
    * Set value
    */
-  async setValue(value: any = [], reload: boolean = false): Promise<any> {
-    if (!reload) {
+  setValue(value: any = [], add: boolean = false): any {
+    if (!this.value || !add) {
       this.value = [];
     }
     for (const values of value) {
-      const form: Form = new Form({fields: this.clone(this._config.fields), values: this.clone(values)}, this);
-      await form.onInit();
+      const form: Form = new Form({fields: this.clone(this._config.fields), values: values}, this);
       this.value.push(form);
     }
   }

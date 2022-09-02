@@ -179,7 +179,7 @@ export class ContextService {
 
 
   // /**
-  //  * OnReload method
+  //  * OnReload
   //  */
   // async onReload($event: any = null): Promise<any> {
   //   //if (this.page.mode === 'viewer') {
@@ -198,7 +198,7 @@ export class ContextService {
   // }
   //
   // /**
-  //  * OnSearch method
+  //  * OnSearch
   //  */
   // async onSearch($event: any = null): Promise<any> {
   //   if (!this.list) {
@@ -264,7 +264,7 @@ export class ContextService {
   // }
   //
   // /**
-  //  * OnSelect method
+  //  * OnSelect
   //  */
   // async onSelect($event: any = null): Promise<any> {
   //   if (!this.form) {

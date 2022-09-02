@@ -20,15 +20,10 @@ export class Item extends Base {
   value: any | undefined;
 
   /**
-   * Init event handler
+   * Setup
    */
-  async onInit(): Promise<any> {
-    if (typeof this._config.load === 'function') {
-      const config: any = await this._config.load();
-      this._config = {...this.clone(this._config), ...this.clone(config)};
-    }
-
-    // Define attributes
+  setup() {
+    const _raw: any = this.clone(this._config);
     const attributes = ['elementClass', 'elementStyle', 'name', 'type', 'mode', 'text', 'icon', 'iconDisabled', 'iconColor', 'iconStyle', 'iconOnly', 'drop', 'dropDisabled', 'dropColor', 'dropStyle', 'hide', 'size', 'case', 'mask', 'fill', 'color', 'fields', 'values', 'value', 'require', 'pattern', 'max', 'maxLength', 'min', 'minLength', 'readonly', 'inputFormat', 'inputType', 'inputMode', 'inputPicker', 'inputAccept', 'inputlocale', 'inputCase', 'inputMask'];
     const attributesEvents = ['onSetup', 'onClick', 'onEnter', 'onLeave', 'onInput', 'onChange', 'onReload', 'onSearch', 'onSelect', 'onSubmit', 'onCancel'];
     for (const a of attributes) {
@@ -36,7 +31,9 @@ export class Item extends Base {
     }
     for (const k in this._config) {
       if (!attributes.includes(k) && !attributesEvents.includes(k)) {
-        console.log(`Delete ${k}`);
+        if (k !== 'slot') {
+          console.log(`Delete ${k}`);
+        }
         delete this._config[`${k}`];
       }
     }
@@ -545,12 +542,13 @@ export class Item extends Base {
 
       // Array mode definitions
       case 'array': {
-        this._config.fields = this._config.fields || [{...this._config, type: this._config.type.replace(/\[\]$/, undefined), mode: 'input', size: 100}];
+        this._config.fields = _raw.fields || [{..._raw, type: _raw.type.replace(/\[\]$/, ''), mode: 'input', size: 100}];
+        this._config.single = _raw.fields ? false : true;
         this._config.inputArrayPush = async (value: any = {}): Promise<any> => {
-          await this.setValue(value);
+          this.setValue(value);
         };
         this._config.inputArrayDrop = async (): Promise<any> => {
-          await this.setValue(undefined);
+          this.setValue(undefined);
         };
         this._config.inputArrayDropByIndex = async (index: number): Promise<any> => {
           this.value.splice(index, 1);
@@ -560,12 +558,12 @@ export class Item extends Base {
 
       // Group mode definitions
       case 'group': {
-        this._config.fields = this._config.fields || [];
+        this._config.fields = _raw.fields || [];
         this._config.inputGroupPush = async (value: any = {}): Promise<any> => {
-          await this.setValue(value);
+          this.setValue(value);
         };
         this._config.inputGroupDrop = async (): Promise<any> => {
-          await this.setValue(undefined);
+          this.setValue(undefined);
         };
         break;
       }
@@ -589,41 +587,32 @@ export class Item extends Base {
     //}
 
     // Verify result
-    //if (this._config._onValue) {
-    //  this._config._onValue();
-    //}
+    if (this._config._onValue) {
+      this._config._onValue();
+    }
 
     //Object.keys(this._config).forEach((k: any) => this._config[k] === undefined ? delete this._config[k] : {});
   }
 
   /**
-   * Get value method
+   * Get value
    */
-  async getValue(): Promise<any> {
+  getValue(): any {
     let result: any;
     switch (this._config.mode) {
       case 'input': {
-        let value: any = undefined;
-        if (this.value) {
-          value = this.value;
-        }
-        result = value;
+        result = this.value || undefined;
         break;
       }
       case 'group': {
-        let value: any = undefined;
-        if (this.value) {
-          value = await this.value.getValue();
-        }
-        result = value;
+        result = this.value ? this.value.getValue() : undefined;
         break;
       }
       case 'array': {
-        let value: any = [];
+        result = [];
         for (const form of this.value || []) {
-          value.push(await form.getValue());
+          result.push(this._config.single ? form.value[`${this._config.name}`].getValue() : form.getValue());
         }
-        result = value;
         break;
       }
     }
@@ -631,9 +620,9 @@ export class Item extends Base {
   }
 
   /**
-   * Set value method
+   * Set value
    */
-  async setValue(value: any = undefined, error: any = undefined): Promise<any> {
+  setValue(value: any = undefined, error: any = undefined) {
     switch (this._config.mode) {
       case 'input': {
         value = value || undefined;
@@ -642,7 +631,6 @@ export class Item extends Base {
       case 'group': {
         if (value) {
           const form = new Form({fields: this.clone(this._config.fields), values: value}, this);
-          await form.onInit();
           this.value = form;
         } else {
           this.value = undefined;
@@ -652,7 +640,6 @@ export class Item extends Base {
       case 'array': {
         if (value) {
           const form = new Form({fields: this.clone(this._config.fields), values: value}, this);
-          await form.onInit();
           this.value = this.value || [];
           this.value.push(form);
         } else {
@@ -773,10 +760,5 @@ export class Item extends Base {
     if (typeof this._config._onValue === 'function') {
       this._config._onValue();
     }
-
-    setTimeout(() => {
-      this.error = error;
-      this.value = value;
-    }, 0);
   }
 }

@@ -1,4 +1,4 @@
-<ng-container *ngIf="form && form._config.init">
+<ng-container *ngIf="form?._config?.init">
   <ng-container *ngFor="let item of form._config.fields">
     <flb-item [item]="form.value[item.name]">
       <ng-content></ng-content>
