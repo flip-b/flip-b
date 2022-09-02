@@ -24,7 +24,55 @@ export class Item extends Base {
    */
   setup() {
     const _raw: any = this.clone(this._config);
-    const attributes = ['elementClass', 'elementStyle', 'name', 'type', 'mode', 'text', 'icon', 'iconDisabled', 'iconColor', 'iconStyle', 'iconOnly', 'drop', 'dropDisabled', 'dropColor', 'dropStyle', 'hide', 'size', 'case', 'mask', 'fill', 'color', 'fields', 'values', 'value', 'require', 'pattern', 'max', 'maxLength', 'min', 'minLength', 'readonly', 'inputFormat', 'inputType', 'inputMode', 'inputPicker', 'inputAccept', 'inputlocale', 'inputCase', 'inputMask'];
+    const attributes = [
+      'elementClass',
+      'elementStyle',
+
+      'name',
+      'type',
+      'mode',
+
+      'text',
+
+      'icon',
+      'iconDisabled',
+      'iconColor',
+      'iconStyle',
+
+      'iconOnly',
+
+      'drop',
+      'dropDisabled',
+      'dropColor',
+      'dropStyle',
+
+      'hide',
+      'size',
+
+      'fill',
+      'color',
+
+      'fields',
+      'values',
+      'value',
+
+      'require',
+      'pattern',
+      'max',
+      'maxLength',
+      'min',
+      'minLength',
+      'readonly',
+
+      'inputLocale',
+      'inputFormat',
+      'inputType',
+      'inputMode',
+      'inputPicker',
+      'inputAccept',
+      'inputCase',
+      'inputMask'
+    ];
     const attributesEvents = ['onSetup', 'onClick', 'onEnter', 'onLeave', 'onInput', 'onChange', 'onReload', 'onSearch', 'onSelect', 'onSubmit', 'onCancel'];
     for (const a of attributes) {
       this._config[`${a}`] = (typeof this._config[`${a}`] === 'function' ? this._config[`${a}`](this) : this._config[`${a}`]) || undefined;
@@ -70,33 +118,10 @@ export class Item extends Base {
       throw new Error('The value for option "mode" is invalid.');
     }
 
-    this._config.uuid = this._config.uuid || `${this._config.name}-${this._config.type}-${this._config.mode}-${Math.random()}`; // + ('00000' + (this._config._uid++).toString().substr(-5));
+    this._config.uuid = this._config.uuid || `${this._config.name}-${this._config.type}-${this._config.mode}-${Math.random()}`.toLowerCase();
+    this._config.hide = this._config.hide || undefined;
     this._config.size = this._config.size || 100;
-
-    //this.path = (parent?.path ? `${parent.path}.` : '') + `${this._config.name}`;
-    //const path: any = `${this._config.name}.${this.path}`;
-    //if (typeof this._config.text === 'string' && this._config.text) {
-    //  this._config.text = {title: this._config.text};
-    //}
     this._config.text = this._config.text || {};
-    this._config.text.title = this._config.title || this._config.name;
-    this._config.text.label = this._config.label || this._config.name;
-    this._config.text.message = this._config.message || this._config.name;
-    //this._config.text.title = this._config.text.title || this.pageService.getI18n(`${path}.title`) || '';
-    //this._config.text.label = this._config.text.label || this.pageService.getI18n(`${path}.label`) || '';
-    //this._config.text.message = this._config.text.message || this.pageService.getI18n(`${path}.message`) || '';
-    //this._config.text.require = this._config.text.require || this.pageService.getI18n(`${path}.require`) || '';
-    //this._config.text.warning = this._config.text.warning || this.pageService.getI18n(`${path}.warning`) || '';
-    //this._config.text.success = this._config.text.success || this.pageService.getI18n(`${path}.success`) || '';
-
-    // Verify
-    //if (!this._config?.locale) {
-    //  this._config.locale = this.pageService.getLocale();
-    //}
-    //if (this._config.type === 'location') {
-    //  this._config.maps = this._config.maps || this.pageService.user?.config?.maps;
-    //  this._config.zoom = this._config.zoom || 12;
-    //}
 
     // Verify type
     switch (this._config.type) {
@@ -538,33 +563,18 @@ export class Item extends Base {
 
     // Verify mode
     switch (this._config.mode) {
-      // Definitions
-
-      // Array mode definitions
       case 'array': {
         this._config.fields = _raw.fields || [{..._raw, type: _raw.type.replace(/\[\]$/, ''), mode: 'input', size: 100}];
         this._config.single = _raw.fields ? false : true;
-        this._config.inputArrayPush = async (value: any = {}): Promise<any> => {
-          this.setValue(value);
-        };
-        this._config.inputArrayDrop = async (): Promise<any> => {
-          this.setValue(undefined);
-        };
-        this._config.inputArrayDropByIndex = async (index: number): Promise<any> => {
-          this.value.splice(index, 1);
-        };
+        this._config.inputArrayPush = (value: any = {}) => this.setValue(value);
+        this._config.inputArrayDrop = () => this.setValue(undefined);
+        this._config.inputArrayDropByIndex = (index: number) => this.value.splice(index, 1);
         break;
       }
-
-      // Group mode definitions
       case 'group': {
         this._config.fields = _raw.fields || [];
-        this._config.inputGroupPush = async (value: any = {}): Promise<any> => {
-          this.setValue(value);
-        };
-        this._config.inputGroupDrop = async (): Promise<any> => {
-          this.setValue(undefined);
-        };
+        this._config.inputGroupPush = (value: any = {}) => this.setValue(value);
+        this._config.inputGroupDrop = () => this.setValue(undefined);
         break;
       }
     }
@@ -591,7 +601,8 @@ export class Item extends Base {
       this._config._onValue();
     }
 
-    //Object.keys(this._config).forEach((k: any) => this._config[k] === undefined ? delete this._config[k] : {});
+    // Format config
+    Object.keys(this._config).forEach((k: any) => this._config[k] === undefined ? delete this._config[k] : {});
   }
 
   /**
