@@ -1,31 +1,24 @@
 <ng-container *ngIf="modal">
   <ion-item lines="none">
-    <ng-container *ngIf="item._config.text.title">
-      <ion-label>
-        <div class="flb-item-title">{{ item._config.text.title }}</div>
-      </ion-label>
-    </ng-container>
+    <ion-input type="text" [value]="value.street" placeholder="{{ item._config.text.title || (item._config.name | i18n) || ('page.street.title' | i18n) }}" (ionLeave)="geocodeString(value)"></ion-input>
+
     <ng-container *ngIf="!item._config.readonly">
-      <ion-button slot="end" fill="clear" color="medium" title="{{ 'page.search.title' | i18n }}" (click)="loadCurrentPosition()">
+      <ion-button slot="end" fill="clear" tabindex="-1" color="medium" title="{{ 'page.search.title' | i18n }}" (click)="loadCurrentPosition()">
         <ion-icon slot="icon-only" name="locate"></ion-icon>
       </ion-button>
     </ng-container>
+
     <ng-container *ngIf="!item._config.readonly">
-      <ion-button slot="end" fill="clear" color="medium" title="{{ 'page.apply.title' | i18n }}" (click)="onApply($event)">
+      <ion-button slot="end" fill="clear" tabindex="-1" color="medium" title="{{ 'page.apply.title' | i18n }}" (click)="onApply($event)">
         <ion-icon slot="icon-only" name="checkmark"></ion-icon>
       </ion-button>
     </ng-container>
+
     <ng-container *ngIf="item._config.readonly">
-      <ion-button slot="end" fill="clear" color="medium" title="{{ 'page.close.title' | i18n }}" (click)="onClose($event)">
+      <ion-button slot="end" fill="clear" tabindex="-1" color="medium" title="{{ 'page.close.title' | i18n }}" (click)="onClose($event)">
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ng-container>
-  </ion-item>
-</ng-container>
-
-<ng-container *ngIf="modal && !item._config.readonly">
-  <ion-item lines="none">
-    <ion-input type="text" [value]="value.street" placeholder="{{ 'page.street.title' | i18n }}" (ionLeave)="geocodeString(value)"></ion-input>
   </ion-item>
 </ng-container>
 

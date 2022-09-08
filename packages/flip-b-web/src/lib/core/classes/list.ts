@@ -9,13 +9,11 @@ export class List extends Base {
 
   /**
    * Error
-   * @attribute {Mixed}
    */
   error: any | undefined;
 
   /**
    * Value
-   * @attribute {Mixed}
    */
   value: any | undefined;
 
@@ -24,12 +22,11 @@ export class List extends Base {
    */
   setup() {
     const attributes = ['elementClass', 'elementStyle', 'fields', 'values'];
-    const attributesEvents = ['onSetup', 'onClick', 'onEnter', 'onLeave', 'onInput', 'onChange', 'onReload', 'onSearch', 'onSelect', 'onSubmit', 'onCancel'];
     for (const a of attributes) {
       this._config[`${a}`] = (typeof this._config[`${a}`] === 'function' ? this._config[`${a}`](this) : this._config[`${a}`]) || undefined;
     }
     for (const k in this._config) {
-      if (!attributes.includes(k) && !attributesEvents.includes(k)) {
+      if (!attributes.includes(k) && !k.match(/^on/)) {
         delete this._config[`${k}`];
       }
     }
@@ -62,12 +59,12 @@ export class List extends Base {
   /**
    * Set value
    */
-  setValue(value: any = [], add: boolean = false): any {
+  setValue(value: any = [], add: boolean = false) {
     if (!this.value || !add) {
       this.value = [];
     }
     for (const values of value) {
-      const form: Form = new Form({fields: this.clone(this._config.fields), values: values}, this);
+      const form: Form = new Form({fields: this.clone(this._config.fields), values}, this);
       this.value.push(form);
     }
   }

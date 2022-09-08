@@ -6,9 +6,8 @@ export abstract class Base {
 
   /**
    * Component
-   * @attribute {Component}
    */
-  public _component: any | undefined;
+  _component: any | undefined;
 
   /**
    * Constructor
@@ -42,6 +41,10 @@ export abstract class Base {
       this._component._elementStyle.width = `${this._config.size}%`;
     }
     this._config.init = true;
+
+    if (this.constructor.name === 'Page') {
+      this.onInit(new CustomEvent('onInit'));
+    }
   }
 
   /**
@@ -151,7 +154,7 @@ export abstract class Base {
         if (!type) {
           type = $event.type || 'undefined';
         }
-        $event = new CustomEvent(type, {detail: {_flb: true, $event}});
+        $event = new CustomEvent(type, {detail: {_flb: true, $event, target: $event.target}});
       }
 
       // Define detail

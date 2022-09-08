@@ -39,14 +39,12 @@ export class DialogflowPlugin extends Plugin {
     if (message.file) {
       input.queryInput.text = {text: `${message.file}`, languageCode: `${message.language}`};
     }
-
     if (message.action && !['show_dialog', 'hide_dialog', 'quit_dialog', 'talking', 'silence', 'waiting', 'disconnect'].includes(message.action)) {
       input.queryInput.event = {name: `${message.action}`, languageCode: `${message.language}`};
-      if (message.data.length) {
-        input.queryInput.event.parameters = jsonToStructProto(message.getDataObject());
-      }
     }
-
+    if (message.action && message.data.length && input.queryInput.event) {
+      input.queryInput.event.parameters = jsonToStructProto(message.getDataObject());
+    }
     if (message.settings?.contexts?.length > 0) {
       input.queryParams.contexts = message.settings.contexts;
     }

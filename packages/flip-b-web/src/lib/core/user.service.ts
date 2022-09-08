@@ -1,4 +1,6 @@
-import {Injectable} from '@angular/core';
+import {Injectable, Inject} from '@angular/core';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {lastValueFrom} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -6,24 +8,15 @@ import {Injectable} from '@angular/core';
 export class UserService {
   // Definitions
 
-  config: any = {};
-  username: any;
-  name: any;
-  image: any;
-  access: any;
+  /**
+   * Config
+   */
+  _config: any = {};
 
   /**
    * Constructor
    */
-  constructor() {
-    this.onInit();
-  }
-
-  /**
-   * Init event handler
-   */
-  async onInit(): Promise<any> {
-  }
+  constructor(public _httpClient: HttpClient) {}
 
   /**
    * Auth
@@ -63,7 +56,6 @@ export class UserService {
   //  } catch (error) {
   //    console.error(error);
   //  }
-  //  console.log(values, typeof values, this.user)
   //  return this.user;
   //}
 }

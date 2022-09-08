@@ -26,6 +26,9 @@ export class App {
   routes: any = {};
   tasks: any = {};
 
+  /**
+   * Constructor
+   */
   constructor(config: any = {}) {
     const folder = path.dirname((require.main || {}).filename || './src/index.ts');
     dotenv.config();

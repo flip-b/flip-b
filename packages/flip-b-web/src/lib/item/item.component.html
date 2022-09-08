@@ -1,35 +1,42 @@
 <!-- Input -->
 <ng-container *ngIf="item?._config?.init && item._config.mode === 'input'">
   <ion-item lines="none">
-
     <ion-label position="stacked">
-      <div class="flb-item-title">{{ item._config.text.title || item._config.name }}</div>
+      <div class="flb-item-title">{{ item._config.text.title || (item._config.path + '.title' | i18n) || item._config.name }}</div>
     </ion-label>
 
     <ng-container *ngIf="item._config.type !== 'textarea' && item._config.type !== 'richtext'">
-      <ion-input [readonly]="item._config.readonly" [value]="item.value" [type]="item._config.inputType" [inputmode]="item._config.inputMode" [placeholder]="item._config.text.message || item._config.name" (ionFocus)="item.onEnter($event)" (ionBlur)="item.onLeave($event)" (ionInput)="item.onInput($event)" (keyup.enter)="item.onSubmit($event)"></ion-input>
+      <ion-input [readonly]="item._config.readonly" [value]="item.value" [type]="item._config.inputType" [inputmode]="item._config.inputMode" placeholder="{{ item._config.text.title || (item._config.path + '.title' | i18n) || item._config.name }}" (ionFocus)="item.onEnter($event)" (ionBlur)="item.onLeave($event)" (ionInput)="item.onInput($event)" (keyup.enter)="item.onSubmit($event)"></ion-input>
     </ng-container>
 
     <ng-container *ngIf="item._config.type === 'textarea' || item._config.type === 'richtext'">
-      <div class="menu" *ngIf="!item._config.readonly && item._config.inputMode === 'html'"><div *ngFor="let item of items" class="item {{ item.title }}" [ngClass]="{active: using.includes(item.index)}" (click)="onClickItem(item)">{{ item.title }}</div></div>
-      <div class="text" [innerHTML]="item.value" [attr.data-ph]="item._config.text.message || item._config.name" contenteditable="true" spellcheck="false" (click)="onInput($event)" (keyup)="onInput($event)"></div>
+      <div class="menu" *ngIf="!item._config.readonly && item._config.inputMode === 'html'">
+        <div *ngFor="let i of item._config._richItems" class="item {{ i.title }}" [ngClass]="{active: item._config._richUsing.includes(i.index)}" (click)="item._config._richOnClickItem(i)">{{ i.title }}</div>
+      </div>
+      <div class="text" [innerHTML]="item.value" attr.data-ph="{{ item._config.text.title || (item._config.path + '.title' | i18n) || item._config.name }}" contenteditable="true" spellcheck="false" (click)="item._config._richOnInput($event)" (keyup)="item._config._richOnInput($event)"></div>
     </ng-container>
 
     <ng-container *ngIf="!item._config.readonly && item._config.inputPicker === 'datetime'">
-      <ion-popover #modal class="flb" [showBackdrop]="false" [arrow]="false" side="left" trigger="{{ item._config.uuid }}">
-        <ng-template><ion-content><flb-item-datetime [modal]="modal" [item]="item" (onApply)="item.onInput($event)"></flb-item-datetime></ion-content></ng-template>
+      <ion-popover #modal class="flb" [showBackdrop]="false" [arrow]="false" side="left" [trigger]="item._config.uuid">
+        <ng-template
+          ><ion-content><flb-item-datetime [modal]="modal" [item]="item" (onApply)="item.onInput($event)"></flb-item-datetime></ion-content
+        ></ng-template>
       </ion-popover>
     </ng-container>
 
     <ng-container *ngIf="!item._config.readonly && item._config.inputPicker === 'location'">
-      <ion-popover #modal class="flb" [showBackdrop]="false" [arrow]="false" side="left" trigger="{{ item._config.uuid }}">
-        <ng-template><ion-content><flb-item-location [modal]="modal" [item]="item" (onApply)="item.onInput($event)"></flb-item-location></ion-content></ng-template>
+      <ion-popover #modal class="flb" [showBackdrop]="false" [arrow]="false" side="left" [trigger]="item._config.uuid">
+        <ng-template
+          ><ion-content><flb-item-location [modal]="modal" [item]="item" (onApply)="item.onInput($event)"></flb-item-location></ion-content
+        ></ng-template>
       </ion-popover>
     </ng-container>
 
     <ng-container *ngIf="!item._config.readonly && item._config.inputPicker === 'select'">
-      <ion-popover #modal class="flb" [showBackdrop]="false" [arrow]="false" side="left" trigger="{{ item._config.uuid }}">
-        <ng-template><ion-content><flb-item-select [modal]="modal" [item]="item" (onApply)="item.onInput($event)"></flb-item-select></ion-content></ng-template>
+      <ion-popover #modal class="flb" [showBackdrop]="false" [arrow]="false" side="left" [trigger]="item._config.uuid">
+        <ng-template
+          ><ion-content><flb-item-select [modal]="modal" [item]="item" (onApply)="item.onInput($event)"></flb-item-select></ion-content
+        ></ng-template>
       </ion-popover>
     </ng-container>
 
@@ -42,19 +49,26 @@
     </ng-container>
 
     <ng-container *ngIf="item._config.icon">
-      <ion-button slot="end" fill="clear" [color]="item._config.iconColor || 'medium'" title="{{ 'icon.' + item._config.icon + '.title' | i18n }}" [disabled]="item._config.iconDisabled" (click)="item.onClick($event)" id="{{ item._config.uuid }}">
+      <ion-button slot="end" fill="clear" tabindex="-1" [color]="item._config.iconColor || 'medium'" title="{{ item._config.iconTitle || item._config.type + '.icon.title' || 'i18n' }}" [disabled]="item._config.iconDisabled" (click)="item.onClick($event)" [id]="item._config.uuid">
         <ion-icon slot="icon-only" [name]="item._config.icon" [style]="item._config.iconStyle || undefined"></ion-icon>
       </ion-button>
     </ng-container>
 
-    <ng-container *ngIf="item._config.drop && item.value">
-      <ion-button slot="end" fill="clear" [color]="item._config.dropColor || 'medium'" title="{{ 'icon.' + item._config.drop + '.title' | i18n }}" [disabled]="item._config.dropDisabled" (click)="item.setValue(undefined)">
+    <ng-container *ngIf="item._config.push && item.value === undefined">
+      <ion-button slot="end" fill="clear" tabindex="-1" [color]="item._config.pushColor || 'medium'" title="{{ item._config.pushTitle || item._config.type + '.push.title' || 'i18n' }}" [disabled]="item._config.pushDisabled" (click)="item._config._onPush()">
+        <ion-icon slot="icon-only" [name]="item._config.push" [style]="item._config.pushStyle || undefined"></ion-icon>
+      </ion-button>
+    </ng-container>
+
+    <ng-container *ngIf="item._config.drop && item.value !== undefined">
+      <ion-button slot="end" fill="clear" tabindex="-1" [color]="item._config.dropColor || 'medium'" title="{{ item._config.dropTitle || item._config.type + '.drop.title' || 'i18n' }}" [disabled]="item._config.dropDisabled" (click)="item._config._onDrop()">
         <ion-icon slot="icon-only" [name]="item._config.drop" [style]="item._config.dropStyle || undefined"></ion-icon>
       </ion-button>
     </ng-container>
 
     <ng-content></ng-content>
   </ion-item>
+
   <ng-container *ngIf="item.error">
     <div class="flb-item-error">{{ item._config.text[item.error] || item.error }}</div>
   </ng-container>
@@ -64,27 +78,29 @@
 <ng-container *ngIf="item?._config?.init && item._config.mode === 'group'">
   <ion-item lines="none">
     <ion-label>
-      <div class="flb-item-title">{{ item._config.text.title || item._config.name }}</div>
-      <div class="flb-item-label">{{ item._config.text.label }}</div>
+      <div class="flb-item-title">{{ item._config.text.title || (item._config.path + '.title' | i18n) || item._config.name }}</div>
+      <div class="flb-item-label">{{ item._config.text.label || (item._config.path + '.label' | i18n) || '' }}</div>
     </ion-label>
 
-    <ng-container *ngIf="!item._config.readonly && item.value">
-      <ion-button slot="end" fill="clear" color="medium" (click)="item._config.collapse = !item._config.collapse">
-        <ion-icon slot="icon-only" [name]="item._config.collapse ? 'chevron-down-circle' : 'chevron-up-circle'"></ion-icon>
+    <ng-container *ngIf="item._config.push && item._config.show">
+      <ion-button slot="end" fill="clear" tabindex="-1" [color]="item._config.pushColor || 'medium'" title="{{ item._config.pushTitle || item._config.type + '.push.title' || 'i18n' }}" [disabled]="item._config.pushDisabled" (click)="item._config._onPush()">
+        <ion-icon slot="icon-only" [name]="item._config.push" [style]="item._config.pushStyle || undefined"></ion-icon>
       </ion-button>
     </ng-container>
-    <ng-container *ngIf="!item._config.readonly && item.value">
-      <ion-button slot="end" fill="clear" color="danger" (click)="item._config.inputGroupDrop()">
-        <ion-icon slot="icon-only" name="remove-circle"></ion-icon>
+
+    <ng-container *ngIf="item._config.drop && item._config.show">
+      <ion-button slot="end" fill="clear" tabindex="-1" [color]="item._config.dropColor || 'medium'" title="{{ item._config.dropTitle || item._config.type + '.drop.title' || 'i18n' }}" [disabled]="item._config.dropDisabled" (click)="item._config._onDrop()">
+        <ion-icon slot="icon-only" [name]="item._config.drop" [style]="item._config.dropStyle || undefined"></ion-icon>
       </ion-button>
     </ng-container>
-    <ng-container *ngIf="!item._config.readonly && !item.value">
-      <ion-button slot="end" fill="clear" color="medium" (click)="item._config.inputGroupPush()">
-        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+
+    <ng-container *ngIf="item.value !== undefined">
+      <ion-button slot="end" fill="clear" tabindex="-1" [color]="item._config.iconColor || 'medium'" title="{{ (item._config.show ? 'hide.icon.title' : 'show.icon.title') || 'i18n' }}" (click)="item._config.show = !item._config.show">
+        <ion-icon slot="icon-only" [name]="item._config.show ? 'chevron-up-circle' : 'chevron-down-circle'"></ion-icon>
       </ion-button>
     </ng-container>
   </ion-item>
-  <ng-container *ngIf="item.value && !item._config.collapse">
+  <ng-container *ngIf="item.value && item._config.show">
     <flb-form [form]="item.value"></flb-form>
   </ng-container>
 </ng-container>
@@ -93,108 +109,98 @@
 <ng-container *ngIf="item?._config?.init && item._config.mode === 'array'">
   <ion-item lines="none">
     <ion-label>
-      <div class="flb-item-title">{{ item._config.text.title || item._config.name }}</div>
-      <div class="flb-item-label">{{ item._config.text.label }}</div>
+      <div class="flb-item-title">{{ item._config.text.title || (item._config.path + '.title' | i18n) || item._config.name }}</div>
+      <div class="flb-item-label">{{ item._config.text.label || (item._config.path + '.label' | i18n) || '' }}</div>
     </ion-label>
 
-    <ng-container *ngIf="!item._config.readonly && item.value?.length">
-      <ion-button slot="end" fill="clear" color="medium" (click)="item._config.collapse = !item._config.collapse">
-        <ion-icon slot="icon-only" [name]="item._config.collapse ? 'chevron-down-circle' : 'chevron-up-circle'"></ion-icon>
+    <ng-container *ngIf="item._config.push && item._config.show">
+      <ion-button slot="end" fill="clear" tabindex="-1" [color]="item._config.pushColor || 'medium'" title="{{ item._config.pushTitle || item._config.type + '.push.title' || 'i18n' }}" [disabled]="item._config.pushDisabled" (click)="item._config._onPush()">
+        <ion-icon slot="icon-only" [name]="item._config.push" [style]="item._config.pushStyle || undefined"></ion-icon>
       </ion-button>
     </ng-container>
 
-    <ng-container *ngIf="!item._config.readonly">
-      <ion-button slot="end" fill="clear" color="medium" (click)="item._config.inputArrayPush()">
-        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+    <ng-container *ngIf="item._config.drop && item._config.show">
+      <ion-button slot="end" fill="clear" tabindex="-1" [color]="item._config.dropColor || 'medium'" title="{{ item._config.dropTitle || item._config.type + '.drop.title' || 'i18n' }}" [disabled]="item._config.dropDisabled" (click)="item._config._onDrop()">
+        <ion-icon slot="icon-only" [name]="item._config.drop" [style]="item._config.dropStyle || undefined"></ion-icon>
       </ion-button>
     </ng-container>
 
-    <ng-container *ngIf="!item._config.readonly && item.value?.length">
-      <ion-button slot="end" fill="clear" color="danger" (click)="item._config.inputArrayDrop()">
-        <ion-icon slot="icon-only" name="remove-circle"></ion-icon>
+    <ng-container *ngIf="item.value !== undefined">
+      <ion-button slot="end" fill="clear" tabindex="-1" [color]="item._config.iconColor || 'medium'" title="{{ (item._config.show ? 'hide.icon.title' : 'show.icon.title') || 'i18n' }}" (click)="item._config.show = !item._config.show">
+        <ion-icon slot="icon-only" [name]="item._config.show ? 'chevron-up-circle' : 'chevron-down-circle'"></ion-icon>
       </ion-button>
     </ng-container>
   </ion-item>
-
-  <ng-container *ngIf="item.value && !item._config.collapse">
+  <ng-container *ngIf="item.value && item._config.show">
     <flb-form [form]="form" *ngFor="let form of item.value; let index = index">
-      <ion-button *ngIf="!item._config.readonly" slot="end" fill="clear" color="medium" (click)="item._config.inputArrayDropByIndex(index)">
-        <ion-icon slot="icon-only" name="remove-circle"></ion-icon>
-      </ion-button>
+      <ng-container *ngIf="item._config.drop">
+        <ion-button slot="end" fill="clear" tabindex="-1" [color]="item._config.dropColor || 'medium'" title="{{ item._config.dropTitle || item._config.type + '.drop.title' || 'i18n' }}" [disabled]="item._config.dropDisabled" (click)="item._config._onDropIndex(index)">
+          <ion-icon slot="icon-only" [name]="item._config.drop" [style]="item._config.dropStyle || undefined"></ion-icon>
+        </ion-button>
+      </ng-container>
     </flb-form>
   </ng-container>
 </ng-container>
 
 <!-- Value -->
-<ng-container *ngIf="item?._config?.init && item._config.mode === 'value'">
-  <ion-item lines="none" [button]="true" [detail]="false" (click)="item.onSelect($event)">
-    <ion-label position="stacked">
-      <div class="flb-item-title">{{ item._config.name }} {{ item._config.uuid }}</div>
-    </ion-label>
-    <ng-container *ngIf="item._config.image !== undefined || item._config.state !== undefined || item._config.icon !== undefined">
+<ng-container *ngIf="item?._config?.init && item._config.mode === 'value' && item.value">
+  <ion-item lines="none" [button]="item.value.index !== undefined" [detail]="false" (click)="item.value.index !== undefined ? item.onSelect($event) : null">
+    <ng-container *ngIf="item.value.image !== undefined || item.value.state !== undefined">
       <ion-thumbnail slot="start">
-        <img class="flb-item-image" *ngIf="item._config.image" [src]="item._config.image" (error)="item._context.page.onLoadImageError($event)">
-        <div class="flb-item-icon" *ngIf="!item._config.image"><ion-icon [name]="item._config.icon || 'camera'"></ion-icon></div>
-        <div class="flb-item-state" *ngIf="item._config.state !== undefined" [ngClass]="{success: item._config.state, danger: !item._config.state}"></div>
+        <img class="flb-item-image" *ngIf="item.value.image" [src]="item.value.image" (error)="data._onLoadImageError($event)" />
+        <div class="flb-item-icon" *ngIf="!item.value.image"><ion-icon [name]="item.value.icon || 'camera'"></ion-icon></div>
+        <div class="flb-item-state" *ngIf="item.value.state !== undefined" [ngClass]="{success: item.value.state, danger: !item.value.state}"></div>
       </ion-thumbnail>
     </ng-container>
-    <ng-container *ngIf="item._config.index !== undefined || item._config.title !== undefined || item._config._id !== undefined">
+
+    <ng-container *ngIf="item.value.title !== undefined || item.value.label !== undefined">
       <ion-label>
-        <div class="flb-item-title" *ngIf="item._config.index !== undefined && !item._config.title && !item._config.label">{{ (item._config.index | i18n) || item._config.index }}</div>
-        <div class="flb-item-title" *ngIf="item._config.title !== undefined">{{ item._config.title }}</div>
-        <div class="flb-item-label" *ngIf="item._config.label !== undefined">{{ item._config.label }}</div>
-        <div class="flb-item-count" *ngIf="item._config.count !== undefined">{{ item._config.count | i18n: 'integer' }}</div>
-        <div class="flb-item-total" *ngIf="item._config.total !== undefined">{{ item._config.total | i18n: 'decimal' }}</div>
+        <div class="flb-item-title" *ngIf="item.value.title !== undefined">{{ item.value.title }}</div>
+        <div class="flb-item-label" *ngIf="item.value.label !== undefined">{{ item.value.label }}</div>
+        <div class="flb-item-count" *ngIf="item.value.count !== undefined">{{ item.value.count }}</div>
+        <div class="flb-item-total" *ngIf="item.value.total !== undefined">{{ item.value.total }}</div>
       </ion-label>
     </ng-container>
-    <ng-container *ngIf="item._config.notes !== undefined">
+
+    <ng-container *ngIf="item.value.notes !== undefined">
       <ion-label>
-        <div class="flb-item-notes" *ngFor="let note of item._config.notes">{{ note }}</div>
+        <div class="flb-item-notes" *ngFor="let note of item.value.notes">{{ note }}</div>
       </ion-label>
+    </ng-container>
+
+    <ng-container *ngIf="item.value.search !== undefined">
+      <ion-searchbar [(ngModel)]="item._config.query" placeholder="{{ 'query' || 'i18n' }}" (ionChange)="(null)"></ion-searchbar>
+    </ng-container>
+
+    <ng-container *ngIf="item.value.menu !== undefined">
+      <ion-button slot="end" fill="clear" tabindex="-1" color="medium" title="{{ '.menu' || 'i18n' }}" class="ion-hide-lg-up" (click)="data.showMenu($event)">
+        <ion-icon slot="icon-only" name="menu"></ion-icon>
+      </ion-button>
+    </ng-container>
+
+    <ng-container *ngIf="item.value.menu !== undefined && item.value.modal !== undefined">
+      <ion-button slot="end" fill="clear" tabindex="-1" color="medium" title="{{ '.cancel' || 'i18n' }}" (click)="item.value.modal.dismiss()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
     </ng-container>
   </ion-item>
 </ng-container>
 
 <!-- Field -->
 <ng-container *ngIf="item?._config?.init && item._config.mode === 'field'">
+  <ion-item lines="none" [button]="['button', 'submit', 'cancel'].includes(item._config.type)" [detail]="false" [disabled]="item._config.iconDisabled" (click)="item.onClick($event)" class="{{ item._config.iconOnly ? 'flb-item-button-icon' : 'flb-item-button-text' }}" title="{{ item._config.text.title || (item._config.path + '.title' | i18n) || item._config.name }}">
+    <ng-container *ngIf="item._config.icon && item._config.iconOnly">
+      <ion-icon [name]="item._config.icon" [color]="item._config.iconColor || 'medium'" [style]="item._config.iconStyle || undefined"></ion-icon>
+    </ng-container>
 
-  <ng-container *ngIf="item._config.type === 'upload'">
-    <ion-thumbnail (click)="item.onClick($event)">
-      <img class="flb-item-image" *ngIf="item.value" [src]="item.value" (error)="item._context.page.onLoadImageError($event)">
-      <div class="flb-item-icon" *ngIf="!item.value"><ion-icon [name]="item._config.icon || 'camera'"></ion-icon></div>
-    </ion-thumbnail>
-  </ng-container>
+    <ng-container *ngIf="item._config.icon && !item._config.iconOnly">
+      <ion-icon [name]="item._config.icon" [color]="item._config.iconColor || 'medium'" [style]="item._config.iconStyle || undefined" slot="start"></ion-icon>
+    </ng-container>
 
-  <ng-container *ngIf="['header', 'footer', 'legend'].includes(item._config.type)">
-    <ion-label>
-      <div class="flb-item-title" *ngIf="item._config.text.title">{{ item._config.text.title }}</div>
-      <div class="flb-item-label" *ngIf="item._config.text.label">{{ item._config.text.label }}</div>
-      <div class="flb-item-value" *ngIf="item.value">{{ item.value | i18n: (item._config.cast || item._config.type) }}</div>
-    </ion-label>
-  </ng-container>
-
-  <ng-container *ngIf="['button', 'submit', 'cancel'].includes(item._config.type)">
-    <ion-button [class]="'flb-button-' + (item._config.iconOnly ? 'icon' : 'text')" expand="block" [fill]="item._config.fill" [color]="item._config.color || 'light'" [title]="item._config.text?.title || ''" [disabled]="item._config.iconDisabled" (click)="item.onClick($event)" id="{{ item._config.uuid || '' }}">
-      <ion-icon *ngIf="item._config.icon" [slot]="item._config.iconOnly ? 'icon-only' : 'start'" [name]="item._config.icon || 'search'"></ion-icon>
-      <ion-text *ngIf="!item._config.iconOnly">{{ item._config.text?.title || item._config.text?.label }}</ion-text>
-    </ion-button>
-  </ng-container>
-
-  <!--
-  <ng-container>
-    <ion-searchbar [(ngModel)]="page._config.query" placeholder="{{ page._config.name + '.title' | i18n }}" (ionChange)="null"></ion-searchbar>
-  </ng-container>
-
-  <ng-container *ngIf="modal">
-    <ion-button slot="end" fill="clear" color="medium" title="{{ page._config.name + '.cancel.title' | i18n }}" (click)="modal.dismiss()">
-      <ion-icon slot="icon-only" name="close"></ion-icon>
-    </ion-button>
-  </ng-container>
-
-  <ng-container *ngIf="!modal">
-    <ion-button slot="end" fill="clear" color="medium" title="{{ page._config.name + '.global.menu' | i18n }}" class="ion-hide-lg-up" (click)="item._context.page.menuController.open()">
-      <ion-icon slot="icon-only" name="menu"></ion-icon>
-    </ion-button>
-  </ng-container>
-  -->
+    <ng-container *ngIf="item._config.text && !item._config.iconOnly && ['header', 'footer', 'legend', 'button', 'submit', 'cancel'].includes(item._config.type)">
+      <ion-label>
+        <div class="flb-item-title">{{ item._config.text.title || (item._config.path + '.title' | i18n) || item._config.name }}</div>
+      </ion-label>
+    </ng-container>
+  </ion-item>
 </ng-container>

@@ -1,6 +1,6 @@
 import {Component, OnInit, Input, HostBinding, ElementRef} from '@angular/core';
 import {Item} from '../core/classes/item';
-import {ContextService} from '../core/context.service';
+import {DataService} from '../core/data.service';
 
 @Component({
   selector: 'flb-item-datetime',
@@ -14,38 +14,35 @@ export class ItemDatetimeComponent implements OnInit {
 
   /**
    * Modal
-   * @attribute {Object}
    */
   @Input() modal: any;
 
   /**
    * Item
-   * @attribute {Item}
    */
   @Input() item: Item | any;
 
   /**
    * Value
-   * @attribute {Mixed}
    */
   @Input() value: any;
 
   /**
    * Constructor
    */
-  constructor(public _context: ContextService, public _element: ElementRef) {}
+  constructor(public data: DataService, public _element: ElementRef) {}
 
   /**
    * Init angular handler
    */
   ngOnInit() {
-    if (this.item?.constructor?.name !== 'Item') {
-      this.item = new Item(this.item);
-      this.item.setComponent(this);
-    }
-    this.value = this.value || this.item.value || new Date().toISOString();
+    this.item = this.item?.constructor?.name !== 'Item' ? new Item(this.item) : this.item;
+    this.item.setComponent(this);
+
     this._elementClass = 'flb-item-datetime';
     this._elementStyle = {};
+
+    this.value = this.value || this.item.value || new Date().toISOString();
   }
 
   /**
@@ -80,9 +77,6 @@ export class ItemDatetimeComponent implements OnInit {
       return;
     }
     this.value = $event.target.value || undefined;
-    $event = new CustomEvent('onChange', {detail: {$event, value: this.value}});
-    this._element.nativeElement.value = this.value;
-    this._element.nativeElement.dispatchEvent($event);
-    console.log(`New value "${this.value}"`);
+    console.log('New value', this.value);
   }
 }

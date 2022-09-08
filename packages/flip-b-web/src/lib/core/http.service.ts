@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {Injectable, Inject} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {lastValueFrom} from 'rxjs';
 
@@ -10,22 +10,13 @@ export class HttpService {
 
   /**
    * Config
-   * @attribute {Object}
    */
-  config: any = {};
+  _config: any = {};
 
   /**
    * Constructor
    */
-  constructor(private httpClient: HttpClient) {
-    this.onInit();
-  }
-
-  /**
-   * Init event handler
-   */
-  async onInit(): Promise<any> {
-  }
+  constructor(public _httpClient: HttpClient) {}
 
   /**
    * Request
@@ -40,7 +31,7 @@ export class HttpService {
     const headers = this.formatHeaders(params.headers);
     const observe = params.observe || undefined;
     const responseType = params.type || undefined;
-    const response$ = this.httpClient.request(method, `${url}${uri}${qs}`, {body: body || form, headers, observe, responseType});
+    const response$ = this._httpClient.request(method, `${url}${uri}${qs}`, {body: body || form, headers, observe, responseType});
     return lastValueFrom(response$);
   }
 
@@ -55,14 +46,14 @@ export class HttpService {
    * Format URL
    */
   private formatUrl(url: any): string {
-    return `${url || this.config.url || ''}`.trim();
+    return `${url || this._config.url || ''}`.trim();
   }
 
   /**
    * Format URI
    */
   private formatUri(uri: any): string {
-    return `${uri || this.config.uri || ''}`.trim();
+    return `${uri || this._config.uri || ''}`.trim();
   }
 
   /**
@@ -100,7 +91,7 @@ export class HttpService {
    * Format Headers
    */
   private formatHeaders(headers: any): any {
-    headers = {...(headers || {}), ...(this.config.headers || {})};
+    headers = {...(headers || {}), ...(this._config.headers || {})};
     for (const h in headers) {
       if (!headers[h]) {
         delete headers[h];

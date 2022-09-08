@@ -1,5 +1,5 @@
 import {Pipe, PipeTransform} from '@angular/core';
-import {ContextService} from './context.service';
+import {DataService} from './data.service';
 
 @Pipe({
   name: 'i18n'
@@ -10,12 +10,12 @@ export class I18nPipe implements PipeTransform {
   /**
    * Constructor
    */
-  constructor(public _context: ContextService) {}
+  constructor(private data: DataService) {}
 
   /**
    * Transform
    */
   transform(data: any, item: any = null): any {
-    return this._context.i18n.format(data, item);
+    return this.data.i18n.format(data, item);
   }
 }

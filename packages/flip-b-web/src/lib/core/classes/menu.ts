@@ -9,13 +9,11 @@ export class Menu extends Base {
 
   /**
    * Error
-   * @attribute {Mixed}
    */
   error: any | undefined;
 
   /**
    * Value
-   * @attribute {Mixed}
    */
   value: any | undefined;
 

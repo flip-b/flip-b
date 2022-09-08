@@ -9,13 +9,11 @@ export class Item extends Base {
 
   /**
    * Error
-   * @attribute {Mixed}
    */
   error: any | undefined;
 
   /**
    * Value
-   * @attribute {Mixed}
    */
   value: any | undefined;
 
@@ -36,21 +34,35 @@ export class Item extends Base {
 
       'icon',
       'iconDisabled',
+      'iconTitle',
       'iconColor',
       'iconStyle',
 
-      'iconOnly',
-
       'drop',
       'dropDisabled',
+      'dropTitle',
       'dropColor',
       'dropStyle',
 
-      'hide',
-      'size',
+      'push',
+      'pushDisabled',
+      'pushTitle',
+      'pushColor',
+      'pushStyle',
 
-      'fill',
-      'color',
+      'hide',
+      'hideText',
+      'hideIcon',
+
+      'show',
+      'showText',
+      'showIcon',
+
+      'iconOnly',
+
+      'size',
+      'slot',
+      'path',
 
       'fields',
       'values',
@@ -64,24 +76,21 @@ export class Item extends Base {
       'minLength',
       'readonly',
 
-      'inputLocale',
       'inputFormat',
       'inputType',
       'inputMode',
       'inputPicker',
       'inputAccept',
+
       'inputCase',
       'inputMask'
     ];
-    const attributesEvents = ['onSetup', 'onClick', 'onEnter', 'onLeave', 'onInput', 'onChange', 'onReload', 'onSearch', 'onSelect', 'onSubmit', 'onCancel'];
+
     for (const a of attributes) {
       this._config[`${a}`] = (typeof this._config[`${a}`] === 'function' ? this._config[`${a}`](this) : this._config[`${a}`]) || undefined;
     }
     for (const k in this._config) {
-      if (!attributes.includes(k) && !attributesEvents.includes(k)) {
-        if (k !== 'slot') {
-          console.log(`Delete ${k}`);
-        }
+      if (!attributes.includes(k) && !k.match(/^on/)) {
         delete this._config[`${k}`];
       }
     }
@@ -109,7 +118,56 @@ export class Item extends Base {
     }
 
     // Verify type
-    if (typeof this._config.type !== 'string' || !['array', 'group', 'value', 'field', 'input', 'id', 'object', 'select', 'select_multiple', 'unixtime', 'datetime', 'date', 'time', 'year', 'year_month', 'decimal', 'integer', 'percent', 'currency', 'checkbox', 'toggle', 'text', 'textarea', 'richtext', 'location', 'attachment', 'image', 'video', 'audio', 'url', 'phone', 'email', 'color', 'username', 'password', 'expand', 'header', 'footer', 'legend', 'upload', 'button', 'submit', 'cancel'].includes(this._config.type)) {
+    if (
+      typeof this._config.type !== 'string' ||
+      ![
+        'array',
+        'group',
+        'value',
+        'field',
+        'input',
+        'id',
+        'string',
+        'number',
+        'object',
+        'select',
+        'select_multiple',
+        'unixtime',
+        'datetime',
+        'date',
+        'time',
+        'year',
+        'year_month',
+        'decimal',
+        'integer',
+        'percent',
+        'currency',
+        'checkbox',
+        'toggle',
+        'text',
+        'textarea',
+        'richtext',
+        'location',
+        'attachment',
+        'image',
+        'video',
+        'audio',
+        'url',
+        'phone',
+        'email',
+        'color',
+        'username',
+        'password',
+        'expand',
+        'header',
+        'footer',
+        'legend',
+        'upload',
+        'button',
+        'submit',
+        'cancel'
+      ].includes(this._config.type)
+    ) {
       throw new Error('The value for option "type" is invalid.');
     }
 
@@ -120,8 +178,23 @@ export class Item extends Base {
 
     this._config.uuid = this._config.uuid || `${this._config.name}-${this._config.type}-${this._config.mode}-${Math.random()}`.toLowerCase();
     this._config.hide = this._config.hide || undefined;
+    this._config.show = this._config.show || true;
     this._config.size = this._config.size || 100;
+    this._config.slot = this._config.slot || undefined;
     this._config.text = this._config.text || {};
+
+    // Define path
+    if (!this._config.path) {
+      const parents = [];
+      let current = this;
+      while (current) {
+        if (current._config?.name) {
+          parents.push(current._config.name);
+        }
+        current = current._parent ? current._parent : undefined;
+      }
+      this._config.path = parents.reverse().join('.');
+    }
 
     // Verify type
     switch (this._config.type) {
@@ -132,10 +205,22 @@ export class Item extends Base {
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'text';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'search';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+        break;
+      }
+
+      // String type definitions
+      case 'string': {
+        this._config.inputFormat = this._config.inputFormat || 'string';
+        this._config.inputType = this._config.inputType || 'text';
+        this._config.inputMode = this._config.inputMode || 'text';
+        break;
+      }
+
+      // Decimal type definitions
+      case 'number': {
+        this._config.inputFormat = this._config.inputFormat || 'number';
+        this._config.inputType = this._config.inputType || 'text';
+        this._config.inputMode = this._config.inputMode || 'decimal';
         break;
       }
 
@@ -144,10 +229,6 @@ export class Item extends Base {
         this._config.inputFormat = this._config.inputFormat || 'object';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'text';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'search';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
         break;
       }
 
@@ -156,11 +237,14 @@ export class Item extends Base {
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'text';
-        this._config.inputPicker = this._config.inputMode || 'select';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'search';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+        this._config.inputPicker = this._config.inputPicker || 'select';
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? undefined : 'search';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+        }
         break;
       }
 
@@ -169,101 +253,115 @@ export class Item extends Base {
         this._config.inputFormat = this._config.inputFormat || 'array';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'text';
-        this._config.inputPicker = this._config.inputMode || 'select';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'search';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+        this._config.inputPicker = this._config.inputPicker || 'select';
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? undefined : 'search';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+        }
         break;
       }
 
       // Unixtime type definitions
       case 'unixtime': {
-        this._config.pattern = this._config.pattern || /^[0-9]+$/;
         this._config.inputFormat = this._config.inputFormat || 'number';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'date-time';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'calendar';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? undefined : 'calendar';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+        }
         break;
       }
 
       // Datetime type definitions
       case 'datetime': {
-        this._config.pattern = this._config.pattern || /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(.*?)/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'date-time';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'calendar';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? undefined : 'calendar';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+        }
         break;
       }
 
       // Date type definitions
       case 'date': {
-        this._config.pattern = this._config.pattern || /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'date';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'calendar';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? undefined : 'calendar';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+        }
         break;
       }
 
       // Time type definitions
       case 'time': {
-        this._config.pattern = this._config.pattern || /^[0-9]{2}:[0-9]{2}$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'time';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'time';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? undefined : 'time';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+        }
         break;
       }
 
       // Year type definitions
       case 'year': {
-        this._config.pattern = this._config.pattern || /^[0-9]{4}$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'year';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'calendar-clear';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? undefined : 'calendar-clear';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+        }
         break;
       }
 
       // Year month type definitions
       case 'year_month': {
-        this._config.pattern = this._config.pattern || /^[0-9]{4}-[0-9]{2}$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'month-year';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'calendar-clear';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? undefined : 'calendar-clear';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+        }
         break;
       }
 
       // Decimal type definitions
       case 'decimal': {
-        this._config.pattern = this._config.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
         this._config.inputFormat = this._config.inputFormat || 'number';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'decimal';
@@ -272,7 +370,6 @@ export class Item extends Base {
 
       // Integer type definitions
       case 'integer': {
-        this._config.pattern = this._config.pattern || /^-?[0-9]{1,20}$/;
         this._config.inputFormat = this._config.inputFormat || 'number';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'numeric';
@@ -281,7 +378,6 @@ export class Item extends Base {
 
       // Percent type definitions
       case 'percent': {
-        this._config.pattern = this._config.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
         this._config.inputFormat = this._config.inputFormat || 'number';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'decimal';
@@ -290,7 +386,6 @@ export class Item extends Base {
 
       // Currency type definitions
       case 'currency': {
-        this._config.pattern = this._config.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
         this._config.inputFormat = this._config.inputFormat || 'number';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'decimal';
@@ -345,124 +440,162 @@ export class Item extends Base {
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'text';
         this._config.inputPicker = this._config.inputPicker || 'location';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? undefined : 'navigate';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? undefined : 'navigate';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+        }
         break;
       }
 
       // Attachment type definitions
       case 'attachment': {
-        this._config.pattern = this._config.pattern || /^https?:\/\/.*$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'url';
         this._config.inputMode = this._config.inputMode || 'url';
-        this._config.inputPicker = this._config.inputPicker || 'files';
         this._config.inputAccept = this._config.inputAccept || '*/*';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? (this.value ? 'document-attach' : undefined) : 'search';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? (this.value ? 'document-attach' : undefined) : 'search';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onClick = async ($event: any): Promise<any> => {
+            return await this._component.data._onItemFilesClick($event, this);
+          };
+        }
         break;
       }
 
       // Image type definitions
       case 'image': {
-        this._config.pattern = this._config.pattern || /^https?:\/\/.*$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'url';
         this._config.inputMode = this._config.inputMode || 'url';
-        this._config.inputPicker = this._config.inputPicker || 'files';
         this._config.inputAccept = this._config.inputAccept || 'image/*';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? (this.value ? 'image' : undefined) : 'search';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? (this.value ? 'image' : undefined) : 'search';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onClick = async ($event: any): Promise<any> => {
+            return await this._component.data._onItemFilesClick($event, this);
+          };
+        }
         break;
       }
 
       // Video type definitions
       case 'video': {
-        this._config.pattern = this._config.pattern || /^https?:\/\/.*$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'url';
         this._config.inputMode = this._config.inputMode || 'url';
-        this._config.inputPicker = this._config.inputPicker || 'files';
         this._config.inputAccept = this._config.inputAccept || 'video/*';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? (this.value ? 'videocam' : undefined) : 'search';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? (this.value ? 'videocam' : undefined) : 'search';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onClick = async ($event: any): Promise<any> => {
+            return await this._component.data._onItemFilesClick($event, this);
+          };
+        }
         break;
       }
 
       // Audio type definitions
       case 'audio': {
-        this._config.pattern = this._config.pattern || /^https?:\/\/.*$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'url';
         this._config.inputMode = this._config.inputMode || 'url';
-        this._config.inputPicker = this._config.inputPicker || 'files';
         this._config.inputAccept = this._config.inputAccept || 'audio/*';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? (this.value ? 'recording' : undefined) : 'search';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? (this.value ? 'recording' : undefined) : 'search';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onClick = async ($event: any): Promise<any> => {
+            return await this._component.data._onItemFilesClick($event, this);
+          };
+        }
         break;
       }
 
       // Url type definitions
       case 'url': {
-        this._config.pattern = this._config.pattern || /^https?:\/\/.*$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'url';
         this._config.inputMode = this._config.inputMode || 'url';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? (this.value ? 'link' : undefined) : undefined;
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? (this.value ? 'link' : undefined) : undefined;
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onClick = async ($event: any): Promise<any> => {
+            return await this._component.data._onItemUrlClick($event, this);
+          };
+        }
         break;
       }
 
       // Phone type definitions
       case 'phone': {
-        this._config.pattern = this._config.pattern || /^[0-9]{8,12}$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'tel';
         this._config.inputMode = this._config.inputMode || 'tel';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? (this.value ? 'call' : undefined) : undefined;
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? (this.value ? 'call' : undefined) : undefined;
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onClick = async ($event: any): Promise<any> => {
+            return await this._component.data._onItemUrlClick($event, this);
+          };
+        }
         break;
       }
 
       // Email type definitions
       case 'email': {
-        this._config.pattern = this._config.pattern || /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'email';
         this._config.inputMode = this._config.inputMode || 'email';
-        this._config._onValue = () => {
-          this._config.icon = this._config.readonly ? (this.value ? 'mail' : undefined) : undefined;
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.readonly ? (this.value ? 'mail' : undefined) : undefined;
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onClick = async ($event: any): Promise<any> => {
+            return await this._component.data._onItemUrlClick($event, this);
+          };
+        }
         break;
       }
 
       // Color type definitions
       case 'color': {
-        this._config.pattern = this._config.pattern || /^#(?:[0-9a-f]{3}){1,2}$/;
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'text';
-        this._config.inputPicker = this._config.inputPicker || 'color';
-        this._config._onValue = () => {
-          this._config.iconStyle = this.value ? {color: this.value} : undefined;
-          this._config.icon = this._config.icon || 'color-fill';
-          this._config.drop = this._config.readonly ? undefined : (this.value ? 'close-circle' : undefined);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.iconStyle = this.value ? {color: this.value} : undefined;
+            this._config.icon = this._config.icon || 'color-fill';
+            this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onClick = async ($event: any): Promise<any> => {
+            return await this._component.data._onItemColorClick($event, this);
+          };
+        }
         break;
       }
 
@@ -471,11 +604,13 @@ export class Item extends Base {
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'text';
-        this._config.inputPicker = this._config.inputPicker || 'username';
-        this._config._onValue = () => {
-          this._config.icon = 'person';
-          this._config.iconDisabled = (!this._config.onClick);
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = 'person';
+            this._config.iconDisabled = !this._config.onClick;
+          };
+        }
         break;
       }
 
@@ -484,14 +619,16 @@ export class Item extends Base {
         this._config.inputFormat = this._config.inputFormat || 'string';
         this._config.inputType = this._config.inputType || 'password';
         this._config.inputMode = this._config.inputMode || 'text';
-        this._config.inputPicker = this._config.inputPicker || 'password';
-        this._config._onValue = () => {
-          this._config.icon = 'eye';
-        };
-        this._config._onClick = () => {
-          this._config.icon = this._config.inputType === 'password' ? 'eye-off' : 'eye';
-          this._config.inputType = this._config.inputType === 'password' ? 'text' : 'password';
-        };
+
+        if (!this._config.onClick) {
+          this._config.onSetValue = () => {
+            this._config.icon = this._config.inputType === 'password' ? 'eye' : 'eye-off';
+          };
+          this._config.onClick = async ($event: any): Promise<any> => {
+            this._config.inputType = this._config.inputType === 'password' ? 'text' : 'password';
+            this._config.onSetValue();
+          };
+        }
         break;
       }
 
@@ -523,58 +660,96 @@ export class Item extends Base {
 
       // Button type definitions
       case 'button': {
-        this._config._onValue = () => {
+        this._config.onSetValue = () => {
           this._config.size = this._config.iconOnly ? 0 : this._config.size;
           this._config.icon = this._config.icon || undefined;
-          this._config.fill = this._config.fill || (this._config.iconOnly ? 'clear' : 'solid');
-          this._config.color = this._config.color || (this._config.iconOnly ? 'medium' : 'light');
         };
+
+        this._config._onClick = () => {
+          this._config.iconDisabled = true;
+        };
+        this._config.onClick_ = () => {
+          this._config.iconDisabled = false;
+        };
+
         break;
       }
 
       // Submit type definitions
       case 'submit': {
-        this._config._onValue = () => {
+        this._config.onSetValue = () => {
           this._config.size = this._config.iconOnly ? 0 : this._config.size;
           this._config.icon = this._config.icon || (this._config.iconOnly ? 'checkmark-circle' : 'checkmark');
-          this._config.fill = this._config.fill || (this._config.iconOnly ? 'clear' : 'solid');
-          this._config.color = this._config.color || (this._config.iconOnly ? 'medium' : 'light');
         };
-        this._config._onClick = async ($event: any): Promise<any> => {
+
+        this._config._onClick = () => {
+          this._config.iconDisabled = true;
+        };
+        this._config.onClick_ = () => {
+          this._config.iconDisabled = false;
+        };
+
+        this._config.onClick = async ($event: any): Promise<any> => {
           return await this.onSubmit($event.detail.$event);
         };
+
         break;
       }
 
       // Cancel type definitions
       case 'cancel': {
-        this._config._onValue = () => {
+        this._config.onSetValue = () => {
           this._config.size = this._config.iconOnly ? 0 : this._config.size;
           this._config.icon = this._config.icon || (this._config.iconOnly ? 'close-circle' : 'close');
-          this._config.fill = this._config.fill || (this._config.iconOnly ? 'clear' : 'solid');
-          this._config.color = this._config.color || (this._config.iconOnly ? 'medium' : 'light');
         };
-        this._config._onClick = async ($event: any): Promise<any> => {
+
+        this._config._onClick = () => {
+          this._config.iconDisabled = true;
+        };
+        this._config.onClick_ = () => {
+          this._config.iconDisabled = false;
+        };
+
+        this._config.onClick = async ($event: any): Promise<any> => {
           return await this.onCancel($event.detail.$event);
         };
+
         break;
       }
-    };
+    }
 
     // Verify mode
     switch (this._config.mode) {
-      case 'array': {
-        this._config.fields = _raw.fields || [{..._raw, type: _raw.type.replace(/\[\]$/, ''), mode: 'input', size: 100}];
-        this._config.single = _raw.fields ? false : true;
-        this._config.inputArrayPush = (value: any = {}) => this.setValue(value);
-        this._config.inputArrayDrop = () => this.setValue(undefined);
-        this._config.inputArrayDropByIndex = (index: number) => this.value.splice(index, 1);
+      case 'input': {
+        this._config._onPush = () => this.setValue({});
+        this._config._onDrop = () => this.setValue(undefined);
         break;
       }
       case 'group': {
         this._config.fields = _raw.fields || [];
-        this._config.inputGroupPush = (value: any = {}) => this.setValue(value);
-        this._config.inputGroupDrop = () => this.setValue(undefined);
+        this._config._onPush = () => this.setValue({});
+        this._config._onDrop = () => this.setValue(undefined);
+        this._config.onSetValue = () => {
+          this._config.drop = this._config.readonly ? undefined : this.value !== undefined ? 'close-circle' : undefined;
+          this._config.push = this._config.readonly ? undefined : this.value === undefined ? 'add-circle' : undefined;
+        };
+        break;
+      }
+      case 'array': {
+        this._config.fields = _raw.fields || [{..._raw, type: _raw.type.replace(/\[\]$/, ''), mode: 'input', size: 100}];
+        this._config.single = _raw.fields ? false : true;
+        this._config._onPush = () => this.setValue({});
+        this._config._onDrop = () => this.setValue(undefined);
+        this._config._onDropIndex = (index: number) => {
+          this.value.splice(index, 1);
+          if (!this.value.length) {
+            this.setValue(undefined);
+          }
+        };
+        this._config.onSetValue = () => {
+          this._config.drop = this._config.readonly ? undefined : this.value !== undefined ? 'close-circle' : undefined;
+          this._config.push = this._config.readonly ? undefined : 'add-circle';
+        };
         break;
       }
     }
@@ -592,17 +767,51 @@ export class Item extends Base {
       };
     }
 
+    // Define richtext options
+    if (this._config.type === 'richtext' || this._config.type === 'textarea') {
+      this._config._richUsing = [];
+      this._config._richItems = [
+        {title: 'b', index: 'B', value: 'bold'},
+        {title: 'i', index: 'I', value: 'italic'},
+        {title: 'u', index: 'U', value: 'underline'},
+        {title: 's', index: 'STRIKE', value: 'strikethrough'}
+      ];
+      this._config._richOnInput = ($event: any) => {
+        const ws: any = window.getSelection();
+        if (ws) {
+          this._config._richUsing = [];
+          for (let i = 0; i < ws.rangeCount; i++) {
+            let $s: any = ws.getRangeAt(i).startContainer;
+            let $c = 0;
+            while ($s?.parentNode && !$event.currentTarget.isEqualNode($s.parentNode) && $c < 100) {
+              this._config._richUsing.push($s.parentNode.nodeName);
+              $s = $s.parentNode;
+              $c++;
+            }
+          }
+        }
+      };
+      this._config._richOnClickItem = (item: any) => {
+        const i = this._config._richUsing.indexOf(item.index);
+        if (i === -1) {
+          this._config._richUsing.push(item.index);
+        } else {
+          this._config._richUsing.splice(i, 1);
+        }
+        document.execCommand(item.value);
+      };
+    }
+
     //if (typeof this.value === 'undefined' && values && typeof values[this._config.name] !== 'undefined') {
     //  this.value = values[`${this._config.name}`];
     //}
 
-    // Verify result
-    if (this._config._onValue) {
-      this._config._onValue();
+    if (typeof this._config.onSetValue === 'function') {
+      this._config.onSetValue();
     }
 
     // Format config
-    Object.keys(this._config).forEach((k: any) => this._config[k] === undefined ? delete this._config[k] : {});
+    Object.keys(this._config).forEach((k: any) => (this._config[k] === undefined ? delete this._config[k] : {}));
   }
 
   /**
@@ -642,21 +851,21 @@ export class Item extends Base {
       case 'group': {
         if (value) {
           const form = new Form({fields: this.clone(this._config.fields), values: value}, this);
-          this.value = form;
+          value = form;
         } else {
-          this.value = undefined;
+          value = undefined;
         }
-        return;
+        break;
       }
       case 'array': {
         if (value) {
           const form = new Form({fields: this.clone(this._config.fields), values: value}, this);
-          this.value = this.value || [];
-          this.value.push(form);
+          value = this.value || [];
+          value.push(form);
         } else {
-          this.value = undefined;
+          value = undefined;
         }
-        return;
+        break;
       }
     }
 
@@ -677,7 +886,6 @@ export class Item extends Base {
 
     // case 'year_month': {
     // this.mask = 'MM/YYYY';
-
 
     //if (this._config.inputMask) {
     //  // D: Day
@@ -749,27 +957,27 @@ export class Item extends Base {
     //case 'decimal': {
     //this.value = parseFloat(`${value || '0'}`);
 
-    if (this._config.require && !value) {
-      error = 'require';
-    } else if (typeof this._config.pattern === 'string' && this._config.pattern && value && !`${value || ''}`.match(new RegExp(this._config.pattern))) {
-      error = 'warning';
-    } else if (typeof this._config.pattern === 'object' && this._config.pattern && value && !`${value || ''}`.match(this._config.pattern)) {
-      error = 'warning';
-    } else if (typeof this._config.min === 'number' && parseFloat(`${value || 0}`) < this._config.min) {
-      error = 'warning';
-    } else if (typeof this._config.max === 'number' && parseFloat(`${value || 0}`) > this._config.max) {
-      error = 'warning';
-    } else if (typeof this._config.minLength === 'number' && (value || []).length < this._config.minLength) {
-      error = 'warning';
-    } else if (typeof this._config.maxLength === 'number' && (value || []).length > this._config.maxLength) {
-      error = 'warning';
-    }
+    //if (this._config.require && !value) {
+    //  error = 'require';
+    //} else if (typeof this._config.pattern === 'string' && this._config.pattern && value && !`${value || ''}`.match(new RegExp(this._config.pattern))) {
+    //  error = 'warning';
+    //} else if (typeof this._config.pattern === 'object' && this._config.pattern && value && !`${value || ''}`.match(this._config.pattern)) {
+    //  error = 'warning';
+    //} else if (typeof this._config.min === 'number' && parseFloat(`${value || 0}`) < this._config.min) {
+    //  error = 'warning';
+    //} else if (typeof this._config.max === 'number' && parseFloat(`${value || 0}`) > this._config.max) {
+    //  error = 'warning';
+    //} else if (typeof this._config.minLength === 'number' && (value || []).length < this._config.minLength) {
+    //  error = 'warning';
+    //} else if (typeof this._config.maxLength === 'number' && (value || []).length > this._config.maxLength) {
+    //  error = 'warning';
+    //}
 
     this.error = error;
     this.value = value;
 
-    if (typeof this._config._onValue === 'function') {
-      this._config._onValue();
+    if (typeof this._config.onSetValue === 'function') {
+      this._config.onSetValue();
     }
   }
 }

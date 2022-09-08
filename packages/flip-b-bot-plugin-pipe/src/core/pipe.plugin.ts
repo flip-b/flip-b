@@ -18,27 +18,33 @@ export class PipePlugin extends Plugin {
     });
 
     // Define server route
-    this.bot.server.router.all(`${this.bot.config.server.path}/${this.plugin}/listen`, (req: Request, res: Response) => {
+    this.bot.server.router.post(`${this.bot.config.server.path}/${this.plugin}/response`, (req: Request, res: Response) => {
       this.bot.addOutgoingMessages(req.body.messages);
       res.send({status: 200});
     });
 
     // Define shipping event
     this.bot.on('shipping', async (messages: Message[]): Promise<any> => {
-      await this.bot.helper.axios
+       await this.bot.helper.axios
         .request({
           url: this.config.url,
           method: this.config.method || 'POST',
           headers: this.config.headers || {},
           timeout: this.config.timeout || 10000,
           data: {
-            messages: messages.map((message: Message) => message.toObject())
+            messages: messages.map((message: Message) => message.toObject()),
+            response: this.config.response || {
+              url: `http://localhost:8081${this.bot.config.server.path}/${this.plugin}/response`,
+              method: 'POST',
+              headers: {},
+              timeout: 10000
+            }
           }
         })
         .catch((error: any) => {
           console.log(`${error}`);
         });
-    });
+   });
   }
 
   /**

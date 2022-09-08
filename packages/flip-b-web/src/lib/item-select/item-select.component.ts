@@ -1,6 +1,6 @@
 import {Component, OnInit, Input, HostBinding, ElementRef} from '@angular/core';
 import {Item} from '../core/classes/item';
-import {ContextService} from '../core/context.service';
+import {DataService} from '../core/data.service';
 
 @Component({
   selector: 'flb-item-select',
@@ -14,46 +14,41 @@ export class ItemSelectComponent implements OnInit {
 
   /**
    * Modal
-   * @attribute {Object}
    */
   @Input() modal: any;
 
   /**
    * Item
-   * @attribute {Item}
    */
   @Input() item: Item | any;
 
   /**
    * Value
-   * @attribute {Mixed}
    */
   @Input() value: any;
 
   /**
    * Items
-   * @attribute {Array}
    */
   @Input() items: any;
 
   /**
    * Constructor
    */
-  constructor(public _context: ContextService, public _element: ElementRef) {}
+  constructor(public data: DataService, public _element: ElementRef) {}
 
   /**
    * Init angular handler
    */
   ngOnInit() {
-    if (this.item?.constructor?.name !== 'Item') {
-      this.item = new Item(this.item);
-      this.item.setComponent(this);
-    }
-    this.value = this.value || this.item.value || undefined;
-    this.items = this.items || ['Item A', 'Item B'];
+    this.item = this.item?.constructor?.name !== 'Item' ? new Item(this.item) : this.item;
+    this.item.setComponent(this);
+
     this._elementClass = 'flb-item-select';
     this._elementStyle = {};
-    //this.populate()
+
+    this.value = this.value || this.item.value || undefined;
+    this.items = this.items || ['Item A', 'Item B'];
   }
 
   /**
@@ -88,23 +83,6 @@ export class ItemSelectComponent implements OnInit {
       return;
     }
     this.value = value;
-    console.log(`New value "${this.value}"`);
-  }
-
-  /**
-   * Populate
-   */
-  private async populate(): Promise<any> {
-    const params: any = {
-      uri: `/api/v1/${this.item._uid.split('.')[0]}`,
-      method: 'GET',
-      qs: {facet: this.item.name}
-    };
-    const value: any = await this._context.http.request(params);
-    if (this.item.require) {
-      this.items = value.filter((r: any) => !!r.index);
-    } else {
-      this.items = value;
-    }
+    console.log('New value', this.value);
   }
 }

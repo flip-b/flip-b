@@ -1,6 +1,6 @@
 import {Component, OnInit, Input, HostBinding, ElementRef} from '@angular/core';
 import {List} from '../core/classes/list';
-import {ContextService} from '../core/context.service';
+import {DataService} from '../core/data.service';
 
 @Component({
   selector: 'flb-list',
@@ -14,20 +14,18 @@ export class ListComponent implements OnInit {
 
   /**
    * Modal
-   * @attribute {Object}
    */
   @Input() modal: any;
 
   /**
    * List
-   * @attribute {List}
    */
   @Input() list: List | any;
 
   /**
    * Constructor
    */
-  constructor(public _context: ContextService, public _element: ElementRef) {}
+  constructor(public data: DataService, public _element: ElementRef) {}
 
   /**
    * Init angular handler

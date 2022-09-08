@@ -3,6 +3,7 @@ import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {HttpClientModule} from '@angular/common/http';
 import {IonicModule} from '@ionic/angular';
+import {I18nDirective} from './core/i18n.directive';
 import {I18nPipe} from './core/i18n.pipe';
 import {FormComponent} from './form/form.component';
 import {ItemComponent} from './item/item.component';
@@ -14,28 +15,14 @@ import {MenuComponent} from './menu/menu.component';
 import {PageComponent} from './page/page.component';
 
 @NgModule({
-  declarations: [
-    I18nPipe,
-    FormComponent,
-    ItemComponent,
-    ItemDatetimeComponent,
-    ItemLocationComponent,
-    ItemSelectComponent,
-    ListComponent,
-    MenuComponent,
-    PageComponent
-  ],
-  imports: [
-    CommonModule,
-    RouterModule,
-    HttpClientModule,
-    IonicModule
-  ],
+  declarations: [I18nDirective, I18nPipe, FormComponent, ItemComponent, ItemDatetimeComponent, ItemLocationComponent, ItemSelectComponent, ListComponent, MenuComponent, PageComponent],
+  imports: [CommonModule, RouterModule, HttpClientModule, IonicModule],
   exports: [
     CommonModule,
     RouterModule,
     HttpClientModule,
     IonicModule,
+    I18nDirective,
     I18nPipe,
     FormComponent,
     ItemComponent,
@@ -46,9 +33,7 @@ import {PageComponent} from './page/page.component';
     MenuComponent,
     PageComponent
   ],
-  schemas: [
-    CUSTOM_ELEMENTS_SCHEMA
-  ]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class FlipBModule {
   static forRoot(flipb: any): ModuleWithProviders<FlipBModule> {

@@ -14,9 +14,9 @@ export class Bot {
   helper: any;
   server: Server | any;
   queues: Queues | any;
-  plugins: {[key: string]: Plugin} = {};
 
-  $on: any[] = [];
+  plugins: {[key: string]: Plugin} = {};
+  $events: any[] = [];
 
   /**
    * Constructor
@@ -36,12 +36,14 @@ export class Bot {
     this.config.tmp = this.config.tmp || process.env.NODE_TMP || path.resolve(this.config.cwd, 'tmp');
 
     // Define config from file
-    const configFile = `${this.config.var}/config/${process.env.CONFIG_FILE || 'default'}/${this.config.env}.json`;
-    if (fs.existsSync(configFile)) {
-      const configData: any = JSON.parse(fs.readFileSync(configFile).toString());
-      if (configData) {
-        this.config = {...this.config, ...configData};
+    try {
+      //const file = `${this.config.var}/config/${process.env.CONFIG_FILE || 'default'}/${this.config.env}.json`;
+      const file = `${this.config.var}/config/${process.env.CONFIG_FILE || 'default'}.json`;
+      if (fs.existsSync(file)) {
+        this.config = {...this.config, ...JSON.parse(fs.readFileSync(file).toString())};
       }
+    } catch (error: any) {
+      console.error(`${error}`);
     }
 
     // Define server router options
@@ -65,6 +67,10 @@ export class Bot {
     this.config.queues.host = this.config.queues.host || process.env.QUEUES_HOST || '127.0.0.1';
     this.config.queues.port = this.config.queues.port || process.env.QUEUES_PORT || '6379';
     this.config.queues.path = this.config.queues.path || process.env.QUEUES_PATH || '';
+
+    // Define redis options
+    this.config.redis = this.config.redis || {};
+    this.config.redis.url = this.config.redis.url || process.env.REDIS_URL || `redis://${this.config.queues.host}:${this.config.queues.port}`;
 
     // Define context options
     this.config.context = this.config.context || {};
@@ -150,7 +156,7 @@ export class Bot {
    */
   async on(name: string, callback: any): Promise<any> {
     this.debug(`> listening event "${name}"`);
-    this.$on.push({name, callback});
+    this.$events.push({name, callback});
   }
 
   /**
@@ -171,9 +177,9 @@ export class Bot {
    * Execute events
    */
   async executeEvents(name: string, messages: any[]): Promise<any> {
-    for (const $ev of this.$on) {
-      if ($ev.name === name && typeof $ev.callback === 'function' && messages.length) {
-        await $ev.callback(messages);
+    for (const $event of this.$events) {
+      if ($event.name === name && typeof $event.callback === 'function' && messages.length) {
+        await $event.callback(messages);
       }
     }
   }

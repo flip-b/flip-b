@@ -1,4 +1,6 @@
-import {Injectable} from '@angular/core';
+import {Injectable, Inject} from '@angular/core';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {lastValueFrom} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,27 +10,18 @@ export class I18nService {
 
   /**
    * Config
-   * @attribute {Object}
    */
-  config: any = {};
+  _config: any = {};
 
   /**
    * Constructor
    */
-  constructor() {
-    this.onInit();
-  }
-
-  /**
-   * Init event handler
-   */
-  async onInit(): Promise<any> {
-  }
+  constructor(public _httpClient: HttpClient) {}
 
   /**
    * Get locale
    */
-  getLocale(): any {
+  getLocale(): string {
     return 'es-AR-u-hc-h23';
   }
 
@@ -45,12 +38,12 @@ export class I18nService {
       const value = parts.join('.');
       parts.shift();
       for (const t of tests) {
-        if (this.config.values && this.config.values[`${t}`] && this.config.values[`${t}`][`${value}[${this.config.region}]`]) {
-          result = this.config.values[`${t}`][`${value}[${this.config.region}]`];
+        if (this._config.values && this._config.values[`${t}`] && this._config.values[`${t}`][`${value}[${this._config.region}]`]) {
+          result = this._config.values[`${t}`][`${value}[${this._config.region}]`];
           break;
         }
-        if (this.config.values && this.config.values[`${t}`] && this.config.values[`${t}`][`${value}`]) {
-          result = this.config.values[`${t}`][`${value}`];
+        if (this._config.values && this._config.values[`${t}`] && this._config.values[`${t}`][`${value}`]) {
+          result = this._config.values[`${t}`][`${value}`];
           break;
         }
       }
@@ -113,6 +106,21 @@ export class I18nService {
   //  // } else if (result.options?.format === 'boolean') {
   //  //   result.value = this.getBool(result.value) || undefined;
   //  // }
+
+  // this._config.pattern = this._config.pattern || /^[0-9]+$/;
+  // this._config.pattern = this._config.pattern || /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(.*?)/;
+  // this._config.pattern = this._config.pattern || /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
+  // this._config.pattern = this._config.pattern || /^[0-9]{2}:[0-9]{2}$/;
+  // this._config.pattern = this._config.pattern || /^[0-9]{4}$/;
+  // this._config.pattern = this._config.pattern || /^[0-9]{4}-[0-9]{2}$/;
+  // this._config.pattern = this._config.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
+  // this._config.pattern = this._config.pattern || /^-?[0-9]{1,20}$/;
+  // this._config.pattern = this._config.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
+  // this._config.pattern = this._config.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
+  // this._config.pattern = this._config.pattern || /^https?:\/\/.*$/;
+  // this._config.pattern = this._config.pattern || /^[0-9]{8,12}$/;
+  // this._config.pattern = this._config.pattern || /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  // this._config.pattern = this._config.pattern || /^#(?:[0-9a-f]{3}){1,2}$/;
 
   /**
    * Get object
@@ -410,5 +418,15 @@ export class I18nService {
       .join(' ');
     result = result.charAt(0).toUpperCase() + result.slice(1);
     return result;
+  }
+
+  /**
+   * Format path
+   */
+  replaceStringParameters(value = '', params: any = {}): string {
+    for (const p in params) {
+      value = value.replace(new RegExp(':' + p), params[p]);
+    }
+    return value;
   }
 }

@@ -1,6 +1,6 @@
 import {Component, OnInit, Input, HostBinding, ElementRef} from '@angular/core';
 import {Item} from '../core/classes/item';
-import {ContextService} from '../core/context.service';
+import {DataService} from '../core/data.service';
 
 @Component({
   selector: 'flb-item',
@@ -14,20 +14,18 @@ export class ItemComponent implements OnInit {
 
   /**
    * Modal
-   * @attribute {Object}
    */
   @Input() modal: any;
 
   /**
    * Item
-   * @attribute {Item}
    */
   @Input() item: Item | any;
 
   /**
    * Constructor
    */
-  constructor(public _context: ContextService, public _element: ElementRef) {}
+  constructor(public data: DataService, public _element: ElementRef) {}
 
   /**
    * Init angular handler
@@ -35,54 +33,5 @@ export class ItemComponent implements OnInit {
   ngOnInit() {
     this.item = this.item?.constructor?.name !== 'Item' ? new Item(this.item) : this.item;
     this.item.setComponent(this);
-  }
-
-  /**
-   * Using
-   * @attribute {Array}
-   */
-  using: any = [];
-
-  /**
-   * Items
-   * @attribute {Array}
-   */
-  items: any = [
-    {title: 'b', index: 'B', value: 'bold'},
-    {title: 'i', index: 'I', value: 'italic'},
-    {title: 'u', index: 'U', value: 'underline'},
-    {title: 's', index: 'STRIKE', value: 'strikethrough'}
-  ];
-
-  /**
-   * Input event handler
-   */
-  onInput($event: any) {
-    const ws: any = window.getSelection();
-    if (ws) {
-      this.using = [];
-      for (let i = 0; i < ws.rangeCount; i++) {
-        let $s: any = ws.getRangeAt(i).startContainer;
-        let $c = 0;
-        while ($s?.parentNode && !$event.currentTarget.isEqualNode($s.parentNode) && $c < 100) {
-          this.using.push($s.parentNode.nodeName);
-          $s = $s.parentNode;
-          $c++;
-        }
-      }
-    }
-  };
-
-  /**
-   * Click item event handler
-   */
-  onClickItem(item: any) {
-    const i = this.using.indexOf(item.index);
-    if (i === -1) {
-      this.using.push(item.index);
-    } else {
-      this.using.splice(i, 1);
-    }
-    document.execCommand(item.value);
   }
 }

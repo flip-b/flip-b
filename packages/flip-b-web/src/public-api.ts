@@ -7,14 +7,13 @@ export * from './lib/core/classes/list';
 export * from './lib/core/classes/menu';
 export * from './lib/core/classes/page';
 
-export * from './lib/core/context.service';
+export * from './lib/core/data.guard';
+export * from './lib/core/data.service';
 export * from './lib/core/http.service';
-export * from './lib/core/i18n.service';
+export * from './lib/core/i18n.directive';
 export * from './lib/core/i18n.pipe';
-export * from './lib/core/menu.service';
-export * from './lib/core/page.service';
+export * from './lib/core/i18n.service';
 export * from './lib/core/user.service';
-export * from './lib/core/user.guard';
 
 export * from './lib/form/form.component';
 export * from './lib/item/item.component';
