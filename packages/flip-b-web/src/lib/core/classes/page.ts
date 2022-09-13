@@ -49,23 +49,13 @@ export class Page extends Base {
     }
 
     this._config.form = this._config.form || {};
-    this._config.show = this._config.show || ['flip'];
-
+    this._config.show = this._config.show || [];
     this._config.showFilter = this._config.showFilter ? true : false;
     this._config.showMetric = this._config.showMetric ? true : false;
-    this._config.showFields = this._config.showFields ? true : false;
 
     // Define flip values
     if (this._config.show.includes('flip')) {
-      if (this._config.mode === 'search') {
-        this._config.showFields = false;
-      } else if (this._config.mode === 'select') {
-        this._config.showFields = true;
-      } else if (this._config.mode === 'submit') {
-        this._config.showFields = true;
-      } else {
-        this._config.showFields = true;
-      }
+      console.log('Flip');
     }
 
     /**
@@ -75,28 +65,22 @@ export class Page extends Base {
      */
 
     // Define slots
-    const check: any = [];
-    if (this._config.form?.fields?.length) {
-      this._config.form.fields.map((v: any) => check.push(this.clone(v)));
-    }
-    const slots: any = this.getSlotsFromItems(check);
-
+    const slots: any = this.getSlots(this._config.form?.fields);
+    
     this._config._setHeader = (value: any = []): any => {
       const result: any = [];
       for (const v of value) {
-        result.push({testi: this.getValueFromSlots(slots, v)});
+        result.push({header: this.getValueFromSlots(slots, v)});
       }
       this._parent.header.setValue(result);
     };
-
     this._config._setResult = (value: any = []): any => {
       const result: any = [];
       for (const v of value) {
-        result.push({testi: this.getValueFromSlots(slots, v)});
+        result.push({header: this.getValueFromSlots(slots, v)});
       }
       this._parent.result.setValue(result);
     };
-
     this._config._setResultValue = (value: any = []): any => {
       this._parent.result.setValue(value);
     };
@@ -108,7 +92,7 @@ export class Page extends Base {
       // Search
       case 'search': {
         this._config.form.header = [];
-        this._config.form.header.push({name: 'testi', type: 'value'});
+        this._config.form.header.push({name: 'header', type: 'value'});
         this._config.form.footer = [];
         this._config.form.navbar = [];
         this._config.form.navbar.push({name: 'filter', type: 'button', icon: 'filter-circle'});
@@ -117,11 +101,12 @@ export class Page extends Base {
         this._config.form.navbar.push({name: 'export', type: 'button', icon: 'cloud-download'});
         this._config.form.navbar.push({name: 'import', type: 'button', icon: 'cloud-upload'});
         this._config.form.navbar.push({name: 'create', type: 'button', icon: 'add-circle'});
-        this._config._onInit = async ($event: any): Promise<any> => {
+        this._config.form.fields = [{name: 'header', type: 'value'}];
+        this._config._onRender = async ($event: any): Promise<any> => {
           return await this._component.data._onPageSearch($event, this);
         };
         this._config._onSelect = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/select/${$event.detail.item.value.value._id}`);
+          return await this._component.data.goto(`${this._config.type}/select/${$event.detail.item.value.value._id}`);
         };
         this._config._onScroll = ($event: any) => {
           const $el = this._component._element.nativeElement;
@@ -137,7 +122,7 @@ export class Page extends Base {
       // Select
       case 'select': {
         this._config.form.header = [];
-        this._config.form.header.push({name: 'testi', type: 'value'});
+        this._config.form.header.push({name: 'header', type: 'value'});
         this._config.form.footer = [];
         this._config.form.navbar = [];
         this._config.form.navbar.push({name: 'download', type: 'button', icon: 'cloud-download'});
@@ -152,14 +137,14 @@ export class Page extends Base {
         this._config.form.fields.map((v: any) => {
           v.readonly = true;
         });
-        this._config._onInit = async ($event: any): Promise<any> => {
+        this._config._onRender = async ($event: any): Promise<any> => {
           return await this._component.data._onPageSelect($event, this);
         };
         this._config._onSubmit = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.goto(`${this._config.type}/search`);
         };
         this._config._onCancel = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.gotoBack();
         };
         break;
       }
@@ -167,21 +152,22 @@ export class Page extends Base {
       // Create
       case 'create': {
         this._config.form.header = [];
-        this._config.form.header.push({name: 'testi', type: 'value'});
+        this._config.form.header.push({name: 'header', type: 'value'});
         this._config.form.footer = [];
         this._config.form.footer.push({name: 'submit', type: 'submit', size: 50});
         this._config.form.footer.push({name: 'cancel', type: 'cancel', size: 50});
         this._config.form.navbar = [];
         this._config.form.navbar.push({name: 'expand', type: 'expand'});
         this._config.form.navbar.push({name: 'cancel', type: 'cancel', iconOnly: true});
-        this._config._onInit = async ($event: any): Promise<any> => {
-          this.setValue([{}]);
+        this._config._onRender = async ($event: any): Promise<any> => {
+          this.setHeader([{header: {menu: true, modal: this._component.modal}}]);
+          this.setResult([{}]);
         };
         this._config._onSubmit = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.goto(`${this._config.type}/search`);
         };
         this._config._onCancel = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.gotoBack();
         };
         break;
       }
@@ -189,21 +175,21 @@ export class Page extends Base {
       // Update
       case 'update': {
         this._config.form.header = [];
-        this._config.form.header.push({name: 'testi', type: 'value'});
+        this._config.form.header.push({name: 'header', type: 'value'});
         this._config.form.footer = [];
         this._config.form.footer.push({name: 'submit', type: 'submit', size: 50});
         this._config.form.footer.push({name: 'cancel', type: 'cancel', size: 50});
         this._config.form.navbar = [];
         this._config.form.navbar.push({name: 'expand', type: 'expand'});
         this._config.form.navbar.push({name: 'cancel', type: 'cancel', iconOnly: true});
-        this._config._onInit = async ($event: any): Promise<any> => {
+        this._config._onRender = async ($event: any): Promise<any> => {
           return await this._component.data._onPageSelect($event, this);
         };
         this._config._onSubmit = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.goto(`${this._config.type}/search`);
         };
         this._config._onCancel = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.gotoBack();
         };
         break;
       }
@@ -211,7 +197,7 @@ export class Page extends Base {
       // Delete
       case 'delete': {
         this._config.form.header = [];
-        this._config.form.header.push({name: 'testi', type: 'value'});
+        this._config.form.header.push({name: 'header', type: 'value'});
         this._config.form.footer = [];
         this._config.form.footer.push({name: 'submit', type: 'submit', size: 50});
         this._config.form.footer.push({name: 'cancel', type: 'cancel', size: 50});
@@ -222,14 +208,14 @@ export class Page extends Base {
         this._config.form.fields.map((v: any) => {
           v.readonly = true;
         });
-        this._config._onInit = async ($event: any): Promise<any> => {
+        this._config._onRender = async ($event: any): Promise<any> => {
           return await this._component.data._onPageSelect($event, this);
         };
         this._config._onSubmit = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.goto(`${this._config.type}/search`);
         };
         this._config._onCancel = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.gotoBack();
         };
         break;
       }
@@ -237,7 +223,7 @@ export class Page extends Base {
       // Export
       case 'export': {
         this._config.form.header = [];
-        this._config.form.header.push({name: 'testi', type: 'value'});
+        this._config.form.header.push({name: 'header', type: 'value'});
         this._config.form.footer = [];
         this._config.form.footer.push({name: 'submit', type: 'submit', size: 50});
         this._config.form.footer.push({name: 'cancel', type: 'cancel', size: 50});
@@ -248,14 +234,15 @@ export class Page extends Base {
         this._config.form.fields.push({name: 'format', type: 'select', default: 'xlsx', data: ['xlsx', 'ods,', 'csv', 'html'], require: true});
         this._config.form.fields.push({name: 'fields', type: 'select_multiple'});
         this._config.form.fields.push({name: 'upload', type: 'attachment'});
-        this._config._onInit = async ($event: any): Promise<any> => {
-          this.setValue([{}]);
+        this._config._onRender = async ($event: any): Promise<any> => {
+          this.setHeader([{header: {menu: true, modal: this._component.modal}}]);
+          this.setResult([{}]);
         };
         this._config._onSubmit = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.goto(`${this._config.type}/search`);
         };
         this._config._onCancel = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.gotoBack();
         };
         break;
       }
@@ -263,25 +250,26 @@ export class Page extends Base {
       // Import
       case 'import': {
         this._config.form.header = [];
-        this._config.form.header.push({name: 'testi', type: 'value'});
+        this._config.form.header.push({name: 'header', type: 'value'});
         this._config.form.footer = [];
         this._config.form.footer.push({name: 'submit', type: 'submit', size: 50});
         this._config.form.footer.push({name: 'cancel', type: 'cancel', size: 50});
         this._config.form.navbar = [];
         this._config.form.navbar.push({name: 'expand', type: 'expand'});
-        this._config.form.footer.push({name: 'cancel', type: 'cancel', iconOnly: true});
+        this._config.form.navbar.push({name: 'cancel', type: 'cancel', iconOnly: true});
         this._config.form.fields = [];
         this._config.form.fields.push({name: 'format', type: 'select', default: 'xlsx', data: ['xlsx', 'ods,', 'csv', 'html'], require: true});
         this._config.form.fields.push({name: 'fields', type: 'select_multiple'});
         this._config.form.fields.push({name: 'upload', type: 'attachment'});
-        this._config._onInit = async ($event: any): Promise<any> => {
-          this.setValue([{}]);
+        this._config._onRender = async ($event: any): Promise<any> => {
+          this.setHeader([{header: {menu: true, modal: this._component.modal}}]);
+          this.setResult([{}]);
         };
         this._config._onSubmit = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.goto(`${this._config.type}/search`);
         };
         this._config._onCancel = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.gotoBack();
         };
         break;
       }
@@ -289,24 +277,20 @@ export class Page extends Base {
       // Submit
       case 'submit': {
         this._config.form.header = [];
-        this._config.form.header.push({name: 'testi', type: 'value'});
+        this._config.form.header.push({name: 'header', type: 'value'});
 
-        this._config._onInit = async ($event: any): Promise<any> => {
-          this.setValue([{}]);
+        this._config._onRender = async ($event: any): Promise<any> => {
+          this.setHeader([{header: {menu: true, modal: this._component.modal}}]);
+          this.setResult([{}]);
         };
         this._config._onSubmit = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.goto(`${this._config.type}/search`);
         };
         this._config._onCancel = async ($event: any): Promise<any> => {
-          this._component.data.goto(`${this._config.type}/search`);
+          return await this._component.data.gotoBack();
         };
         break;
       }
-    }
-
-    // Items o Value?
-    if (!this._config.showFields) {
-      this._config.form.fields = [{name: 'testi', type: 'value'}];
     }
 
     // Define styles
@@ -327,40 +311,40 @@ export class Page extends Base {
       this._parent.metric._component._elementStyle = this._config.showMetric ? styles.show : styles.hide;
     };
     events.download = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data._onPageSelectAndDownload($event, this);
+      return await $event.detail.item._component.data._onPageSelectAndDownload($event, this);
     };
     events.print = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data._onPageSelectAndPrint($event, this);
+      return await $event.detail.item._component.data._onPageSelectAndPrint($event, this);
     };
     events.share = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data._onPageSelectAndShare($event, this);
+      return await $event.detail.item._component.data._onPageSelectAndShare($event, this);
     };
     events.sendmail = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data._onPageSelectAndSendmail($event, this);
+      return await $event.detail.item._component.data._onPageSelectAndSendmail($event, this);
     };
     events.search = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data.goto(`${this._config.type}/search`);
+      return await $event.detail.item._component.data.goto(`${this._config.type}/search`);
     };
     events.select = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data.goto(`${this._config.type}/select/:_id`, this._config.params);
+      return await $event.detail.item._component.data.goto(`${this._config.type}/select/:_id`, this._config.params);
     };
     events.delete = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data.goto(`${this._config.type}/delete/:_id`, this._config.params);
+      return await $event.detail.item._component.data.goto(`${this._config.type}/delete/:_id`, this._config.params);
     };
     events.update = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data.goto(`${this._config.type}/update/:_id`, this._config.params);
+      return await $event.detail.item._component.data.goto(`${this._config.type}/update/:_id`, this._config.params);
     };
     events.create = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data.goto(`${this._config.type}/create`);
+      return await $event.detail.item._component.data.goto(`${this._config.type}/create`);
     };
     events.import = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data.goto(`${this._config.type}/import`);
+      return await $event.detail.item._component.data.goto(`${this._config.type}/import`);
     };
     events.export = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data.goto(`${this._config.type}/export`);
+      return await $event.detail.item._component.data.goto(`${this._config.type}/export`);
     };
     events.cancel = async ($event: any): Promise<any> => {
-      await $event.detail.item._component.data.goto(`${this._config.type}/search`);
+      return await $event.detail.item._component.data.goto(`${this._config.type}/search`);
     };
     for (const item of this._config.form.navbar || []) {
       if (item.type === 'button' && typeof item.iconOnly === 'undefined') {
@@ -436,19 +420,47 @@ export class Page extends Base {
   }
 
   /**
-   * Get header
-   */
-  getHeader(): any {
-    return this._parent.header.getValue();
-  }
-
-  /**
    * Set header
    */
   setHeader(value: any = []) {
     this._parent.header.setValue(value);
   }
 
+  /**
+   * Set footer
+   */
+  setFooter(value: any = []) {
+    this._parent.footer.setValue(value);
+  }
+
+  /**
+   * Set navbar
+   */
+  setNavbar(value: any = []) {
+    this._parent.navbar.setValue(value);
+  }
+
+  /**
+   * Set filter
+   */
+  setFilter(value: any = []) {
+    this._parent.filter.setValue(value);
+  }
+
+  /**
+   * Set metric
+   */
+  setMetric(value: any = []) {
+    this._parent.metric.setValue(value);
+  }
+
+  /**
+   * Set value
+   */
+  setResult(value: any = []) {
+    this._parent.result.setValue(value);
+  }
+  
   /**
    * Get value
    */
@@ -463,71 +475,49 @@ export class Page extends Base {
     this._parent.result.setValue(value);
   }
 
-  // Get value from slots
+  /**
+   * Get value from slots
+   */
   getValueFromSlots(slots: any = [], value: any = {}): any {
-    // Get value from field // TODO: add display value
-    const getValueFromFields = (fields: any[], value: any = {}): any[] => {
+    const getValue = (fields: any[], value: any = {}): any[] => {
       return fields.map((i: any) => getValueFromField(i, value)).filter((v: any) => !!v);
     };
     const getValueFromField = (field: any, value: any = {}): any => {
       return field.name.split('.').reduce((o: any, k: any) => (o || {})[k], value);
     };
-
     const result: any = {};
-    if (slots.index?.length) {
-      result.index = getValueFromFields(slots.index, value).shift() || '';
-    } else {
-      result.index = value._id || value.id || '';
-    }
-    if (slots.title?.length) {
-      result.title = getValueFromFields(slots.title, value).join(' ') || '';
-    }
-    if (slots.label?.length) {
-      result.label = getValueFromFields(slots.label, value).join(' ') || '';
-    }
-    if (slots.count?.length) {
-      result.count = getValueFromFields(slots.count, value).join(' ') || '';
-    }
-    if (slots.total?.length) {
-      result.total = getValueFromFields(slots.total, value).join(' ') || '';
-    }
-    if (slots.notes?.length) {
-      result.notes = getValueFromFields(slots.notes, value) || [];
-    }
-    if (slots.image?.length) {
-      result.image = getValueFromFields(slots.image, value).shift() || '';
-    }
-    if (slots.video?.length) {
-      result.video = getValueFromFields(slots.video, value).shift() || '';
-    }
-    if (slots.state?.length) {
-      result.state = getValueFromFields(slots.state, value).shift() || '';
-    }
-    if (slots.color?.length) {
-      result.color = getValueFromFields(slots.color, value).shift() || '';
-    }
-    if (slots.style?.length) {
-      result.style = getValueFromFields(slots.style, value).shift() || {};
-    }
+    result.index = slots.index?.length ? getValue(slots.index, value).shift() || '' : value._id || value.id || '';
+    result.title = slots.title?.length ? getValue(slots.title, value).join(' ') || '' : undefined;
+    result.label = slots.label?.length ? getValue(slots.label, value).join(' ') || '' : undefined;
+    result.count = slots.count?.length ? getValue(slots.count, value).join(' ') || '' : undefined;
+    result.total = slots.total?.length ? getValue(slots.total, value).join(' ') || '' : undefined;
+    result.notes = slots.notes?.length ? getValue(slots.notes, value) || [] : undefined;
+    result.image = slots.image?.length ? getValue(slots.image, value).shift() || '' : undefined;
+    result.video = slots.video?.length ? getValue(slots.video, value).shift() || '' : undefined;
+    result.state = slots.state?.length ? getValue(slots.state, value).shift() || '' : undefined;
+    result.color = slots.color?.length ? getValue(slots.color, value).shift() || '' : undefined;
+    result.style = slots.style?.length ? getValue(slots.style, value).shift() || {} : undefined;
     result.value = value;
     Object.keys(result).forEach((k: any) => (result[k] === undefined ? delete result[k] : {}));
     return result;
   }
 
-  // Get slot from items
-  getSlotsFromItems(items: any[] = []): any[] {
-    const getSlot = (f: any[], s: string): any => {
-      return f.reduce((a: any, i: any) => [...(a || []), ...(i.slot === s ? [i] : []), ...(i.fields ? getSlot(i.fields, s) || [] : [])], null) || [];
+  /**
+   * Get slots
+   */
+  getSlots(items: any[] = []): any[] {
+    const getValue = (f: any[], s: string): any => {
+      return f.reduce((a: any, i: any) => [...(a || []), ...(i.slot === s ? [i] : []), ...(i.fields ? getValue(i.fields, s) || [] : [])], null) || [];
     };
     const result: any = {};
-    result.title = getSlot(items, 'title');
-    result.label = getSlot(items, 'label');
-    result.notes = getSlot(items, 'notes');
-    result.image = getSlot(items, 'image');
-    result.video = getSlot(items, 'video');
-    result.state = getSlot(items, 'state');
-    result.color = getSlot(items, 'color');
-    result.style = getSlot(items, 'style');
+    result.title = getValue(items, 'title');
+    result.label = getValue(items, 'label');
+    result.notes = getValue(items, 'notes');
+    result.image = getValue(items, 'image');
+    result.video = getValue(items, 'video');
+    result.state = getValue(items, 'state');
+    result.color = getValue(items, 'color');
+    result.style = getValue(items, 'style');
     Object.keys(result).forEach((k: any) => (result[k] === undefined || !result[k].length ? delete result[k] : {}));
     return result;
   }

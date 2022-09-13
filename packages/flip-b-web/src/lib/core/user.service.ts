@@ -1,6 +1,4 @@
-import {Injectable, Inject} from '@angular/core';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {lastValueFrom} from 'rxjs';
+import {Injectable, EventEmitter} from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -14,48 +12,57 @@ export class UserService {
   _config: any = {};
 
   /**
+   * Events
+   */
+  _events: any = new EventEmitter<any>();
+
+  /**
    * Constructor
    */
-  constructor(public _httpClient: HttpClient) {}
+  constructor() {
+    this._config.storage = localStorage || sessionStorage;
+    this._config.history = [];
+    this.getUser();
+  }
 
   /**
    * Auth
    */
-  async auth(auth: any): Promise<boolean> {
-    return true;
-    //const user: any = sessionStorage.getItem(`user`) ? JSON.parse(sessionStorage.getItem(`user`) || '{}') : false;
-    //if (auth?.includes(user?.access || 'anonymous')) {
-    //  return true;
-    //} else {
-    //  //await this.removeUser();
-    //  //this.goto('user/signin');
-    //  return false;
-    //}
+  async auth(user?: any): Promise<boolean> {
+    if (user) {
+      await this.setUser(user);
+      this._events.emit({name: 'auth', data: user});  
+    }
+    return user;
   }
 
-  //async store(values: any = false): Promise<any> {
-  //  try {
-  //    if (values) {
-  //      this.user = {
-  //        access: values.user.access.role,
-  //        access_token: values.user.access.token.split(' ').pop(),
-  //        config: values.user.config,
-  //        _id: values.user.access.user,
-  //        ...values.user.values
-  //      };
-  //      sessionStorage.setItem(`user`, JSON.stringify(this.user));
-  //      //for (const value in values) {
-  //      //  sessionStorage.setItem(`app-${value}`, JSON.stringify(values[value]));
-  //      //}
-  //    } else {
-  //      this.user = false;
-  //      sessionStorage.removeItem(`user`);
-  //      sessionStorage.clear();
-  //    }
-  //    //this.auth$.next(value);
-  //  } catch (error) {
-  //    console.error(error);
-  //  }
-  //  return this.user;
-  //}
+  /**
+   * Get user
+   */
+  async getUser(): Promise<any> {
+    try {
+      return this._config.storage.getItem(`user`) ? JSON.parse(this._config.storage.getItem(`user`) || '{}') : false;
+    } catch (error: any) {
+      console.log(`UserService.setUser error ${error}`);
+    }
+  }
+  
+  /**
+   * Set user
+   */
+  async setUser(user: any): Promise<any> {
+    try {
+      this._config.storage.setItem(`user`, JSON.stringify(user))
+    } catch (error: any) {
+      console.log(`UserService.setUser error ${error}`);
+    }
+  }
+ 
+  /**
+   * Remove
+   */
+  async remove(): Promise<any> {
+    sessionStorage.removeItem(`user`);
+    sessionStorage.clear();
+  }
 }

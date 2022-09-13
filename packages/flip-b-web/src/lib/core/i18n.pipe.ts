@@ -15,7 +15,7 @@ export class I18nPipe implements PipeTransform {
   /**
    * Transform
    */
-  transform(data: any, item: any = null): any {
-    return this.data.i18n.format(data, item);
+  transform(type: any, item: any = undefined, data: any = undefined): any {
+    return this.data.i18n.format(type, item, data);
   }
 }

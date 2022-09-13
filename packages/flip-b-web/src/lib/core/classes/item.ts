@@ -33,35 +33,24 @@ export class Item extends Base {
       'text',
 
       'icon',
-      'iconDisabled',
-      'iconTitle',
       'iconColor',
       'iconStyle',
 
       'drop',
-      'dropDisabled',
-      'dropTitle',
       'dropColor',
       'dropStyle',
 
       'push',
-      'pushDisabled',
-      'pushTitle',
       'pushColor',
       'pushStyle',
 
       'hide',
-      'hideText',
-      'hideIcon',
-
       'show',
-      'showText',
-      'showIcon',
 
       'iconOnly',
 
       'size',
-      'slot',
+      'slot', 
       'path',
 
       'fields',
@@ -75,15 +64,13 @@ export class Item extends Base {
       'min',
       'minLength',
       'readonly',
+      'disabled',
 
       'inputFormat',
       'inputType',
       'inputMode',
       'inputPicker',
-      'inputAccept',
-
-      'inputCase',
-      'inputMask'
+      'inputAccept'
     ];
 
     for (const a of attributes) {
@@ -106,7 +93,7 @@ export class Item extends Base {
       this._config.mode = 'group';
     } else if (this._config.type === 'value') {
       this._config.mode = 'value';
-    } else if (this._config.type === 'field' || ['expand', 'header', 'footer', 'legend', 'upload', 'button', 'submit', 'cancel'].includes(this._config.type)) {
+    } else if (this._config.type === 'field' || ['expand', 'header', 'footer', 'button', 'submit', 'cancel'].includes(this._config.type)) {
       this._config.mode = 'field';
     } else {
       this._config.mode = 'input';
@@ -126,43 +113,53 @@ export class Item extends Base {
         'value',
         'field',
         'input',
+
         'id',
         'string',
         'number',
         'object',
+
         'select',
         'select_multiple',
+
         'unixtime',
         'datetime',
         'date',
         'time',
         'year',
         'year_month',
+
         'decimal',
         'integer',
         'percent',
         'currency',
+
         'checkbox',
         'toggle',
+
         'text',
         'textarea',
         'richtext',
+
         'location',
+
         'attachment',
         'image',
         'video',
         'audio',
         'url',
+
         'phone',
         'email',
         'color',
+
         'username',
         'password',
+        
         'expand',
         'header',
         'footer',
-        'legend',
-        'upload',
+
         'button',
         'submit',
         'cancel'
@@ -179,9 +176,19 @@ export class Item extends Base {
     this._config.uuid = this._config.uuid || `${this._config.name}-${this._config.type}-${this._config.mode}-${Math.random()}`.toLowerCase();
     this._config.hide = this._config.hide || undefined;
     this._config.show = this._config.show || true;
+    this._config.showContent = this._config.showContent || true;
     this._config.size = this._config.size || 100;
     this._config.slot = this._config.slot || undefined;
     this._config.text = this._config.text || {};
+
+    this._config.iconColor = this._config.iconColor || 'medium';
+    this._config.iconStyle = this._config.iconStyle || undefined;
+    
+    this._config.pushColor = this._config.pushColor || 'medium';
+    this._config.pushStyle = this._config.pushStyle || undefined;
+    
+    this._config.dropColor = this._config.dropColor || 'medium';
+    this._config.dropStyle = this._config.dropStyle || undefined;
 
     // Define path
     if (!this._config.path) {
@@ -239,10 +246,13 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'text';
         this._config.inputPicker = this._config.inputPicker || 'select';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? undefined : 'search';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onIconClick = async ($event: any): Promise<any> => {
+            $event.preventDefault();
           };
         }
         break;
@@ -255,10 +265,13 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'text';
         this._config.inputPicker = this._config.inputPicker || 'select';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? undefined : 'search';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onIconClick = async ($event: any): Promise<any> => {
+            $event.preventDefault();
           };
         }
         break;
@@ -271,10 +284,13 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'date-time';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? undefined : 'calendar';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onIconClick = async ($event: any): Promise<any> => {
+            $event.preventDefault();
           };
         }
         break;
@@ -287,10 +303,13 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'date-time';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? undefined : 'calendar';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onIconClick = async ($event: any): Promise<any> => {
+            $event.preventDefault();
           };
         }
         break;
@@ -303,10 +322,13 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'date';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? undefined : 'calendar';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onIconClick = async ($event: any): Promise<any> => {
+            $event.preventDefault();
           };
         }
         break;
@@ -319,10 +341,13 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'time';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? undefined : 'time';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onIconClick = async ($event: any): Promise<any> => {
+            $event.preventDefault();
           };
         }
         break;
@@ -335,10 +360,13 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'year';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? undefined : 'calendar-clear';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onIconClick = async ($event: any): Promise<any> => {
+            $event.preventDefault();
           };
         }
         break;
@@ -351,10 +379,13 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'month-year';
         this._config.inputPicker = this._config.inputPicker || 'datetime';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? undefined : 'calendar-clear';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onIconClick = async ($event: any): Promise<any> => {
+            $event.preventDefault();
           };
         }
         break;
@@ -441,10 +472,13 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'text';
         this._config.inputPicker = this._config.inputPicker || 'location';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? undefined : 'navigate';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
+          };
+          this._config.onIconClick = async ($event: any): Promise<any> => {
+            $event.preventDefault();
           };
         }
         break;
@@ -457,12 +491,12 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'url';
         this._config.inputAccept = this._config.inputAccept || '*/*';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? (this.value ? 'document-attach' : undefined) : 'search';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
           };
-          this._config.onClick = async ($event: any): Promise<any> => {
+          this._config.onIconClick = async ($event: any): Promise<any> => {
             return await this._component.data._onItemFilesClick($event, this);
           };
         }
@@ -476,12 +510,12 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'url';
         this._config.inputAccept = this._config.inputAccept || 'image/*';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? (this.value ? 'image' : undefined) : 'search';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
           };
-          this._config.onClick = async ($event: any): Promise<any> => {
+          this._config.onIconClick = async ($event: any): Promise<any> => {
             return await this._component.data._onItemFilesClick($event, this);
           };
         }
@@ -495,12 +529,12 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'url';
         this._config.inputAccept = this._config.inputAccept || 'video/*';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? (this.value ? 'videocam' : undefined) : 'search';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
           };
-          this._config.onClick = async ($event: any): Promise<any> => {
+          this._config.onIconClick = async ($event: any): Promise<any> => {
             return await this._component.data._onItemFilesClick($event, this);
           };
         }
@@ -514,12 +548,12 @@ export class Item extends Base {
         this._config.inputMode = this._config.inputMode || 'url';
         this._config.inputAccept = this._config.inputAccept || 'audio/*';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? (this.value ? 'recording' : undefined) : 'search';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
           };
-          this._config.onClick = async ($event: any): Promise<any> => {
+          this._config.onIconClick = async ($event: any): Promise<any> => {
             return await this._component.data._onItemFilesClick($event, this);
           };
         }
@@ -532,12 +566,12 @@ export class Item extends Base {
         this._config.inputType = this._config.inputType || 'url';
         this._config.inputMode = this._config.inputMode || 'url';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? (this.value ? 'link' : undefined) : undefined;
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
           };
-          this._config.onClick = async ($event: any): Promise<any> => {
+          this._config.onIconClick = async ($event: any): Promise<any> => {
             return await this._component.data._onItemUrlClick($event, this);
           };
         }
@@ -550,12 +584,12 @@ export class Item extends Base {
         this._config.inputType = this._config.inputType || 'tel';
         this._config.inputMode = this._config.inputMode || 'tel';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? (this.value ? 'call' : undefined) : undefined;
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
           };
-          this._config.onClick = async ($event: any): Promise<any> => {
+          this._config.onIconClick = async ($event: any): Promise<any> => {
             return await this._component.data._onItemUrlClick($event, this);
           };
         }
@@ -568,12 +602,12 @@ export class Item extends Base {
         this._config.inputType = this._config.inputType || 'email';
         this._config.inputMode = this._config.inputMode || 'email';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.readonly ? (this.value ? 'mail' : undefined) : undefined;
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
           };
-          this._config.onClick = async ($event: any): Promise<any> => {
+          this._config.onIconClick = async ($event: any): Promise<any> => {
             return await this._component.data._onItemUrlClick($event, this);
           };
         }
@@ -586,13 +620,13 @@ export class Item extends Base {
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'text';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.iconStyle = this.value ? {color: this.value} : undefined;
             this._config.icon = this._config.icon || 'color-fill';
             this._config.drop = this._config.readonly ? undefined : this.value ? 'close-circle' : undefined;
           };
-          this._config.onClick = async ($event: any): Promise<any> => {
+          this._config.onIconClick = async ($event: any): Promise<any> => {
             return await this._component.data._onItemColorClick($event, this);
           };
         }
@@ -605,10 +639,9 @@ export class Item extends Base {
         this._config.inputType = this._config.inputType || 'text';
         this._config.inputMode = this._config.inputMode || 'text';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = 'person';
-            this._config.iconDisabled = !this._config.onClick;
           };
         }
         break;
@@ -620,13 +653,13 @@ export class Item extends Base {
         this._config.inputType = this._config.inputType || 'password';
         this._config.inputMode = this._config.inputMode || 'text';
 
-        if (!this._config.onClick) {
-          this._config.onSetValue = () => {
+        if (!this._config.onIconClick && !this._config.onClick) {
+          this._config.onLoadValue = () => {
             this._config.icon = this._config.inputType === 'password' ? 'eye' : 'eye-off';
           };
-          this._config.onClick = async ($event: any): Promise<any> => {
+          this._config.onIconClick = async ($event: any): Promise<any> => {
             this._config.inputType = this._config.inputType === 'password' ? 'text' : 'password';
-            this._config.onSetValue();
+            this._config.onLoadValue();
           };
         }
         break;
@@ -648,72 +681,54 @@ export class Item extends Base {
         break;
       }
 
-      // Legend type definitions
-      case 'legend': {
-        break;
-      }
-
-      // Upload type definitions
-      case 'upload': {
-        break;
-      }
-
       // Button type definitions
       case 'button': {
-        this._config.onSetValue = () => {
+        this._config.onLoadValue = () => {
           this._config.size = this._config.iconOnly ? 0 : this._config.size;
           this._config.icon = this._config.icon || undefined;
         };
-
         this._config._onClick = () => {
-          this._config.iconDisabled = true;
+          this._config.disabled = true;
         };
         this._config.onClick_ = () => {
-          this._config.iconDisabled = false;
+          this._config.disabled = false;
         };
-
         break;
       }
 
       // Submit type definitions
       case 'submit': {
-        this._config.onSetValue = () => {
+        this._config.onLoadValue = () => {
           this._config.size = this._config.iconOnly ? 0 : this._config.size;
           this._config.icon = this._config.icon || (this._config.iconOnly ? 'checkmark-circle' : 'checkmark');
         };
-
         this._config._onClick = () => {
-          this._config.iconDisabled = true;
+          this._config.disabled = true;
         };
         this._config.onClick_ = () => {
-          this._config.iconDisabled = false;
+          this._config.disabled = false;
         };
-
         this._config.onClick = async ($event: any): Promise<any> => {
           return await this.onSubmit($event.detail.$event);
         };
-
         break;
       }
 
       // Cancel type definitions
       case 'cancel': {
-        this._config.onSetValue = () => {
+        this._config.onLoadValue = () => {
           this._config.size = this._config.iconOnly ? 0 : this._config.size;
           this._config.icon = this._config.icon || (this._config.iconOnly ? 'close-circle' : 'close');
         };
-
         this._config._onClick = () => {
-          this._config.iconDisabled = true;
+          this._config.disabled = true;
         };
         this._config.onClick_ = () => {
-          this._config.iconDisabled = false;
+          this._config.disabled = false;
         };
-
         this._config.onClick = async ($event: any): Promise<any> => {
           return await this.onCancel($event.detail.$event);
         };
-
         break;
       }
     }
@@ -721,15 +736,15 @@ export class Item extends Base {
     // Verify mode
     switch (this._config.mode) {
       case 'input': {
-        this._config._onPush = () => this.setValue({});
-        this._config._onDrop = () => this.setValue(undefined);
+        this._config.onPushClick = ($event: any) => this.setValue({});
+        this._config.onDropClick = ($event: any) => this.setValue(undefined);
         break;
       }
       case 'group': {
         this._config.fields = _raw.fields || [];
-        this._config._onPush = () => this.setValue({});
-        this._config._onDrop = () => this.setValue(undefined);
-        this._config.onSetValue = () => {
+        this._config.onPushClick = ($event: any) => this.setValue({});
+        this._config.onDropClick = ($event: any) => this.setValue(undefined);
+        this._config.onLoadValue = () => {
           this._config.drop = this._config.readonly ? undefined : this.value !== undefined ? 'close-circle' : undefined;
           this._config.push = this._config.readonly ? undefined : this.value === undefined ? 'add-circle' : undefined;
         };
@@ -738,15 +753,15 @@ export class Item extends Base {
       case 'array': {
         this._config.fields = _raw.fields || [{..._raw, type: _raw.type.replace(/\[\]$/, ''), mode: 'input', size: 100}];
         this._config.single = _raw.fields ? false : true;
-        this._config._onPush = () => this.setValue({});
-        this._config._onDrop = () => this.setValue(undefined);
-        this._config._onDropIndex = (index: number) => {
+        this._config.onPushClick = ($event: any) => this.setValue({});
+        this._config.onDropClick = ($event: any) => this.setValue(undefined);
+        this._config.onDropIndex = ($event: any, index: number) => {
           this.value.splice(index, 1);
           if (!this.value.length) {
             this.setValue(undefined);
           }
         };
-        this._config.onSetValue = () => {
+        this._config.onLoadValue = () => {
           this._config.drop = this._config.readonly ? undefined : this.value !== undefined ? 'close-circle' : undefined;
           this._config.push = this._config.readonly ? undefined : 'add-circle';
         };
@@ -759,9 +774,9 @@ export class Item extends Base {
         $event = $event.detail.$event;
         if (typeof $event.target !== 'undefined') {
           if (typeof $event.target.checked !== 'undefined') {
-            await this.setValue($event.target.checked ? true : false);
+            this.setValue($event.target.checked ? true : false);
           } else {
-            await this.setValue($event.target.value);
+            this.setValue($event.target.value);
           }
         }
       };
@@ -806,8 +821,8 @@ export class Item extends Base {
     //  this.value = values[`${this._config.name}`];
     //}
 
-    if (typeof this._config.onSetValue === 'function') {
-      this._config.onSetValue();
+    if (this._config.onLoadValue) {
+      this._config.onLoadValue();
     }
 
     // Format config
@@ -976,8 +991,8 @@ export class Item extends Base {
     this.error = error;
     this.value = value;
 
-    if (typeof this._config.onSetValue === 'function') {
-      this._config.onSetValue();
+    if (this._config.onLoadValue) {
+      this._config.onLoadValue();
     }
   }
 }

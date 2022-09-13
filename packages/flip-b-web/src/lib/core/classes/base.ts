@@ -43,7 +43,9 @@ export abstract class Base {
     this._config.init = true;
 
     if (this.constructor.name === 'Page') {
-      this.onInit(new CustomEvent('onInit'));
+      const $event = new CustomEvent('onInit');
+      await this.onInit($event);
+      await this.onRender($event);
     }
   }
 
@@ -101,6 +103,13 @@ export abstract class Base {
    */
   async onChange($event: any): Promise<any> {
     await this.dispatchEvent($event, 'onChange');
+  }
+
+  /**
+   * Render event handler
+   */
+  async onRender($event: any): Promise<any> {
+    await this.dispatchEvent($event, 'onRender');
   }
 
   /**

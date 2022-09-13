@@ -17,6 +17,6 @@ export class DataGuard implements CanActivate {
    * Can activate
    */
   async canActivate(next: ActivatedRouteSnapshot): Promise<boolean> {
-    return (await this.data.auth(next.data.page?.auth)) || true;
+    return await this.data.auth(next.data.page?.auth);
   }
 }

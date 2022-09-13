@@ -14,7 +14,6 @@ export class DataService {
   // Definitions
 
   _loading: any = false;
-
   _routerHistory: any = [];
 
   /**
@@ -32,12 +31,6 @@ export class DataService {
     public _ionToast: ToastController,
     public _router: Router
   ) {
-    this._router.events.subscribe((event: any) => {
-      if (event instanceof NavigationEnd && event.url) {
-        this._routerHistory.push(event.url);
-        this._routerHistory = this._routerHistory.slice(-10);
-      }
-    });
 
     // Fucking shadow-root
     setInterval(() => {
@@ -51,7 +44,22 @@ export class DataService {
         }
       });
     }, 500);
+  
+    this._router.events.subscribe((event: any) => {
+      if (event instanceof NavigationEnd && event.url) {
+        this._routerHistory.push(event.url);
+        this._routerHistory = this._routerHistory.slice(-10);
+      }
+    });
 
+    this.user._events.subscribe((event: any) => {
+      console.log('USER', event)
+    });
+
+    this.i18n._events.subscribe((event: any) => {
+      console.log('I18N', event)
+    });
+   
     this.onInit();
   }
 
@@ -59,20 +67,22 @@ export class DataService {
    * Init event handler
    */
   async onInit(): Promise<any> {
-    //const user: any = sessionStorage.getItem(`user`) ? JSON.parse(sessionStorage.getItem(`user`) || '{}') : false;
-    //if (!auth?.includes(user?.access || 'anonymous')) {
-    //  this.goto('user/signin');
-    //}
 
     // Define http config
     this.http._config.url = this._config.http?.url || '';
     this.http._config.uri = this._config.http?.uri || '';
     this.http._config.headers = this._config.http?.headers || {};
-
     this.http._config.headers = {
       Authorization:
-        'Baerer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoiNjMxNWMxMjQzYmM2NDM2ZTIyYTRmNjg0IiwicGxhY2UiOiI2MzE1YzE1NTZiZDhmZDBmOGM2NDA0M2QiLCJyb2xlIjoiYWRtaW5pc3RyYXRvciIsInVzZXIiOiI2MzE1YzE1ZGZhNzdkMjEwNzNjMWEzMjQiLCJjb3VudHJ5IjoiZXMtQVIiLCJpYXQiOjE2NjIzNzAxNjksImV4cCI6MTY2MjQ1NjU2OX0.6iv7gwDFpcVS-zbq7zi92fnCCHHj4bh-qQd_oYnvtD8'
+        'Baerer ' +
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoiNjMxOWRjM2RiZGM1MmRhZWY4Yjk4YmQ3IiwicGxhY2UiOiI2MzE5ZGM0OTBhYzYwZWRhMGMxMDgxNWUiLCJyb2xlIjoiYWRtaW5pc3RyYXRvciIsInVzZXIiOiI2MzE5ZGM0YTRkYThlOGZiNDQzOGZjYWMiLCJjb3VudHJ5IjoiZXMtQVIiLCJpYXQiOjE2NjI5ODkxMzMsImV4cCI6MTY2MzA3NTUzM30.EFCG2CQhEjoE3ptX6SQgbt4uXHbX_S4jnccbpkISovo'
     };
+
+    this.user.auth({
+      name: 'Administrator',
+      email: 'administrator@flip-b.com', 
+      token: this.http._config.headers.Authorization
+    })
 
     // Define user token
     try {
@@ -123,47 +133,47 @@ export class DataService {
       //}
     }
 
-    //g// Define config
-    //gconst config: any = {...this._config};
-    //g
-    //g// Define html attributes
-    //gconst places: any = ['page', 'menu'];
-    //gconst values: any = ['background', 'background_color', 'background_color_rgb', 'text_color', 'text_color_rgb', 'border_color', 'content_color'];
-    //gfor (const place of places) {
-    //g  for (const value of values) {
-    //g    if (typeof config[`${place}_${value}`] !== 'undefined') {
-    //g      document.documentElement.style.setProperty(`__flb_${place}_${value}`.replace(/_/g, '-'), config[`${place}_${value}`]);
-    //g    } else {
-    //g      document.documentElement.style.removeProperty(`__flb_${place}_${value}`.replace(/_/g, '-'));
-    //g    }
-    //g  }
-    //g}
-
-    //site_background: `#222 url("https://www.flip-b.com/assets/backgrounds/background-${('000' + (Math.floor(Math.random() * 440) + 1)).substr(-3)}.jpg") 0 0/100% 100% no-repeat`,
-    //// Define html title
-    //const $title: any = document.querySelector('title');
-    //if ($title && this.menu.title) {
+    // // Define config
+    // const config: any = {...this._config};
+    
+    // // Define html attributes
+    // const places: any = ['page', 'menu'];
+    // const values: any = ['background', 'background_color', 'background_color_rgb', 'text_color', 'text_color_rgb', 'border_color', 'content_color'];
+    // for (const place of places) {
+    //   for (const value of values) {
+    //     if (typeof config[`${place}_${value}`] !== 'undefined') {
+    //       document.documentElement.style.setProperty(`__flb_${place}_${value}`.replace(/_/g, '-'), config[`${place}_${value}`]);
+    //     } else {
+    //       document.documentElement.style.removeProperty(`__flb_${place}_${value}`.replace(/_/g, '-'));
+    //     }
+    //   }
+    // }
+    
+    // site_background: `#222 url("https://www.flip-b.com/assets/backgrounds/background-${('000' + (Math.floor(Math.random() * 440) + 1)).substr(-3)}.jpg") 0 0/100% 100% no-repeat`,
+    // // Define html title
+    // const $title: any = document.querySelector('title');
+    // if ($title && this.menu.title) {
     //  $title.innerText = this.menu.title;
-    //}
-    //
-    //// Define html color
-    //const $color: any = document.querySelector('meta[name=theme-color]');
-    //if ($color && this.menu.color) {
+    // }
+    
+    // // Define html color
+    // const $color: any = document.querySelector('meta[name=theme-color]');
+    // if ($color && this.menu.color) {
     //  $color.setAttribute('content', this.menu.color);
-    //}
-    //
-    //// Define html icons
-    //const $icons: any = document.querySelectorAll('link[rel=icon]');
-    //if ($icons && this.menu.image) {
+    // }
+    
+    // // Define html icons
+    // const $icons: any = document.querySelectorAll('link[rel=icon]');
+    // if ($icons && this.menu.image) {
     //  [...$icons].map(($icon: any) => $icon.setAttribute('href', this.menu.image));
-    //}
-    //
-    //// Verify html user
-    //if (this.user) {
+    // }
+    
+    // // Verify html user
+    // if (this.user) {
     //  document.body.classList.toggle('user', true);
-    //} else {
+    // } else {
     //  document.body.classList.toggle('user', false);
-    //}
+    // }
 
     document.body.classList.toggle('user', true);
   }
@@ -171,45 +181,58 @@ export class DataService {
   /**
    * Auth
    */
-  auth(url: string): boolean {
-    for (const view of this._config.views) {
-      if (`${view.path}` === url && view.auth && view.auth.includes((this.user._config || {}).access || 'anonymous')) {
-        return true;
-      }
-    }
-    return false;
+  async auth(url: string): Promise<boolean> {
+    // for (const view of this._config.views) {
+    //   if (`${view.path}` === url && view.auth && view.auth.includes((this.user._config || {}).access || 'anonymous')) {
+    //     return true;
+    //   }
+    // }
+    // return false;
+    return !!url;
   }
 
   /**
    * Goto
    */
-  goto(url = '', params: any = {}, options: any = {}) {
-    url = this.i18n.replaceStringParameters(url, params);
-    options.replaceUrl = true;
-    options.state = params;
-    this._router.navigate([url], options);
+  async goto(url = '', params: any = {}, options: any = {}): Promise<any> {
+    try {
+      url = this.i18n.replaceStringParameters(url, params);
+      options.replaceUrl = true;
+      options.state = params;
+      return await this._router.navigate([url], options);
+    } catch (error: any) {
+      console.error(`${error}`);
+    }
   }
 
   /**
-   * Root
+   * Goto root
    */
-  gotoRoot(url = '', params: any = {}, options: any = {}) {
-    url = this.i18n.replaceStringParameters(url, params);
-    this._routerHistory = [];
-    options.replaceUrl = true;
-    options.state = params;
-    this._router.navigate([url], options);
+  async gotoRoot(url = '', params: any = {}, options: any = {}): Promise<any> {
+    try {
+      url = this.i18n.replaceStringParameters(url, params);
+      options.replaceUrl = true;
+      options.state = params;
+      this._routerHistory = [];
+      return await this._router.navigate([url], options);
+    } catch (error: any) {
+      console.error(`${error}`);
+    }
   }
 
   /**
-   * Back
+   * Goto back
    */
-  gotoBack(url = '', params: any = {}, options: any = {}) {
-    url = this.i18n.replaceStringParameters(url || this._routerHistory[this._routerHistory.length - 2], params);
-    this._routerHistory = this._routerHistory.slice(0, -2);
-    options.replaceUrl = true;
-    options.state = params;
-    this._router.navigate([url], options);
+  async gotoBack(url = '', params: any = {}, options: any = {}): Promise<any> {
+    try {
+      url = this.i18n.replaceStringParameters(url || this._routerHistory[this._routerHistory.length - 2], params);
+      this._routerHistory = this._routerHistory.slice(0, -2);
+      options.replaceUrl = true;
+      options.state = params;
+      return await this._router.navigate([url], options);
+    } catch (error: any) {
+      console.error(`${error}`);
+    }
   }
 
   /*********************************************************************************************************************
@@ -231,11 +254,11 @@ export class DataService {
   /**
    * Load page
    */
-  async loadPage(): Promise<any> {
+  async loadPage(params: any = {}): Promise<any> {
     let result: any = {};
     const snap: any = this._router.routerState.snapshot.root.firstChild;
     const data: any = snap.data.page || {};
-    const page: any = {};
+    const page: any = {...params};
     page.name = page.name || data.name || undefined;
     page.type = page.type || data.type || undefined;
     page.mode = page.mode || data.mode || undefined;
@@ -274,17 +297,6 @@ export class DataService {
    ***
    *********************************************************************************************************************
    ********************************************************************************************************************/
-
-  /**
-   * onLoadImageError
-   */
-  async _onLoadImageError($event: any): Promise<any> {
-    try {
-      $event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII=';
-    } catch (error: any) {
-      console.error(`${error}`);
-    }
-  }
 
   /**
    * Show loading
@@ -358,11 +370,6 @@ export class DataService {
       $event.stopPropagation();
       $event.preventDefault();
     }
-    //if (typeof params.$event?.target?.complete === 'function') {
-    //  params.$event.target.complete();
-    //}
-    $event.stopPropagation();
-    $event.preventDefault();
     document.body.classList.toggle('night', (this.user._config.night = !this.user._config.night));
   }
 
@@ -433,8 +440,7 @@ export class DataService {
         method: 'GET'
       });
 
-      page.setHeader([{testi: {menu: true, search: true, modal: page._component.modal}}]);
-
+      page.setHeader([{header: {menu: true, search: true, modal: page._component.modal}}]);
       page._config._setResult(result);
 
       this.showMessage({message: `${page._config.name}.search.success`, $event, value: result});
@@ -780,7 +786,7 @@ export class DataService {
           item._config.$el.onchange = () => {
             item.setValue(item._config.$el.value || undefined);
           };
-          $event.detail.target.parentNode.appendChild(item._config.$el);
+          $event.target.parentNode.appendChild(item._config.$el);
         }
         setTimeout(() => item._config.$el.click(), 100);
       }
@@ -803,7 +809,7 @@ export class DataService {
           item._config.$el.onchange = () => {
             item.setValue(item._config.$el.files ? item._config.$el.files[0] : undefined);
           };
-          $event.detail.target.parentNode.appendChild(item._config.$el);
+          $event.target.parentNode.appendChild(item._config.$el);
         }
         setTimeout(() => item._config.$el.click(), 100);
       }
@@ -820,6 +826,18 @@ export class DataService {
       if (item.value) {
         window.open(item.value, '_system');
       }
+    } catch (error: any) {
+      console.error(`${error}`);
+    }
+  }
+
+
+  /**
+   * onLoadImageError
+   */
+  async _onLoadImageError($event: any): Promise<any> {
+    try {
+      $event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII=';
     } catch (error: any) {
       console.error(`${error}`);
     }

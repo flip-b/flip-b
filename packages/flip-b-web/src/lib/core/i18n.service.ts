@@ -1,6 +1,4 @@
-import {Injectable, Inject} from '@angular/core';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {lastValueFrom} from 'rxjs';
+import {Injectable, EventEmitter} from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -14,9 +12,16 @@ export class I18nService {
   _config: any = {};
 
   /**
+   * Events
+   */
+  _events: any = new EventEmitter<any>();
+
+  /**
    * Constructor
    */
-  constructor(public _httpClient: HttpClient) {}
+  constructor() {
+    this._events.emit({name: 'setup', data: {}});  
+  }
 
   /**
    * Get locale
@@ -28,11 +33,26 @@ export class I18nService {
   /**
    * Format I18n
    */
-  format(data: any, item: any = null): any {
-    const parts = `${data || ''}`.toLowerCase().split('.');
+  format(type: any, item: any = undefined, data: any = undefined): any {
+
+    if (type === 'value') {
+      console.log(type, data)
+      return item?.value || '';
+    }
+
+    if (item?._config?.text && typeof item._config.text[type] === 'string') {
+      return item._config.text[type];
+    }
+ 
+    if (item?._config?.path) {
+      type = item._config.path + '.' + type;
+    }
+
+    const parts = `${type || ''}`.toLowerCase().split('.');
     const index = parts.shift();
     const count = parts.length;
     const tests = [`${index}`, '$page', '$text'];
+  
     let result = '';
     for (let i = 0; i < count; i++) {
       const value = parts.join('.');
@@ -51,6 +71,11 @@ export class I18nService {
         break;
       }
     }
+
+    if (!result && type.match(/title$/i)) {
+      result = item?._config?.name || '';
+    }
+
     result = result.toString();
     result = result.replace(/\s\s+/, ' ').trim();
     if (item) {
@@ -191,9 +216,9 @@ export class I18nService {
   }
 
   /**
-   * Get bool
+   * Get boolean
    */
-  getBool(value: any): string {
+  getBoolean(value: any): string {
     let result = value || false;
     result = ['true', 'yes', '1', true].includes(value) ? true : false;
     return result;
