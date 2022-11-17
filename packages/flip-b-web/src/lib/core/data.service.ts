@@ -1,11 +1,8 @@
 import {Injectable, Inject} from '@angular/core';
 import {Router, NavigationEnd} from '@angular/router';
-
 import {HttpService} from './http.service';
-import {I18nService} from './i18n.service';
-import {UserService} from './user.service';
-
-import {LoadingController, AlertController, ModalController, ToastController, MenuController} from '@ionic/angular';
+import {LoadingController, AlertController, ModalController, ToastController, MenuController, Platform} from '@ionic/angular';
+import {events} from './data.events';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +10,45 @@ import {LoadingController, AlertController, ModalController, ToastController, Me
 export class DataService {
   // Definitions
 
-  _loading: any = false;
-  _routerHistory: any = [];
+  /**
+   * Menu
+   */
+  menu: any;
+
+  /**
+   * Page
+   */
+  page: any;
+
+  /**
+   * User
+   */
+  user: any;
+
+  /**
+   * I18n
+   */
+  i18n: any;
+
+  /**
+   * History
+   */
+  private _history: any = [];
+
+  /**
+   * Loading
+   */
+  private _loading: any = false;
+
+  /**
+   * Storage
+   */
+  private _storage: any = localStorage || sessionStorage || {};
+
+  /**
+   * Default events
+   */
+  events: any = events;
 
   /**
    * Constructor
@@ -22,44 +56,67 @@ export class DataService {
   constructor(
     @Inject('config') public _config: any = {},
     public http: HttpService,
-    public i18n: I18nService,
-    public user: UserService,
     public _ionAlert: AlertController,
-    public _ionLoading: LoadingController,
+    public _loadingController: LoadingController,
     public _ionMenu: MenuController,
     public _ionModal: ModalController,
     public _ionToast: ToastController,
+    public _platform: Platform,
     public _router: Router
   ) {
 
-    // Fucking shadow-root
+    // Fix ionic popover
     setInterval(() => {
-      const $elements: any = document.querySelectorAll('ion-popover ion-datetime');
+      const $elements: any = document.querySelectorAll('ion-popover');
       [...($elements || [])].map(($element: any) => {
         if ($element?.shadowRoot) {
-          const $target: any = $element.shadowRoot.querySelector('.calendar-month-year');
-          if ($target) {
-            $target.style.width = '150px';
+          const $target1: any = $element.shadowRoot.querySelector('.popover-content');
+          if ($target1 && $target1.style?.top !== '150px') {
+            //console.log($target1.style.top); // calc(628px + var(--offset-y, 0px))
+            //console.log(window.getComputedStyle($target1));
+            //$target1.style.top = '150px';
           }
         }
       });
     }, 500);
-  
-    this._router.events.subscribe((event: any) => {
+
+    // Fix ionic popover
+    setInterval(() => {
+      const $elements: any = document.querySelectorAll('ion-popover ion-datetime');
+      [...($elements || [])].map(($element: any) => {
+        if ($element?.shadowRoot) {
+          const $target1: any = $element.shadowRoot.querySelector('.calendar-month-year');
+          if ($target1) {
+            $target1.style.width = '150px';
+          }
+        }
+      });
+    }, 500);
+
+    // Define router event handler
+    this._router.events.subscribe(async (event: any): Promise<any> => {
       if (event instanceof NavigationEnd && event.url) {
-        this._routerHistory.push(event.url);
-        this._routerHistory = this._routerHistory.slice(-10);
+        this._history.push(event.urlAfterRedirects);
+        this._history = this._history.slice(-10);
       }
     });
 
-    this.user._events.subscribe((event: any) => {
-      console.log('USER', event)
+    // Define pause event handler (only Cordova)
+    this._platform.pause.subscribe(async () => {
+      console.info('Pause event detected');
     });
 
-    this.i18n._events.subscribe((event: any) => {
-      console.log('I18N', event)
+    // Define resume event handler (only Cordova)
+    this._platform.resume.subscribe(async () => {
+      console.info('Resume event detected');
     });
-   
+
+    // Define resize event handler
+    this._platform.resize.subscribe(async () => {
+      console.info('Resize event detected');
+    });
+
+    // Init
     this.onInit();
   }
 
@@ -68,77 +125,103 @@ export class DataService {
    */
   async onInit(): Promise<any> {
 
+    this.user = await this.getUser();
+    this.user = this.user || undefined;
+
     // Define http config
     this.http._config.url = this._config.http?.url || '';
     this.http._config.uri = this._config.http?.uri || '';
+    this.http._config.api = this._config.http?.api || '';
     this.http._config.headers = this._config.http?.headers || {};
-    this.http._config.headers = {
-      Authorization:
-        'Baerer ' +
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50IjoiNjMxOWRjM2RiZGM1MmRhZWY4Yjk4YmQ3IiwicGxhY2UiOiI2MzE5ZGM0OTBhYzYwZWRhMGMxMDgxNWUiLCJyb2xlIjoiYWRtaW5pc3RyYXRvciIsInVzZXIiOiI2MzE5ZGM0YTRkYThlOGZiNDQzOGZjYWMiLCJjb3VudHJ5IjoiZXMtQVIiLCJpYXQiOjE2NjI5ODkxMzMsImV4cCI6MTY2MzA3NTUzM30.EFCG2CQhEjoE3ptX6SQgbt4uXHbX_S4jnccbpkISovo'
-    };
 
-    this.user.auth({
-      name: 'Administrator',
-      email: 'administrator@flip-b.com', 
-      token: this.http._config.headers.Authorization
-    })
-
-    // Define user token
-    try {
-      const index = `${this._config.http.token?.index || 'authorization'}`;
-      const value = `${this._config.http.token?.value || 'Bearer {token}'}`;
-      const field = `${this._config.http.token?.field || 'access_token'}`;
-
-      //this.http._config.headers = this._config.http.headers || {};
-      //if (this.user && this.user[`${field}`]) {
-      //this.http._config.headers[`${index}`] = `${value}`.replace('{token}', this.user[`${field}`]);
-      //} else {
-      //this.http._config.headers[`${index}`];
-      //}
-    } catch (error) {
-      console.error(error);
+    if (this.user?._access?.headers) {
+      this.http._config.headers = this.user._access.headers || {};
     }
 
+    // // Define user token
+    // try {
+    //   const index = `${this._config.http.token?.index || 'authorization'}`;
+    //   const value = `${this._config.http.token?.value || 'Bearer {token}'}`;
+    //   const field = `${this._config.http.token?.field || 'access_token'}`;
+    //
+    //   this.http._config.headers = this._config.http.headers || {};
+    //   if (this.user && this.user[`${field}`]) {
+    //     this.http._config.headers[`${index}`] = `${value}`.replace('{token}', this.user[`${field}`]);
+    //   } else {
+    //     this.http._config.headers[`${index}`];
+    //   }
+    // } catch (error) {
+    //   console.error(error);
+    // }
+
     // Define i18n config
-    this.i18n._config.locale = this._config.i18n?.locale || 'es-AR-u-hc-h23';
-    this.i18n._config.language = 'es';
-    this.i18n._config.region = 'ar';
-    this.i18n._config.values = await this.http.request({method: 'GET', url: `assets/i18n/${this.i18n._config.language}.json`});
+    this.i18n = {};
+    this.i18n.calendar = this._config.i18n?.calendar || 'es-AR-u-hc-h23';
+    this.i18n.language = this._config.i18n?.language || 'es';
+    this.i18n.region = this._config.i18n?.region || 'ar';
+    this.i18n.values = await this.http.request({method: 'GET', url: `assets/i18n/${this.i18n.language}.json`});
 
-    // Define menu config
-    this.user._config.title = this._config.menu?.title || this.i18n.format('page.global.title') || '';
-    this.user._config.label = this._config.menu?.label || this.i18n.format('page.global.label') || '';
-    this.user._config.image = this._config.menu?.image || this.i18n.format('page.global.image') || '';
-    this.user._config.route_1 = '';
-    this.user._config.route_2 = '';
+    // Define menu
+    this.menu = undefined;
 
-    // Define menu items
-    this.user._config.items = [];
-    for (const p of this._config.views) {
-      //if (p.auth && p.auth.includes(this.user?.access || 'anonymous')) {
-      if (p.menu === 'primary') {
-        this.user._config.items.push({
-          title: this.i18n.format(`${p.name}.title`),
-          label: this.i18n.format(`${p.name}.label`),
-          image: this.i18n.format(`${p.name}.image`),
-          icon: this.i18n.format(`${p.name}.icon`),
-          path: `${p.path}`
-        });
-      } else if (p.menu === 'route-1') {
-        this.user._config.route_1 = `${p.path}`;
-      } else if (p.menu === 'route-2') {
-        this.user._config.route_2 = `${p.path}`;
+    // Define menu (user)
+    if (this.user) {
+      this.menu = {};
+      this.menu.title = this.user?._config?.menu?.title || undefined;
+      this.menu.label = this.user?._config?.menu?.label || undefined;
+      this.menu.image = this.user?._config?.menu?.image || undefined;
+
+      // Define menu items
+      this.menu.mainMenu = [];
+      this.menu.userMenu = [];
+      for (const p of this._config.views) {
+        if (p.menu === 'main' && p.auth?.includes(this.user._access?.auth || 'anonymous')) {
+          this.menu.mainMenu.push({
+            title: this.formatI18n(`${p.name}.header.title`) || p.name,
+            label: this.formatI18n(`${p.name}.header.label`),
+            image: this.formatI18n(`${p.name}.header.image`),
+            icon: this.formatI18n(`${p.name}.header.icon`) || 'search',
+            path: p.path
+          });
+          continue;
+        }
+        if (p.menu === 'user' && p.auth?.includes(this.user._access?.auth || 'anonymous')) {
+          this.menu.userMenu.push({
+            title: this.formatI18n(`${p.name}.header.title`) || p.name,
+            label: this.formatI18n(`${p.name}.header.label`),
+            image: this.formatI18n(`${p.name}.header.image`),
+            icon: this.formatI18n(`${p.name}.header.icon`) || 'people',
+            path: `${p.path}`
+          });
+          continue;
+        }
       }
-      //}
+
+      if (this.user._config) {
+        if (this.user._access.auth) {
+          this.menu.userMenu.push({
+            title: this.user._config.night ? 'Activa el modo claro' : 'Activa el modo oscuro',
+            label: '',
+            image: '',
+            icon: this.user._config.night ? 'sunny' : 'moon',
+            onSetup: (item: any) => {
+              item.title = this.user._config.night ? 'Activa el modo claro' : 'Activa el modo oscuro';
+              item.icon = this.user._config.night ? 'sunny' : 'moon';
+            },
+            onClick: (item: any) => {
+              //this.toggleNight();
+              document.body.classList.toggle('night', (this.user._config.night = !this.user._config.night));
+              item.onSetup(item);
+            }
+          });
+        }
+      }
     }
 
     // // Define config
     // const config: any = {...this._config};
-    
-    // // Define html attributes
     // const places: any = ['page', 'menu'];
-    // const values: any = ['background', 'background_color', 'background_color_rgb', 'text_color', 'text_color_rgb', 'border_color', 'content_color'];
+    // const values: any = ['background_color', 'border_color', 'text_color', 'content_color'];
     // for (const place of places) {
     //   for (const value of values) {
     //     if (typeof config[`${place}_${value}`] !== 'undefined') {
@@ -148,90 +231,36 @@ export class DataService {
     //     }
     //   }
     // }
-    
-    // site_background: `#222 url("https://www.flip-b.com/assets/backgrounds/background-${('000' + (Math.floor(Math.random() * 440) + 1)).substr(-3)}.jpg") 0 0/100% 100% no-repeat`,
-    // // Define html title
-    // const $title: any = document.querySelector('title');
-    // if ($title && this.menu.title) {
-    //  $title.innerText = this.menu.title;
-    // }
-    
-    // // Define html color
-    // const $color: any = document.querySelector('meta[name=theme-color]');
-    // if ($color && this.menu.color) {
-    //  $color.setAttribute('content', this.menu.color);
-    // }
-    
-    // // Define html icons
-    // const $icons: any = document.querySelectorAll('link[rel=icon]');
-    // if ($icons && this.menu.image) {
-    //  [...$icons].map(($icon: any) => $icon.setAttribute('href', this.menu.image));
-    // }
-    
-    // // Verify html user
-    // if (this.user) {
-    //  document.body.classList.toggle('user', true);
-    // } else {
-    //  document.body.classList.toggle('user', false);
-    // }
 
-    document.body.classList.toggle('user', true);
-  }
-
-  /**
-   * Auth
-   */
-  async auth(url: string): Promise<boolean> {
-    // for (const view of this._config.views) {
-    //   if (`${view.path}` === url && view.auth && view.auth.includes((this.user._config || {}).access || 'anonymous')) {
-    //     return true;
-    //   }
-    // }
-    // return false;
-    return !!url;
-  }
-
-  /**
-   * Goto
-   */
-  async goto(url = '', params: any = {}, options: any = {}): Promise<any> {
-    try {
-      url = this.i18n.replaceStringParameters(url, params);
-      options.replaceUrl = true;
-      options.state = params;
-      return await this._router.navigate([url], options);
-    } catch (error: any) {
-      console.error(`${error}`);
+    // Define html title
+    const $title: any = document.querySelector('title');
+    if ($title && this.menu?.title) {
+      $title.innerText = this.menu.title;
     }
-  }
 
-  /**
-   * Goto root
-   */
-  async gotoRoot(url = '', params: any = {}, options: any = {}): Promise<any> {
-    try {
-      url = this.i18n.replaceStringParameters(url, params);
-      options.replaceUrl = true;
-      options.state = params;
-      this._routerHistory = [];
-      return await this._router.navigate([url], options);
-    } catch (error: any) {
-      console.error(`${error}`);
+    // Define html color
+    const $color: any = document.querySelector('meta[name=theme-color]');
+    if ($color && this.menu?.color) {
+      $color.setAttribute('content', this.menu.color);
     }
-  }
 
-  /**
-   * Goto back
-   */
-  async gotoBack(url = '', params: any = {}, options: any = {}): Promise<any> {
-    try {
-      url = this.i18n.replaceStringParameters(url || this._routerHistory[this._routerHistory.length - 2], params);
-      this._routerHistory = this._routerHistory.slice(0, -2);
-      options.replaceUrl = true;
-      options.state = params;
-      return await this._router.navigate([url], options);
-    } catch (error: any) {
-      console.error(`${error}`);
+    // Define html icons
+    const $icons: any = document.querySelectorAll('link[rel=icon]');
+    if ($icons && this.menu?.image) {
+      [...$icons].map(($icon: any) => $icon.setAttribute('href', this.menu.image));
+    }
+
+    // Define menu classes
+    if (this.menu) {
+      document.body.classList.toggle('flb-menu', true);
+      document.body.classList.toggle('flb-menu-show', true);
+      document.body.classList.toggle('flb-menu-hide', false);
+      document.body.style.setProperty('--flb-body-background', `unset`);
+    } else {
+      document.body.classList.toggle('flb-menu', false);
+      document.body.classList.toggle('flb-menu-show', false);
+      document.body.classList.toggle('flb-menu-hide', false);
+      document.body.style.setProperty('--flb-body-background', `#222 url("https://www.flip-b.com/assets/backgrounds/background-${('000' + (Math.floor(Math.random() * 440) + 1)).substr(-3)}.jpg") 0 0/100% 100% no-repeat`);
     }
   }
 
@@ -244,32 +273,112 @@ export class DataService {
    ********************************************************************************************************************/
 
   /**
-   * Load menu
+   * Get user values
    */
-  async loadMenu(): Promise<any> {
-    const result: any = {};
-    return result;
+  async getUser(): Promise<any> {
+    try {
+      return this._storage.getItem(this._config.user.key) ? JSON.parse(this._storage.getItem(this._config.user.key) || '{}') : false;
+    } catch (error: any) {
+      console.log(`UserService.setUser error ${error}`);
+    }
   }
 
   /**
-   * Load page
+   * User update
    */
-  async loadPage(params: any = {}): Promise<any> {
-    let result: any = {};
-    const snap: any = this._router.routerState.snapshot.root.firstChild;
-    const data: any = snap.data.page || {};
-    const page: any = {...params};
-    page.name = page.name || data.name || undefined;
-    page.type = page.type || data.type || undefined;
-    page.mode = page.mode || data.mode || undefined;
-    page.load = page.load || data.load || undefined;
-    page.params = this.clone({...snap.params, ...snap.queryParams, ...history.state});
-    delete page.params.navigationId;
-    if (typeof page.load === 'function') {
-      result = {...this.clone(page), ...this.clone(await page.load())};
+  async setUser(user: any): Promise<any> {
+    try {
+      this._storage.setItem(this._config.user.key, JSON.stringify(user));
+    } catch (error: any) {
+      console.log(`UserService.setUser error ${error}`);
     }
-    return result;
   }
+
+  /**
+   * User remove
+   */
+  async removeUser(): Promise<any> {
+    try {
+      sessionStorage.removeItem(this._config.user.key);
+      sessionStorage.clear();
+    } catch (error: any) {
+      console.log(`UserService.remove error ${error}`);
+    }
+  }
+
+  /**
+   * Auth
+   */
+  async auth(path: string): Promise<boolean> {
+    try {
+      path = path.split('?')[0];
+      for (const view of this._config.views) {
+        if (view.path === path) {
+          return view.auth.includes(this.user?._access?.auth || 'anonymous');
+        }
+      }
+      return false;
+    } catch (error: any) {
+      console.error(`Attention, "auth": ${error}`);
+      return false;
+    }
+  }
+
+  /**
+   * Goto
+   */
+  async goto(path: string, params: any = {}, options: any = {}): Promise<any> {
+    try {
+
+      if (typeof params.setUser !== 'undefined') {
+        await this.setUser(params.setUser);
+        await this.onInit();
+      }
+
+      path = this.formatUrlParameters(path, params);
+      options.state = params;
+      options.replaceUrl = true;
+      return await this._router.navigate([path], options);
+    } catch (error: any) {
+      console.error(`Attention, "goto": ${error}`);
+      return false;
+    }
+  }
+
+  /**
+   * Goto root
+   */
+  async gotoRoot(path = '', params: any = {}, options: any = {}): Promise<any> {
+    try {
+      this._history = [];
+      return await this.goto(path, params, options);
+    } catch (error: any) {
+      console.error(`Attention, "gotoRoot": ${error}`);
+      return false;
+    }
+  }
+
+  /**
+   * Goto back
+   */
+  async gotoBack(): Promise<any> {
+    try {
+      const history = this._history[this._history.length - 2] || '';
+      this._history = this._history.slice(0, -2);
+      return await this.goto(history);
+    } catch (error: any) {
+      console.error(`Attention, "gotoBack": ${error}`);
+      return false;
+    }
+  }
+
+  /*********************************************************************************************************************
+   *********************************************************************************************************************
+   ***
+   *** Support methods
+   ***
+   *********************************************************************************************************************
+   ********************************************************************************************************************/
 
   /**
    * Clone
@@ -293,6 +402,78 @@ export class DataService {
   /*********************************************************************************************************************
    *********************************************************************************************************************
    ***
+   *** Form
+   ***
+   *********************************************************************************************************************
+   ********************************************************************************************************************/
+
+  /**
+   * Form image error event handler
+   */
+  async _onFormImageError($event: any): Promise<any> {
+    try {
+      $event.stopPropagation();
+      $event.preventDefault();
+      $event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII=';
+    } catch (error: any) {
+      console.error(`Attention, "_onFormImageError": ${error}`);
+    }
+  }
+
+  /*********************************************************************************************************************
+   *********************************************************************************************************************
+   ***
+   *** Menu
+   ***
+   *********************************************************************************************************************
+   ********************************************************************************************************************/
+
+  /**
+   * Menu image error event handler
+   */
+  async _onMenuImageError($event: any): Promise<any> {
+    try {
+      $event.stopPropagation();
+      $event.preventDefault();
+      $event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII=';
+    } catch (error: any) {
+      console.error(`Attention, "_onMenuImageError": ${error}`);
+    }
+  }
+
+  /**
+   * Menu button click event handler
+   */
+  async _onMenuButtonClick($event: any): Promise<any> {
+    try {
+      $event.stopPropagation();
+      $event.preventDefault();
+      document.body.classList.toggle('flb-menu-hide');
+      document.body.classList.toggle('flb-menu-show');
+      this._ionMenu.open();
+    } catch (error: any) {
+      console.error(`Attention, "_onMenuButtonClick": ${error}`);
+    }
+  }
+
+  /**
+   * Menu toggle click event handler
+   */
+  async _onMenuToggleClick($event: any): Promise<any> {
+    try {
+      $event.stopPropagation();
+      $event.preventDefault();
+      document.body.classList.toggle('flb-menu-hide', false);
+      document.body.classList.toggle('flb-menu-show', true);
+      this._ionMenu.toggle();
+    } catch (error: any) {
+      console.error(`Attention, "_onMenuToggleClick": ${error}`);
+    }
+  }
+
+  /*********************************************************************************************************************
+   *********************************************************************************************************************
+   ***
    *** Support methods
    ***
    *********************************************************************************************************************
@@ -302,22 +483,21 @@ export class DataService {
    * Show loading
    */
   async showLoading(params: any = {}): Promise<any> {
-    await this.hideLoading();
+    this._loading = null;
+    this._loadingController.dismiss('loading').catch(() => true);
+
     const loading = (this._loading = `${new Date().getTime()}-${Math.random()}`);
-    await new Promise((r: any) => setTimeout(r, params.delay || 1000));
+    await new Promise((r: any) => setTimeout(r, params.delay || 1500));
     if (loading !== this._loading) {
       return;
     }
+
     if (params.message) {
-      const text = this.i18n.format(params.message, params.value) || params.message;
-      if (text && text !== params.message) {
-        params.message = text;
-      } else {
-        params.message = undefined;
-      }
+      params.message = this.formatI18n(params.message, params.value);
     }
+
     if (params.message) {
-      const object: any = await this._ionLoading.create({cssClass: 'flb', id: 'loading', message: params.message, duration: params.duration || 1000});
+      const object: any = await this._loadingController.create({cssClass: 'flb', id: 'loading', message: params.message, duration: params.duration || 1000});
       await object.present();
     }
   }
@@ -326,73 +506,42 @@ export class DataService {
    * Show message
    */
   async showMessage(params: any = {}): Promise<any> {
-    await this.hideLoading();
+    this._loading = null;
+    this._loadingController.dismiss('loading').catch(() => true);
+
     if (params.message) {
-      const text = this.i18n.format(params.message, params.value) || params.message;
-      if (text && text !== params.message) {
-        params.message = text;
-      } else {
-        params.message = undefined;
-      }
+      params.message = this.formatI18n(params.message);
     }
+
     if (params.error) {
-      params.message = this.i18n.format(`page.status.${params.error?.status || '500'}.warning`) || params.message;
+      params.message = this.formatI18n(`page.status.${params.error?.status || '500'}.warning`) || params.message;
       params.color = params.color || 'danger';
       params.duration = params.duration || 6000;
     } else {
       params.color = params.color || 'success';
       params.duration = params.duration || 1000;
     }
+
     if (params.message) {
       const object: any = await this._ionToast.create({cssClass: 'flb', message: params.message, color: params.color, duration: params.duration});
       await object.present();
     }
+
     if (params.message && params.error?.status === 402) {
       console.log('ERROR', params.error?.status);
-      //await this.store();
-      //this.goto('user/signin');
+      //this.gotoRoot('user/signin', {setUser: false});
     }
-  }
-
-  /**
-   * Hide loading
-   */
-  async hideLoading(): Promise<any> {
-    this._loading = null;
-    this._ionLoading.dismiss('loading').catch(() => true);
-  }
-
-  /**
-   * Toggle night mode
-   */
-  async toggleNight($event: any = undefined): Promise<any> {
-    if ($event) {
-      $event.stopPropagation();
-      $event.preventDefault();
-    }
-    document.body.classList.toggle('night', (this.user._config.night = !this.user._config.night));
-  }
-
-  /**
-   * Show menu
-   */
-  async showMenu($event: any = undefined): Promise<any> {
-    if ($event) {
-      $event.stopPropagation();
-      $event.preventDefault();
-    }
-    this._ionMenu.open();
   }
 
   /**
    * Show view
    */
   async showView(params: any = {}): Promise<any> {
-    await this.hideLoading();
-    if (typeof params.$event?.target?.complete === 'function') {
-      params.$event.target.complete();
+    if (params.lock) {
+      await this._ionModal.dismiss().catch(() => true);
+      delete params.lock;
     }
-    const modal = await this._ionModal.create({cssClass: 'flb', component: params.component, componentProps: params.componentProps});
+    const modal = await this._ionModal.create({cssClass: 'flb', ...params});
     await modal.present();
     const result: any = await modal.onDidDismiss();
     if (result && result.data) {
@@ -402,444 +551,515 @@ export class DataService {
     }
   }
 
+  /*********************************************************************************************************************
+   *********************************************************************************************************************
+   ***
+   *** Support methods
+   ***
+   *********************************************************************************************************************
+   ********************************************************************************************************************/
+
   /**
-   * Show form
+   * Toggle night mode
    */
-  async showForm(params: any = {}): Promise<any> {
+  //async toggleNight($event: any = undefined): Promise<any> {
+  //  if ($event) {
+  //    $event.stopPropagation();
+  //    $event.preventDefault();
+  //  }
+  //  document.body.classList.toggle('night', (this.user._config.night = !this.user._config.night));
+  //}
+
+  async showConfirmDialog(params: any = {}): Promise<any> {
     return await new Promise(async (resolve: any) => {
       const alert = await this._ionAlert.create({
         header: params.header || '',
         inputs: params.inputs || [],
         buttons: [
-          {text: 'submit', handler: resolve},
-          {text: 'cancel', role: 'cancel', cssClass: 'secondary', handler: resolve}
+          {text: this.formatI18n('$page.accept.title'), handler: resolve},
+          {text: this.formatI18n('$page.cancel.title'), role: 'cancel', cssClass: 'secondary', handler: resolve}
         ]
       });
       await alert.present();
     });
   }
 
-  /*********************************************************************************************************************
-   *********************************************************************************************************************
-   ***
-   *** Page
-   ***
-   *********************************************************************************************************************
-   ********************************************************************************************************************/
-
   /**
-   * Page search event handler
+   * Show content download
    */
-  async _onPageSearch($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.search.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/`,
-        method: 'GET'
-      });
-
-      page.setHeader([{header: {menu: true, search: true, modal: page._component.modal}}]);
-      page._config._setResult(result);
-
-      this.showMessage({message: `${page._config.name}.search.success`, $event, value: result});
-    } catch (error) {
-      this.showMessage({message: `${page._config.name}.search.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page select event handler
-   */
-  async _onPageSelect($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.select.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/${page._config.params._id || ''}`,
-        method: 'GET'
-      });
-
-      page._config._setHeader([result]);
-      page._config._setResultValue([result]);
-
-      this.showMessage({message: `${page._config.name}.select.success`, $event, value: result});
-    } catch (error) {
-      this.showMessage({message: `${page._config.name}.select.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page create event handler
-   */
-  async _onPageCreate($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.create.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/`,
-        method: 'POST',
-        body: page._config.params
-      });
-
-      this.showMessage({message: `${page._config.name}.create.success`, $event, value: result});
-    } catch (error) {
-      this.showMessage({message: `${page._config.name}.create.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page update event handler
-   */
-  async _onPageUpdate($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.update.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/${page._config.params._id || ''}`,
-        method: 'PUT',
-        body: page._config.params
-      });
-
-      this.showMessage({message: `${page._config.name}.update.success`, $event, value: result});
-    } catch (error) {
-      this.showMessage({message: `${page._config.name}.update.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page delete event handler
-   */
-  async _onPageDelete($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.delete.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/${page._config.params._id || ''}`,
-        method: 'DELETE'
-      });
-
-      this.showMessage({message: `${page._config.name}.delete.success`, $event, value: result});
-    } catch (error) {
-      this.showMessage({message: `${page._config.name}.delete.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page export event handler
-   */
-  async _onPageExport($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.export.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/export`,
-        method: 'POST',
-        body: page._config.params
-      });
-
-      this.showMessage({message: `${page._config.name}.export.success`, $event, value: result});
-    } catch (error) {
-      this.showMessage({message: `${page._config.name}.export.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page import event handler
-   */
-  async _onPageImport($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.import.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/import`,
-        method: 'POST',
-        body: page._config.params
-      });
-
-      this.showMessage({message: `${page._config.name}.import.success`, $event, value: result});
-    } catch (error) {
-      this.showMessage({message: `${page._config.name}.import.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page submit event handler
-   */
-  async _onPageSubmit($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.submit.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/${page._config.params._id || ''}`,
-        method: 'POST',
-        body: page._config.params
-      });
-
-      this.showMessage({message: `${page._config.name}.submit.success`, $event, value: result});
-    } catch (error) {
-      this.showMessage({message: `${page._config.name}.submit.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page cancel event handler
-   */
-  async _onPageCancel($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.cancel.loading`, $event});
-
-      const result: any = {};
-
-      this.showMessage({message: `${page._config.name}.cancel.success`, $event, value: result});
-    } catch (error) {
-      this.showMessage({message: `${page._config.name}.cancel.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page upload event handler
-   */
-  async _onPageUpload($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.upload.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/upload`,
-        method: 'POST',
-        form: page._config.params
-      });
-
-      this.showMessage({message: `${page._config.name}.upload.success`, $event, value: result});
-    } catch (error) {
-      this.showMessage({message: `${page._config.name}.upload.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page download event handler
-   */
-  async _onPageSelectAndDownload($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.download.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/${page._config.params._id || ''}`,
-        method: 'GET',
-        qs: {event: 'download'},
-        type: 'blob',
-        observe: 'response'
-      });
-
-      const subject = ((result.headers.get('content-disposition') || 'download.pdf').split('filename=').pop() || '')
-        .replace(/^("|')?(.*?)("|')?$/, '$2')
-        .replace(/\s\s+/g, ' ')
-        .trim();
-      const element = document.createElement('a');
-      element.href = URL.createObjectURL(result.body);
-      element.style.display = 'none';
-      element.download = subject;
-      element.click();
-
-      this.showMessage({message: `${page._config.name}.download.success`, $event, value: result});
-    } catch (error: any) {
-      this.showMessage({message: `${page._config.name}.download.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page print event handler
-   */
-  async _onPageSelectAndPrint($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.print.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/${page._config.params._id || ''}`,
-        method: 'GET',
-        qs: {event: 'print'},
-        type: 'blob',
-        observe: 'response'
-      });
-
-      const element = document.createElement('iframe');
-      element.src = URL.createObjectURL(result.body);
-      element.style.display = 'none';
-      element.onload = () => {
-        element.focus();
-        element.contentWindow?.print();
-      };
-      document.body.appendChild(element);
-
-      this.showMessage({message: `${page._config.name}.print.success`, $event, value: result});
-    } catch (error: any) {
-      this.showMessage({message: `${page._config.name}.print.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page share event handler
-   */
-  async _onPageSelectAndShare($event: any, page: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.share.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/${page._config.params._id || ''}`,
-        method: 'GET',
-        qs: {event: 'share'},
-        type: 'blob',
-        observe: 'response'
-      });
-
-      navigator.share ? navigator.share(result.body) : navigator.clipboard.writeText(result.body);
-
-      this.showMessage({message: `${page._config.name}.share.success`, $event, value: result});
-    } catch (error: any) {
-      this.showMessage({message: `${page._config.name}.share.warning`, $event, error});
-    }
-  }
-
-  /**
-   * Page sendmail event handler
-   */
-  async _onPageSelectAndSendmail($event: any, page: any): Promise<any> {
-    try {
-      const params: any = await this.showForm({
-        header: 'Ingresa el E-mail',
-        inputs: [{name: 'email', type: 'email', value: this.user._config.email || '', placeholder: 'E-mail'}]
-      });
-      if (!params?.email) {
-        return;
+  async showContentDownload(params: any = {}): Promise<any> {
+    return await new Promise(async (resolve: any, reject: any) => {
+      try {
+        const subject =
+          params.name ||
+          ((params.value.headers.get('content-disposition') || 'download.pdf').split('filename=').pop() || '')
+            .replace(/^("|')?(.*?)("|')?$/, '$2')
+            .replace(/\s\s+/g, ' ')
+            .trim();
+        const element = document.createElement('a');
+        element.href = URL.createObjectURL(params.value.body);
+        element.style.display = 'none';
+        element.download = subject;
+        element.click();
+        resolve();
+      } catch (error: any) {
+        reject(error);
       }
-
-      this.showLoading({message: `${page._config.name}.send.loading`, $event});
-
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/${page._config.params._id || ''}`,
-        method: 'GET',
-        qs: {event: 'send', email: params.email}
-      });
-
-      this.showMessage({message: `${page._config.name}.send.success`, $event, value: result});
-    } catch (error: any) {
-      this.showMessage({message: `${page._config.name}.send.warning`, $event, error});
-    }
+    });
   }
 
   /**
-   * Populate
+   * Show content print
    */
-  async _onPageItemPopulate($event: any, page: any, item: any): Promise<any> {
-    try {
-      this.showLoading({message: `${page._config.name}.populate.loading`, $event});
-      const result: any = await this.http.request({
-        url: `${this._config.http.url}`,
-        uri: `${this._config.http.uri}${this._config.http.api}/${page._config.type}/`,
-        method: 'GET',
-        qs: {facet: item.name}
-      });
+  async showContentPrint(params: any = {}): Promise<any> {
+    return await new Promise(async (resolve: any, reject: any) => {
+      try {
+        const element = document.createElement('iframe');
+        element.src = URL.createObjectURL(params.value.body);
+        element.style.display = 'none';
+        element.onload = () => {
+          element.focus();
+          element.contentWindow?.print();
+        };
+        document.body.appendChild(element);
+        resolve();
+      } catch (error: any) {
+        reject(error);
+      }
+    });
+  }
 
-      //const value: any = await this.data.http.request(params);
-      //if (this.item.require) {
-      //  this.items = value.filter((r: any) => !!r.index);
-      //} else {
-      //  this.items = value;
-      //}
+  /**
+   * Show content share
+   */
+  async showContentShare(params: any = {}): Promise<any> {
+    return await new Promise(async (resolve: any, reject: any) => {
+      try {
+        try {
+          navigator.share(params.value.body);
+        } catch (e: any) {
+          navigator.clipboard.writeText(params.value.body);
+        }
+        resolve();
+      } catch (error: any) {
+        reject(error);
+      }
+    });
+  }
 
-      this.showMessage({message: `${page._config.name}.populate.success`, $event, value: result});
-    } catch (error: any) {
-      this.showMessage({message: `${page._config.name}.populate.warning`, $event, error});
-    }
+  /**
+   * Show content sendmail
+   */
+  async showContentSendmail(params: any = {}): Promise<any> {
+    return await new Promise(async (resolve: any, reject: any) => {
+      try {
+        try {
+          navigator.share(params.value.body);
+        } catch (e: any) {
+          navigator.clipboard.writeText(params.value.body);
+        }
+        resolve();
+      } catch (error: any) {
+        reject(error);
+      }
+    });
   }
 
   /*********************************************************************************************************************
    *********************************************************************************************************************
    ***
-   *** Item
+   *** Format
    ***
    *********************************************************************************************************************
    ********************************************************************************************************************/
 
   /**
-   * Item color click event handler
+   * Format i18n
    */
-  async _onItemColorClick($event: any, item: any): Promise<any> {
-    try {
-      if (!item._config.readonly) {
-        if (!item._config.$el) {
-          item._config.$el = document.createElement('input');
-          item._config.$el.type = 'color';
-          item._config.$el.onchange = () => {
-            item.setValue(item._config.$el.value || undefined);
-          };
-          $event.target.parentNode.appendChild(item._config.$el);
+  formatI18n(type: any, item: any = undefined, data: any = undefined): any {
+    if (type === 'value') {
+      return item?.value || {};
+    }
+    if (item && data) {
+      item.__counter = (item.__counter || 0) + 1;
+    }
+
+    if (item?.value && typeof item.value[type] !== 'undefined') {
+      return item.value[type];
+    }
+
+    if (item?.text && typeof item.text[type] !== 'undefined') {
+      return item?.text[type];
+    }
+
+    if (item?._i18n) {
+      type = `${item._i18n}.${type}`;
+    }
+
+    const parts = `${type || ''}`.toLowerCase().split('.');
+
+    const index = parts.shift();
+
+    const count = parts.length;
+
+    const tests = [`${index}`, '$page', '$text'];
+
+    let result: any;
+    for (let i = 0; i < count; i++) {
+      const value = parts.join('.');
+      parts.shift();
+
+      for (const t of tests) {
+
+        //if (this.i18n.values[`${t}`] && this.i18n.values[`${t}`][`${value}[${this.i18n.region}]`]) {
+        //  result = this.i18n.values[`${t}`][`${value}[${this.i18n.region}]`];
+        //  break;
+        //}
+
+        if (typeof this.i18n.values[`${t}`] === 'object' && typeof this.i18n.values[`${t}`][`${value}`] === 'string') {
+          result = this.i18n.values[`${t}`][`${value}`];
+          break;
         }
-        setTimeout(() => item._config.$el.click(), 100);
       }
-    } catch (error: any) {
-      console.error(`${error}`);
+
+      if (typeof result !== 'undefined') {
+        break;
+      }
     }
+
+    result = result || '';
+
+    if (!result && type.match(/title$/i)) {
+      result = item?._config?.name || '';
+    }
+
+    result = result.toString();
+
+    result = result.replace(/\s\s+/g, ' ').trim();
+
+    const replacements: any = [...result.matchAll(/\{\{.*?\}\}/g)];
+    for (const r of replacements) {
+      result = result.replace(r.input, this.formatI18n(r.input.replace('{{', '').replace('}}', '').trim()));
+    }
+
+    if (item) {
+      for (const i in item) {
+        result = result.replace(`{{${i}}}`, item[i]);
+      }
+    }
+
+    result = result.replace(/\{\{.*?\}\}/g, '').trim();
+    result = result.replace(/\s\s+/g, ' ').trim();
+
+    //result = type + ` "${result}"`;
+    return result;
   }
 
   /**
-   * Item files click event handler
+   * Format input string
    */
-  async _onItemFilesClick($event: any, item: any): Promise<any> {
-    try {
-      if (!item._config.readonly) {
-        if (!item._config.$el) {
-          item._config.$el = document.createElement('input');
-          item._config.$el.type = 'file';
-          item._config.$el.accept = item._config.inputAccept || '*/*';
-          item._config.$el.capture = 'environment';
-          item._config.$el.onchange = () => {
-            item.setValue(item._config.$el.files ? item._config.$el.files[0] : undefined);
-          };
-          $event.target.parentNode.appendChild(item._config.$el);
+  formatInputString(value: any): any {
+    let result = value || '';
+    result = result.toString();
+    return result;
+  }
+
+  /**
+   * Format input number
+   */
+  formatInputNumber(value: any): any {
+    let result = value || 0;
+    result = parseFloat(result);
+    return result;
+  }
+
+  /**
+   * Format input number positive
+   */
+  formatInputNumberPositive(value: any): any {
+    let result = value || 0;
+    result = this.formatInputNumber(result);
+    result = Math.abs(result);
+    return result;
+  }
+
+  /**
+   * Format input number negative
+   */
+  formatInputNumberNegative(value: any): any {
+    let result = value || 0;
+    result = this.formatInputNumber(result);
+    result = Math.abs(result) * -1;
+    return result;
+  }
+
+  /**
+   * Format input object
+   */
+  formatInputObject(value: any): any {
+    const result = value || {};
+    return result;
+  }
+
+  /**
+   * Format input date
+   */
+  formatInputDate(value: any): string {
+    if (!value) {
+      return '';
+    }
+    const p = (n: any) => {
+      const v = Math.floor(Math.abs(n));
+      return (v < 10 ? '0' : '') + v;
+    };
+    const date = new Date(value);
+    const t = date.getTimezoneOffset() * -1;
+    const y = date.getFullYear();
+    const m = date.getMonth() + 1;
+    const d = date.getDate();
+    const h = date.getHours();
+    const i = date.getMinutes();
+    const s = date.getSeconds();
+    return `${y}-${p(m)}-${p(d)}T${p(h)}:${p(i)}:${p(s)}${t >= 0 ? '+' : '-'}${p(t / 60)}:${p(t % 60)}`;
+  }
+
+  /**
+   * Format input boolean
+   */
+  formatInputBoolean(value: any): string {
+    let result = value || false;
+    result = ['true', 'yes', '1', true].includes(value) ? true : false;
+    return result;
+  }
+
+  /**
+   * Format human string
+   */
+  formatHumanString(value: any): any {
+    const result = value || '';
+    return result;
+  }
+
+  /**
+   * Format human number
+   */
+  formatHumanNumber(value: any): any {
+    let result = this.formatInputNumber(value);
+    result = Math.round((result + Number.EPSILON) * 100) / 100;
+    const values = result.toString().split('.');
+    result = values[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + ((values[1] ? values[1].substr(0, 2) : '') + '00').substr(0, 2);
+    result = result.trim();
+    return result;
+  }
+
+  /**
+   * Format human datetime
+   */
+  formatHumanDatetime(value: any): any {
+    let result = value ? this.formatInputDate(value) : '';
+    result = result.toString();
+    result = result.replace(/^([0-9]{4})-([0-9]{2})-([0-9]{2}).([0-9]{2}):([0-9]{2}):([0-9]{2})(.*)?/, (...v: any) => {
+      return 'd/m/y h:i:s'.trim().replace(/y+/i, v[1]).replace(/m+/i, v[2]).replace(/d+/i, v[3]).replace(/h+/i, v[4]).replace(/i+/i, v[5]).replace(/s+/i, v[6]);
+    });
+    return result;
+  }
+
+  /**
+   * Format human date
+   */
+  formatHumanDate(value: any): any {
+    let result = value || '';
+    result = result.toString();
+    result = result.replace(/([0-9]{4})-([0-9]{2})-([0-9]{2})(.*)/, (...v: any) => {
+      return 'd/m/y'.trim().replace(/y+/i, v[1]).replace(/m+/i, v[2]).replace(/d+/i, v[3]);
+    });
+    return result;
+  }
+
+  /**
+   * Format human time
+   */
+  formatHumanTime(value: any): any {
+    let result = value || '';
+    result = result.toString();
+    result = result.replace(/([0-9]{2}):([0-9]{2}):([0-9]{2})(.*)/, (...v: any) => {
+      return 'h:i:s'.trim().replace(/h+/i, v[1]).replace(/i+/i, v[2]).replace(/s+/i, v[3]);
+    });
+    return result;
+  }
+
+  /**
+   * Format human year
+   */
+  formatHumanYear(value: any): any {
+    let result = value || '';
+    result = result.toString();
+    result = result.replace(/^([0-9]{4})$/, '$1');
+    return result;
+  }
+
+  /**
+   * Format human year-month
+   */
+  formatHumanYearMonth(value: any): any {
+    let result = value || '';
+    result = result.toString();
+    result = result.replace(/^([0-9]{4})-([0-9]{2})$/, '$2/$1');
+    return result;
+  }
+
+  /**
+   * Format human URL
+   */
+  formatHumanUrl(value: any): any {
+    let result = value || '';
+    result = result.toString();
+    result = result.toLowerCase();
+    result = result.trim();
+    return result;
+  }
+
+  /**
+   * Format human phone
+   */
+  formatHumanPhone(value: any): any {
+    let result = value || '';
+    result = result.toString();
+    result = result.toLowerCase();
+    result = result.trim();
+    return result;
+  }
+
+  /**
+   * Format human email
+   */
+  formatHumanEmail(value: any): any {
+    let result = value || '';
+    result = result.toString();
+    result = result.toLowerCase();
+    result = result.trim();
+    return result;
+  }
+
+  /**
+   * Format human color
+   */
+  formatHumanColor(value: any): any {
+    let result = value || '';
+    result = result.toString();
+    result = result.toLowerCase();
+    result = result.trim();
+    return result;
+  }
+
+  /**
+   * Format human location
+   */
+  formatHumanLocation(value: any): any {
+    if (typeof value == 'object' && value) {
+      value = [value.street, value.city, value.state].filter((v) => !!v).join(', ');
+    }
+    let result = value || '';
+    result = result.toString();
+    result = result.trim();
+    return result;
+  }
+
+  /**
+   * Format address
+   */
+  formatAddress(params: any) {
+    const current: any = {};
+    params.address_components.forEach((r: any) => {
+      if (r.types.includes('route')) {
+        current.street = this.formatI18n(r.short_name);
+      }
+    });
+    params.address_components.forEach((r: any) => {
+      if (r.types.includes('street_number') && current.street) {
+        current.street = current.street + ' ' + this.formatI18n(r.long_name);
+      }
+    });
+    params.address_components.forEach((r: any) => {
+      if (r.types.includes('administrative_area_level_2')) {
+        current.city = this.formatI18n(r.long_name);
+      }
+    });
+    params.address_components.forEach((r: any) => {
+      if (r.types.includes('locality')) {
+        current.city = this.formatI18n(r.long_name);
+      }
+    });
+    params.address_components.forEach((r: any) => {
+      if (r.types.includes('administrative_area_level_1')) {
+        current.state = this.formatI18n(r.long_name);
+      }
+    });
+    params.address_components.forEach((r: any) => {
+      if (r.types.includes('country')) {
+        current.country = this.formatI18n(r.long_name);
+      }
+    });
+    params.address_components.forEach((r: any) => {
+      if (r.types.includes('postal_code')) {
+        current.zipcode = this.formatI18n(r.long_name);
+      }
+    });
+
+    //if (this.value.street && params.keep_street) {
+    //  current.street = this.formatI18n(this.value.street);
+    //}
+    if (!current.street && params.formatted_address) {
+      current.street = params.formatted_address.split(',')[0].trim();
+    }
+    if (!current.city || current.city.match(/^capital/i)) {
+      current.city = current.state;
+    }
+
+    return current;
+
+    //const position: any = {
+    //  lat: params.geometry.location.lat(),
+    //  lng: params.geometry.location.lng()
+    //};
+    //this.value = current;
+    //this.value.position = [position.lat, position.lng];
+    //this.google.map.setCenter(position);
+    //this.google.marker.setPosition(position);
+    //console.log('New value', this.value);
+  }
+
+  /**
+   * Format human address text
+   */
+  formatString(value: any): string {
+    let result = value || '';
+    result = result.toString();
+    result = result.replace(/\s\s+/, ' ').trim();
+    result = result
+      .split(' ')
+      .map((word: string) => {
+        if (word.match(/[0-9]+/)) {
+          return word.toUpperCase();
         }
-        setTimeout(() => item._config.$el.click(), 100);
-      }
-    } catch (error: any) {
-      console.error(`${error}`);
-    }
+        if (word.match(/[^a-záéíóúñ]/)) {
+          return word;
+        } else {
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        }
+      })
+      .join(' ');
+    result = result.charAt(0).toUpperCase() + result.slice(1);
+    return result;
   }
 
   /**
-   * Item url click event handler
+   * Format human path
    */
-  async _onItemUrlClick($event: any, item: any): Promise<any> {
-    try {
-      if (item.value) {
-        window.open(item.value, '_system');
-      }
-    } catch (error: any) {
-      console.error(`${error}`);
+  formatUrlParameters(value = '', params: any = {}): string {
+    for (const p in params) {
+      value = value.replace(new RegExp(':' + p), params[p]);
     }
-  }
-
-
-  /**
-   * onLoadImageError
-   */
-  async _onLoadImageError($event: any): Promise<any> {
-    try {
-      $event.target.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAQAAAAnOwc2AAAAEUlEQVR42mP8/58BAzAOZUEA5OUT9xiCXfgAAAAASUVORK5CYII=';
-    } catch (error: any) {
-      console.error(`${error}`);
-    }
+    return value;
   }
 }

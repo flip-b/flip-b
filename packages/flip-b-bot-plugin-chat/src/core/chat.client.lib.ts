@@ -1,77 +1,91 @@
 /**
- * Chat client
+ * Get chat client lib function
  */
-export function client(bot: any, params: any = {}, config: any = {}) {
-  const version = '1.0.0';
-  const author = params.author || 'Flip-B';
-  const prefix = params.prefix || 'Bot';
+export function getChatClientLib(params: any = {}, query: any = {}) {
+  const author: any = params.system_author || 'Flip-B';
+  const prefix: any = params.system_prefix || 'Bot';
+  const version: any = params.system_version || '1.0.0';
+
+  // Define default global values
+  const global: any = {
+    language: query.language || params.global_language || 'en-US',
+    settings: query.settings || params.global_settings || undefined,
+    ...(params.global || {})
+  };
+
+  // Define default system values
+  const system: any = {
+    storage: params.system_storage || 'sessionStorage',
+    timeout: params.system_timeout || 0,
+    waiting: params.system_waiting || 0,
+    ...(params.system || {})
+  };
 
   // Define default colors values
   const colors: any = {
-    button_bg: '#02ad83',
-    button_bg_active: '#7f7f7f',
-    button_fg: '#ffffff',
-    button_fg_active: '#134390',
-    dialog_bg: '#1b3b6e',
-    dialog_bg_active: '#134390',
-    dialog_fg: '#ffffff',
-    dialog_fg_active: '#134390',
+    button_bg: params.colors_button_bg || '#02ad83',
+    button_bg_active: params.colors_button_bg_active || '#7f7f7f',
+    button_fg: params.colors_button_fg || '#ffffff',
+    button_fg_active: params.colors_button_fg_active || '#134390',
+    dialog_bg: params.colors_dialog_bg || '#1b3b6e',
+    dialog_bg_active: params.colors_dialog_bg_active || '#134390',
+    dialog_fg: params.colors_dialog_fg || '#ffffff',
+    dialog_fg_active: params.colors_dialog_fg_active || '#134390',
     ...(params.colors || {})
   };
 
   // Define default images values
   const images: any = {
-    logo: '',
-    chat: '',
-    head: '',
+    logo: params.images_logo || params.images_avatar_im || '',
+    head: params.images_head || params.images_dialog_im || '',
+    chat: params.images_chat || params.images_button_im || '',
     ...(params.images || {})
   };
 
   // Define default styles values
   const styles: any = {
-    font_family: 'inherit',
-    font_size: 'inherit',
-    radius: 25,
+    font_family: params.styles_font_family || 'inherit',
+    font_size: params.styles_font_size || 'inherit',
+    radius: params.styles_radius || 0,
     ...(params.styles || {})
   };
 
   // Define default buttom values
   const button: any = {
-    style: 'responsive',
-    title: 'Chat',
-    align: 'right',
-    quit_button: true,
+    style: params.button_style || 'responsive',
+    title: params.button_title || 'Chat',
+    align: params.button_align || 'right',
+    quit_button: params.button_quit_button || false,
     ...(params.button || {})
   };
 
   // Define default dialog values
   const dialog: any = {
-    style: 'responsive',
-    title: 'Chat',
-    write: 'Type a message here',
-    share_attach_message: 'Select an file or drop it here',
-    share_attach_link: 'Download file',
-    share_attach_name: 'File',
-    share_camera_message: 'Send a capture',
-    emojis: true,
-    attach: true,
-    camera: true,
-    dictate: true,
-    dictate_lang: 'en-US',
-    hide_button: true,
-    quit_button: true,
-    quit_dialog: true,
-    quit_dialog_message: 'Do you want to leave the chat?',
-    quit_dialog_negative: 'Cancel',
-    quit_dialog_positive: 'Exit',
-    logo: true,
-    time: true,
-    timeout: 0,
+    style: params.dialog_style || 'responsive',
+    title: params.dialog_title || 'Chat',
+    align: params.dialog_align || 'right',
+    write: params.dialog_write || 'Type a message here',
+    share_attach_message: params.dialog_share_attach_message || 'Select an file or drop it here',
+    share_attach_link: params.dialog_share_attach_link || 'Download file',
+    share_attach_name: params.dialog_share_attach_name || 'File',
+    share_camera_message: params.dialog_share_camera_message || 'Send a capture',
+    emojis: params.dialog_emojis || false,
+    attach: params.dialog_attach || false,
+    camera: params.dialog_camera || false,
+    dictate: params.dialog_dictate || false,
+    hide_button: params.dialog_hide_button || false,
+    quit_button: params.dialog_quit_button || false,
+    quit_dialog: params.dialog_quit_dialog || false,
+    quit_dialog_message: params.dialog_quit_dialog_message || 'Do you want to leave the chat?',
+    quit_dialog_negative: params.dialog_quit_dialog_negative || 'Cancel',
+    quit_dialog_positive: params.dialog_quit_dialog_positive || 'Exit',
+    logo: params.dialog_logo || false,
+    time: params.dialog_time || false,
     ...(params.dialog || {})
   };
 
   // Define result
-  let result = String.raw`
+  return String.raw`
 
 /*!
  * ${prefix}Chat ${version}
@@ -85,8 +99,19 @@ window.${prefix}Chat = {
 
   // Define params
   params: {
-    url_root: '_URL_ROOT_',
-    url_path: '_URL_PATH_',
+
+    // Define global
+    global: {
+      language: ${global.language ? "'" + global.language + "'" : 'undefined'},
+      settings: ${global.settings ? JSON.stringify(global.settings) : 'undefined'}
+    },
+
+    // Define system
+    system: {
+      storage: ${system.storage ? "'" + system.storage + "'" : 'sessionStorage'},
+      timeout: ${system.timeout ? parseInt(system.timeout) * 1000 : 0},
+      waiting: ${system.waiting ? parseInt(system.waiting) * 1000 : 0}
+    },
 
     // Define colors
     colors: {
@@ -126,6 +151,7 @@ window.${prefix}Chat = {
     dialog: {
       style: '${dialog.style}',
       title: '${dialog.title}',
+      align: '${dialog.align}',
       write: '${dialog.write}',
       share_attach_message: '${dialog.share_attach_message}',
       share_attach_link: '${dialog.share_attach_link}',
@@ -135,7 +161,6 @@ window.${prefix}Chat = {
       attach: ${dialog.attach},
       camera: ${dialog.camera},
       dictate: ${dialog.dictate},
-      dictate_lang: '${dialog.dictate_lang}',
       hide_button: ${dialog.hide_button},
       quit_button: ${dialog.quit_button},
       quit_dialog: ${dialog.quit_dialog},
@@ -143,8 +168,7 @@ window.${prefix}Chat = {
       quit_dialog_negative: '${dialog.quit_dialog_negative}',
       quit_dialog_positive: '${dialog.quit_dialog_positive}',
       logo: ${dialog.logo},
-      time: ${dialog.time},
-      timeout: ${dialog.timeout}
+      time: ${dialog.time}
     },
 
     // Define emojis
@@ -202,8 +226,8 @@ window.${prefix}Chat = {
   // Define socket
   socket: null,
 
-  // Define session
-  session: null,
+  // Define ticket
+  ticket: null,
 
   // Define welcome
   welcome: null,
@@ -597,7 +621,7 @@ window.${prefix}Chat = {
         var recognition = new webkitSpeechRecognition();
         recognition.continuous = false;
         recognition.interimResults = true;
-        recognition.lang = self.params.dialog.dictate_lang;
+        recognition.lang = self.params.global.language;
         recognition.start();
         recognition.onresult = function(e) {
           if (e) {
@@ -632,26 +656,26 @@ window.${prefix}Chat = {
     // Define status
     self.client = true;
 
-    // Define session
-    self.session = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    // Define ticket
+    self.ticket = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
-    self.system_storage.setItem('session', self.session);
+    self.system_storage.setItem('ticket', self.ticket);
 
-    // Define session interval
-    var sessionInterval = setInterval(function() {
-      if (!self.system_storage.hasItem('session')) {
+    // Define ticket interval
+    var ticketInterval = setInterval(function() {
+      if (!self.system_storage.hasItem('ticket')) {
         self.__quit();
-        clearInterval(sessionInterval);
+        clearInterval(ticketInterval);
       }
     }, 1000);
 
     var timeoutInterval = setInterval(function() {
-      if (self.params.dialog.timeout && self.last && (new Date().getTime() - self.last) > self.params.dialog.timeout) {
+      if (self.params.system.timeout && self.last && (new Date().getTime() - self.last) > self.params.system.timeout) {
         self.last = 0;
         self.sendAction('timeout');
-        clearInterval(sessionInterval);
+        clearInterval(ticketInterval);
         clearInterval(timeoutInterval);
         setTimeout(function() {
           self.__close();
@@ -677,10 +701,12 @@ window.${prefix}Chat = {
     }
 
     // Define socket
-    self.socket = io(self.params.url_root, {
-      path: self.params.url_path + '/socket.io',
+    self.socket = io('_URL_', {
+      path: '/_PLUGIN_/socket.io',
       query: {
-        session: self.session
+        plugin: '_PLUGIN_',
+        origin: '_ORIGIN_',
+        ticket: self.ticket
       },
       transports: ['websocket', 'polling'],
       timeout: 60000
@@ -801,12 +827,12 @@ window.${prefix}Chat = {
 
     // Verify language
     if (update.language) {
-      self.params.language = update.language;
+      self.params.global.language = update.language;
     }
 
     // Verify settings
     if (update.settings) {
-      self.params.settings = update.settings;
+      self.params.global.settings = update.settings;
     }
 
     // Verify show button
@@ -1057,9 +1083,9 @@ window.${prefix}Chat = {
         item_values += (item.attr && item.attr.onblur ? ' onblur="' + item.attr.onblur + '"' : '');
         item_values += (item.attr && item.attr.onclick ? ' onclick="' + item.attr.onclick + '"' : '');
         item_values += (item.attr && item.attr.ondblclick ? ' ondblclick="' + item.attr.ondblclick + '"' : '');
-        item_values += (item.attr && item.attr.ondkeyup ? ' ondkeyup="' + item.attr.ondkeyup + '"' : '');
-        item_values += (item.attr && item.attr.ondkeydown ? ' ondkeydown="' + item.attr.ondkeydown + '"' : '');
-        item_values += (item.attr && item.attr.ondkeypress ? ' ondkeypress="' + item.attr.ondkeypress + '"' : '');
+        item_values += (item.attr && item.attr.onkeyup ? ' onkeyup="' + item.attr.onkeyup + '"' : '');
+        item_values += (item.attr && item.attr.onkeydown ? ' onkeydown="' + item.attr.onkeydown + '"' : '');
+        item_values += (item.attr && item.attr.onkeypress ? ' onkeypress="' + item.attr.onkeypress + '"' : '');
 
         if (item.action && (item.type == 'submit' || item.type == 'button')) {
           item_values += ' onclick="${prefix}Chat.__submitForm(\'' + form_prefix + '\', \'' + item.action + '\', \'' + item.type + '\');"';
@@ -1245,7 +1271,7 @@ window.${prefix}Chat = {
     var self = this;
 
     // Define adapter
-    var adapter = window.sessionStorage;
+    var adapter = self.params.system.storage ? window[self.params.system.storage] : window.sessionStorage;
 
     // Define storage
     var storage = {
@@ -1432,7 +1458,7 @@ window.${prefix}Chat = {
       '      display: none;',
       '      overflow: hidden !important;',
       '      position: fixed !important;',
-      '      ' + (this.params.button.align ? this.params.button.align : 'right') + ': 30px !important;',
+      '      ' + (this.params.dialog.align ? this.params.dialog.align : 'right') + ': 30px !important;',
       '      bottom: 30px !important;',
       '      width: 375px !important;',
       '      height: 500px !important;',
@@ -2577,7 +2603,6 @@ window.${prefix}Chat = {
 
       // Define custom styles
 
-
       '  </style>'
     ].join('\n');
 
@@ -2601,7 +2626,6 @@ window.${prefix}Chat = {
       '    </button>',
 
       // Define custom button content
-
 
       '  </div>'
     ].join('\n');
@@ -2671,7 +2695,6 @@ window.${prefix}Chat = {
 
       // Define custom dialog content
 
-
       '  </div>'
     ].join('\n');
 
@@ -2707,11 +2730,11 @@ window.${prefix}Chat = {
     // Define welcome
     this.welcome = false;
 
-    // Define session
-    this.session = null;
+    // Define ticket
+    this.ticket = null;
 
-    // Remove session
-    this.system_storage.removeItem('session');
+    // Remove ticket
+    this.system_storage.removeItem('ticket');
 
     // Define client
     this.client = null;
@@ -2749,11 +2772,11 @@ window.${prefix}Chat = {
     // Define welcome
     this.welcome = false;
 
-    // Define session
-    this.session = null;
+    // Define ticket
+    this.ticket = null;
 
-    // Remove session
-    this.system_storage.removeItem('session');
+    // Remove ticket
+    this.system_storage.removeItem('ticket');
 
     // Define client
     this.client = null;
@@ -2887,8 +2910,8 @@ window.${prefix}Chat = {
   sendText: function(text, language, settings) {
     this.send({
       text: text,
-      language: language || this.params.language,
-      settings: settings || this.params.settings
+      language: language || this.params.global.language,
+      settings: settings || this.params.global.settings
     });
   },
 
@@ -2904,8 +2927,8 @@ window.${prefix}Chat = {
   sendFile: function(file, language, settings) {
     this.send({
       file: file,
-      language: language || this.params.language,
-      settings: settings || this.params.settings
+      language: language || this.params.global.language,
+      settings: settings || this.params.global.settings
     });
   },
 
@@ -2921,8 +2944,8 @@ window.${prefix}Chat = {
   sendData: function(data, language, settings) {
     this.send({
       data: data,
-      language: language || this.params.language,
-      settings: settings || this.params.settings
+      language: language || this.params.global.language,
+      settings: settings || this.params.global.settings
     });
   },
 
@@ -2938,8 +2961,8 @@ window.${prefix}Chat = {
   sendAction: function(action, language, settings) {
     this.send({
       action: action,
-      language: language || this.params.language,
-      settings: settings || this.params.settings
+      language: language || this.params.global.language,
+      settings: settings || this.params.global.settings
     });
   },
 
@@ -2956,8 +2979,8 @@ window.${prefix}Chat = {
     this.send({
       action: action,
       data: data,
-      language: language || this.params.language,
-      settings: settings || this.params.settings
+      language: language || this.params.global.language,
+      settings: settings || this.params.global.settings
     });
   },
 
@@ -2973,8 +2996,8 @@ window.${prefix}Chat = {
   sendIntent: function(intent, language, settings) {
     this.send({
       intent: intent,
-      language: language || this.params.language,
-      settings: settings || this.params.settings
+      language: language || this.params.global.language,
+      settings: settings || this.params.global.settings
     });
   }
 };
@@ -3027,9 +3050,4 @@ window.${prefix}Mask = {
   }
 };
 `;
-
-  if (config.minify) {
-    result = bot.helper.uglifyJs.minify(result).code;
-  }
-  return result;
 }

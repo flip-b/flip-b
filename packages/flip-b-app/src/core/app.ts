@@ -5,7 +5,6 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
 import {camelCase} from 'change-case';
 import errorHandler from './middleware/error-handler';
 import filesHandler from './middleware/files-handler';
@@ -25,6 +24,7 @@ export class App {
   models: any = {};
   routes: any = {};
   tasks: any = {};
+  tests: any = {};
 
   /**
    * Constructor
@@ -41,56 +41,46 @@ export class App {
   }
 
   /**
-   * Start
+   * Initialize
    */
-  async start(): Promise<any> {
+  private async initialize(): Promise<any> {
     await this.initializeConfig();
-    await this.initializeDatabase();
     await this.initializeHelper();
+    await this.initializeDatabase();
     await this.initializeControllers();
     await this.initializeModels();
     await this.initializeRoutes();
     await this.initializeTasks();
+    await this.initializeTests();
     await this.initializeRouter();
     await this.initializeServer();
-  }
-
-  /**
-   * Stop
-   */
-  async stop(): Promise<any> {
-    if (this.database) {
-      await this.database.disconnect();
-    }
-    process.exit(0);
-  }
-
-  /**
-   * Debug
-   */
-  async debug(...args: any): Promise<any> {
-    if (this.config.env === 'development') {
-      console.info(...args);
-    }
   }
 
   /**
    * Initialize config
    */
   private async initializeConfig(): Promise<any> {
-    this.debug(`> initializing config`);
-    const file = path.resolve(`${this.config.src}/config/${this.config.env.toLowerCase()}`);
-    const data = await import(file);
-    this.config = {...this.config, ...data.default};
+    console.info(`> initializing config`);
+    try {
+      const file = path.resolve(`${this.config.src}/config/${this.config.env.toLowerCase()}`);
+      const data = await import(file);
+      this.config = {...this.config, ...data.default};
+    } catch (error: any) {
+      console.error(`A fatal error occurred while initializing the config module. ${error}`);
+    }
   }
 
   /**
    * Initialize database
    */
   private async initializeDatabase(): Promise<any> {
-    this.debug(`> initializing database`);
-    if (this.config.database) {
-      this.database = await mongoose.connect(`${this.config.database.url}`, this.config.database.options);
+    console.info(`> initializing database`);
+    try {
+      if (this.config.database) {
+        this.database = await this.helper.mongoose.connect(`${this.config.database.url}`, this.config.database.options);
+      }
+    } catch (error: any) {
+      console.error(`A fatal error occurred while initializing the database module. ${error}`);
     }
   }
 
@@ -98,11 +88,14 @@ export class App {
    * Initialize helper
    */
   private async initializeHelper(): Promise<any> {
-    this.debug(`> initializing helper`);
-    const list = ['bcryptjs', 'busboy', 'change-case', 'crypto', 'ejs', 'fs', 'path', 'http', 'https', 'jsonwebtoken', 'mime-types'];
-    for (const l of list) {
-      const helper = await import(`${l}`);
-      this.helper[`${camelCase(l)}`] = helper.default || helper;
+    console.info(`> initializing helper`);
+    try {
+      const items: any[] = await this.getItems();
+      for (const i of items) {
+        this.helper[`${i.name}`] = i.call.default || i.call;
+      }
+    } catch (error: any) {
+      console.error(`A fatal error occurred while initializing the helper module. ${error}`);
     }
   }
 
@@ -110,10 +103,14 @@ export class App {
    * Initialize controllers
    */
   private async initializeControllers(): Promise<any> {
-    this.debug(`> initializing controllers`);
-    const files: any[] = await this.getFiles(path.resolve(`${this.config.src}/controllers`));
-    for (const f of files) {
-      this.controllers[`${f.name}`] = new f.call.default(this).getController();
+    console.info(`> initializing controllers`);
+    try {
+      const files: any[] = await this.getFiles(path.resolve(`${this.config.src}/controllers`));
+      for (const f of files) {
+        this.controllers[`${f.name}`] = new f.call.default(this).getController();
+      }
+    } catch (error: any) {
+      console.error(`A fatal error occurred while initializing the controllers module. ${error}`);
     }
   }
 
@@ -121,10 +118,14 @@ export class App {
    * Initialize models
    */
   private async initializeModels(): Promise<any> {
-    this.debug(`> initializing models`);
-    const files: any[] = await this.getFiles(path.resolve(`${this.config.src}/models`));
-    for (const f of files) {
-      this.models[`${f.name}`] = new f.call.default(this).getModel();
+    console.info(`> initializing models`);
+    try {
+      const files: any[] = await this.getFiles(path.resolve(`${this.config.src}/models`));
+      for (const f of files) {
+        this.models[`${f.name}`] = new f.call.default(this).getModel();
+      }
+    } catch (error: any) {
+      console.error(`A fatal error occurred while initializing the models module. ${error}`);
     }
   }
 
@@ -132,10 +133,14 @@ export class App {
    * Initialize routes
    */
   private async initializeRoutes(): Promise<any> {
-    this.debug(`> initializing routes`);
-    const files: any[] = await this.getFiles(path.resolve(`${this.config.src}/routes`));
-    for (const f of files) {
-      this.routes[`${f.name}`] = new f.call.default(this).getRoute();
+    console.info(`> initializing routes`);
+    try {
+      const files: any[] = await this.getFiles(path.resolve(`${this.config.src}/routes`));
+      for (const f of files) {
+        this.routes[`${f.name}`] = new f.call.default(this).getRoute();
+      }
+    } catch (error: any) {
+      console.error(`A fatal error occurred while initializing the routes module. ${error}`);
     }
   }
 
@@ -143,10 +148,29 @@ export class App {
    * Initialize tasks
    */
   private async initializeTasks(): Promise<any> {
-    this.debug(`> initializing tasks`);
-    const files: any[] = await this.getFiles(path.resolve(`${this.config.src}/tasks`));
-    for (const f of files) {
-      this.tasks[`${f.name}`] = new f.call.default(this).getTask();
+    console.info(`> initializing tasks`);
+    try {
+      const files: any[] = await this.getFiles(path.resolve(`${this.config.src}/tasks`));
+      for (const f of files) {
+        this.tasks[`${f.name}`] = new f.call.default(this).getTask();
+      }
+    } catch (error: any) {
+      console.error(`A fatal error occurred while initializing the tasks module. ${error}`);
+    }
+  }
+
+  /**
+   * Initialize tests
+   */
+  private async initializeTests(): Promise<any> {
+    console.info(`> initializing tests`);
+    try {
+      const files: any[] = await this.getFiles(path.resolve(`${this.config.src}/tests`));
+      for (const f of files) {
+        this.tests[`${f.name}`] = new f.call.default(this).getTest();
+      }
+    } catch (error: any) {
+      console.error(`A fatal error occurred while initializing the tests module. ${error}`);
     }
   }
 
@@ -154,25 +178,26 @@ export class App {
    * Initialize router
    */
   private async initializeRouter(): Promise<any> {
-    this.debug(`> initializing router`);
-    this.router = express();
-    this.server = http.createServer(this.router);
-
-    this.router.set('trust proxy', true);
-    this.router.set('views', `${this.config.var}/views`);
-    this.router.set('view engine', 'ejs');
-    this.router.set('etag', false);
-    this.router.set('x-powered-by', false);
-
-    this.router.use(compression(this.config.router.compression));
-    this.router.use(cors(this.config.router.cors));
-    this.router.use(express.json(this.config.router.json));
-    this.router.use(express.urlencoded(this.config.router.urlencoded));
-
-    this.router.use(routeHandler(this));
-    this.router.use(filesHandler(this));
-    this.router.use(mountHandler(this));
-    this.router.use(errorHandler(this));
+    console.info(`> initializing router`);
+    try {
+      this.router = express();
+      this.server = http.createServer(this.router);
+      this.router.set('trust proxy', true);
+      this.router.set('views', `${this.config.var}/views`);
+      this.router.set('view engine', 'ejs');
+      this.router.set('etag', false);
+      this.router.set('x-powered-by', false);
+      this.router.use(compression(this.config.router.compression));
+      this.router.use(cors(this.config.router.cors));
+      this.router.use(express.json(this.config.router.json));
+      this.router.use(express.urlencoded(this.config.router.urlencoded));
+      this.router.use(routeHandler(this));
+      this.router.use(filesHandler(this));
+      this.router.use(mountHandler(this));
+      this.router.use(errorHandler(this));
+    } catch (error: any) {
+      console.error(`A fatal error occurred while initializing the router module. ${error}`);
+    }
   }
 
   /**
@@ -187,27 +212,40 @@ export class App {
       await this.runTest(process.argv.slice(process.argv.indexOf('test') + 1));
       return;
     }
-    process.on('SIGINT', () => {
-      this.debug('> sigint received, shutting down');
-      this.stop();
-    });
-    process.on('SIGTERM', () => {
-      this.debug('> sigterm received, shutting down');
-      this.stop();
-    });
-    this.debug(`> initializing server`);
+    console.info(`> initializing server`);
     this.server.listen(this.config.server?.port).on('listening', () => {
-      this.debug(`> listening server on port ${this.config.server.port} (#${process.pid})`);
+      console.info(`> listening server on port ${this.config.server.port} (#${process.pid})`);
     });
+  }
+
+  /**
+   * Disconnect
+   */
+  private async disconnect(): Promise<any> {
+    try {
+      if (this.database) {
+        await this.database.disconnect();
+      }
+    } catch (error: any) {
+      console.error(`A fatal error occurred while disconnected the application. ${error}`);
+    }
   }
 
   /**
    * Run task
    */
   private async runTask(args: string[]): Promise<any> {
-    const task = camelCase(args.shift() || '');
-    this.debug(`> initializing ${task}`);
-    await this.tasks[`${task}`].run(...args);
+    try {
+      const module = camelCase(args.shift() || '');
+      const method = camelCase(args.shift() || '');
+      console.info(`> Run "${module}.${method}" task`);
+      const result: any = await this.tasks[`${module}`][`${method}`](this.helper.yargs(args).argv);
+      if (result) {
+        console.log(result);
+      }
+    } catch (error: any) {
+      console.error(`A fatal error occurred while runing task. ${error}`);
+    }
     await this.stop();
   }
 
@@ -215,27 +253,87 @@ export class App {
    * Run test
    */
   private async runTest(args: string[]): Promise<any> {
-    const test = camelCase(args.shift() || '');
-    this.debug(`> initializing ${test}`);
+    try {
+      const module = camelCase(args.shift() || '');
+      const method = camelCase(args.shift() || '');
+      console.info(`> Run "${module}.${method}" test`);
+      const result: any = await this.tests[`${module}`][`${method}`](this.helper.yargs(args).argv);
+      if (result) {
+        console.log(result);
+      }
+    } catch (error: any) {
+      console.error(`A fatal error occurred while runing test. ${error}`);
+    }
     await this.stop();
+  }
+
+  /**
+   * Get items
+   */
+  private async getItems(): Promise<any[]> {
+    const values: any = ['mongoose', 'express', 'busboy', 'change-case', 'ejs', 'fs', 'path', 'http', 'https', 'yargs', 'crypto', 'bcryptjs', 'jsonwebtoken', 'mime-types'];
+    const result: any[] = [];
+    for (const v of values) {
+      try {
+        result.push({name: camelCase(v), call: await import(v)});
+      } catch (error: any) {
+        console.error(`${v} ${error}`);
+      }
+    }
+    return result;
   }
 
   /**
    * Get files
    */
   private async getFiles(base: string): Promise<any[]> {
+    if (!fs.existsSync(base)) {
+      return [];
+    }
     const result: any[] = [];
-    if (fs.existsSync(base)) {
-      const files = fs.readdirSync(`${base}`);
-      for (const f of files) {
-        if (f.match(/\.(ts|js)$/) && !f.match(/\.(d|test|spec)\./)) {
-          result.push({
-            name: camelCase(`${f}`.split('.')[0]),
-            call: await import(`${base}/${f}`)
-          });
-        }
+    const values = fs.readdirSync(base);
+    for (const v of values) {
+      if (!v.match(/\.(ts|js)$/) || v.match(/\.(d|test|spec)\./)) {
+        continue;
+      }
+      try {
+        result.push({name: camelCase(v.split('.')[0]), call: await import(`${base}/${v}`)});
+      } catch (error: any) {
+        console.error(`${error}`);
       }
     }
     return result;
+  }
+
+  /**
+   * Start
+   */
+  async start(): Promise<any> {
+    process.on('SIGINT', () => {
+      console.info('> sigint received, shutting down');
+      this.stop();
+    });
+    process.on('SIGTERM', () => {
+      console.info('> sigterm received, shutting down');
+      this.stop();
+    });
+    await this.initialize();
+  }
+
+  /**
+   * Stop
+   */
+  async stop(): Promise<any> {
+    await this.disconnect();
+    process.exit(0);
+  }
+
+  /**
+   * Debug
+   */
+  async debug(...args: any): Promise<any> {
+    if (this.config.env === 'development') {
+      console.info(...args);
+    }
   }
 }

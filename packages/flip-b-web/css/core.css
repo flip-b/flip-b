@@ -1,39 +1,16 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
-
 /**
- * FlibB fonts options
+ * Flip-B light theme options
  */
-:root,
-:root[mode=ios],
-:root[mode=md],
-html,
-body {
-  --ion-default-family: 'Ubuntu', sans-serif;
-  --ion-font-family: 'Ubuntu', sans-serif;
-  font-family: 'Ubuntu', sans-serif;
-}
 
-/**
- * FlibB light theme options
- */
 body {
-  --flb-site-background: unset;
-
-  --flb-page-background: unset;
-  --flb-page-background-color: #f4f5f8;
-  --flb-page-background-color-rgb: 244,245,248;
+  --flb-body-background-color: #f4f5f8;
+  --flb-page-background-color: #ffffff;
+  --flb-page-border-color: rgba(0,0,0,.1);
   --flb-page-text-color: #202428;
-  --flb-page-text-color-rgb: 32,36,40;
-  --flb-page-border-color: rgba(33,33,33,.15);
-  --flb-page-content-color: #ffffff;
-
-  --flb-menu-background: #00467f;
-  --flb-menu-background-color: #202428;
-  --flb-menu-background-color-rgb: 32,36,40;
-  --flb-menu-text-color: #f4f5f8;
-  --flb-menu-text-color-rgb: 244,245,248;
+  --flb-menu-background-color: #00467f;
   --flb-menu-border-color: rgba(33,33,33,.15);
+  --flb-menu-text-color: #f4f5f8;
 
   --ion-color-primary: #3880ff;
   --ion-color-primary-rgb: 56,128,255;
@@ -88,36 +65,27 @@ body {
   --ion-color-light-rgb: 244,245,248;
   --ion-color-light-contrast: #000000;
   --ion-color-light-contrast-rgb: 0,0,0;
-  --ion-color-light-shade: #d7d8da;
+  --ion-color-light-shade-old: #d7d8da;
+  --ion-color-light-shade: #e7e7e7;
   --ion-color-light-tint: #f5f6f9;
 
   --ion-background-color: var(--flb-page-background-color);
-  --ion-background-color-rgb: var(--flb-page-background-color-rgb);
-  --ion-text-color: var(--flb-page-text-color);
-  --ion-text-color-rgb: var(--flb-page-text-color-rgb);
   --ion-border-color: var(--flb-page-border-color);
+  --ion-text-color: var(--flb-page-text-color);
 }
 
-/*
- * FlibB night theme options
+/**
+ * Flip-B night theme options
  */
+
 body.night {
-  --flb-site-background: unset;
-
-  --flb-page-background: #202428;
-  --flb-page-background-color: #202428;
-  --flb-page-background-color-rgb: 32,36,40;
-  --flb-page-text-color: #f4f5f8;
-  --flb-page-text-color-rgb: 244,245,248;
+  --flb-body-background-color: #222428;
+  --flb-page-background-color: #1e2023;
   --flb-page-border-color: rgba(0, 0, 0, .1);
-  --flb-page-content-color: #1e2023;
-
-  --flb-menu-background: #202428;
-  --flb-menu-background-color: #202428;
-  --flb-menu-background-color-rgb: 32,36,40;
-  --flb-menu-text-color: #f4f5f8;
-  --flb-menu-text-color-rgb: 244,245,248;
+  --flb-page-text-color: #f4f5f8;
+  --flb-menu-background-color: #1e2023;
   --flb-menu-border-color: rgba(0, 0, 0, .1);
+  --flb-menu-text-color: #f4f5f8;
 
   --ion-color-primary: #428cff;
   --ion-color-primary-rgb: 66,140,255;
@@ -203,32 +171,1155 @@ body.night {
   --ion-color-step-950: #f3f3f3;
 
   --ion-background-color: var(--flb-page-background-color);
-  --ion-background-color-rgb: var(--flb-page-background-color-rgb);
-  --ion-text-color: var(--flb-page-text-color);
-  --ion-text-color-rgb: var(--flb-page-text-color-rgb);
   --ion-border-color: var(--flb-page-border-color);
+  --ion-text-color: var(--flb-page-text-color);
 }
 
-/*
- * FlibB menu options
+/**
+ * Flip-B body options
  */
+
+body {
+  background: var(--flb-body-background);
+  background-color: var(--flb-body-background-color);
+}
+
+body.flb-menu-show {
+  --flb-menu-content-width: 300px;
+  --flb-page-content-width: 992px;
+  --flb-page-content-border: 1px solid var(--flb-page-border-color);
+  --flb-page-content-border-radius: 6px;
+  --flb-page-content-margin: 0 auto;
+  --flb-page-content-padding: 0;
+}
+
+body.flb-menu-hide {
+  --flb-menu-content-width: 60px;
+  --flb-page-content-width: 1200px;
+  --flb-page-content-border: 1px solid var(--flb-page-border-color);
+  --flb-page-content-border-radius: 6px;
+  --flb-page-content-margin: 0 auto;
+  --flb-page-content-padding: 0;
+}
+
+body:not(.flb-menu) {
+  --flb-page-background-color: rgba(30, 32, 35, .85);
+  --flb-page-border-color: rgba(0, 0, 0, .1);
+  --flb-page-text-color: #f4f5f8;
+  --flb-page-content-width: 320px;
+  --flb-page-content-border: 1px solid var(--flb-page-border-color);
+  --flb-page-content-border-radius: 6px;
+  --flb-page-content-margin: 0 auto;
+  --flb-page-content-padding: 16px;
+}
+
+/**
+ * Flip-B header styles
+ */
+
+ion-header {
+  --ion-background-color: transparent;
+}
+
+ion-header:after,
+ion-header.header-sm:after,
+ion-header.header-md:after {
+  background-image: none;
+}
+
+ion-header:before,
+ion-header.footer-sm:before,
+ion-header.footer-md:before {
+  background-image: none;
+}
+
+/**
+ * Flip-B footer styles
+ */
+
+ion-footer {
+  --ion-background-color: transparent;
+}
+
+ion-footer:after,
+ion-footer.footer-sm:after,
+ion-footer.footer-md:after {
+  background-image: none;
+}
+
+ion-footer:before,
+ion-footer.footer-sm:before,
+ion-footer.footer-md:before {
+  background-image: none;
+}
+
+/**
+ * Flip-B toolbar styles
+ */
+
+ion-toolbar {
+  --ion-background-color: transparent;
+}
+
+/**
+ * Flip-B content styles
+ */
+
+ion-content {
+  --ion-background-color: transparent;
+}
+
+
+/**
+ * Flip-B card styles
+ */
+
+ion-card {
+  --ion-background-color: transparent;
+}
+
+/**
+ * Flip-B list styles
+ */
+
+ion-list {
+  --ion-background-color: transparent;
+}
+
+ion-list-divider {
+  --ion-background-color: transparent;
+}
+
+
+/**
+ * Flip-B item styles
+ */
+
+ion-item {
+  --ion-background-color: transparent;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-start: 0;
+  --inner-padding-end: 0;
+  font-size: 14px;
+}
+
+ion-item > ion-item-divider {
+  --ion-background-color: transparent;
+  font-size: 14px;
+}
+
+ion-item > ion-label + ion-label {
+  flex: unset;
+}
+
+ion-item > ion-input,
+ion-item > ion-select,
+ion-item > ion-textarea {
+  min-height: 35px;
+}
+
+ion-item > ion-input > input[readonly],
+ion-item > ion-select > input[readonly],
+ion-item > ion-textarea > input[readonly] {
+  pointer-events: none;
+}
+
+ion-item.item-label-stacked > ion-button[slot],
+ion-item.item-label-stacked > ion-toggle[slot],
+ion-item.item-label-stacked > ion-checkbox[slot] {
+  align-self: flex-end;
+}
+
+ion-item.item-label-stacked > ion-checkbox[slot] {
+  margin-right: 2px;
+}
+
+ion-item > ion-button[slot] {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  margin: 8px 4px;
+  margin-right: 0;
+  padding: 0;
+  border-radius: 50%;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  opacity: .75;
+  transition: all 100ms ease-in-out;
+}
+
+ion-item > ion-button[slot]:hover {
+  opacity: .95;
+}
+
+ion-item > ion-icon {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+/**
+ * Flip-B icon styles
+ */
+
+ion-icon {
+  pointer-events: none;
+}
+
+/**
+ * Flip-B avatar styles
+ */
+
+ion-avatar {
+  overflow: hidden;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+/**
+ * Flip-B thumbnail styles
+ */
+
+ion-thumbnail {
+  overflow: hidden;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--flb-page-content-border-radius);
+}
+
+/**
+ * Flip-B accordion styles
+ */
+
+ion-accordion {
+  --ion-background-color: transparent;
+}
+
+ion-accordion > ion-item[slot=header] {
+  --inner-padding-end: 22px;
+}
+
+/**
+ * Flip-B serchbar styles
+ */
+
+ion-searchbar {
+  max-width: 400px;
+  border: 0;
+  margin: 0;
+  margin-left: -14px;
+  padding: 0;
+}
+
+ion-searchbar .searchbar-input,
+ion-searchbar .searchbar-input.sc-ion-searchbar-md {
+  font-weight: bold;
+  --box-shadow: none;
+}
+
+ion-searchbar .searchbar-search-icon,
+ion-searchbar .searchbar-search-icon.sc-ion-searchbar-md {
+  color: var(--ion-color-medium);
+}
+
+ion-searchbar .searchbar-clear-button,
+ion-searchbar .searchbar-clear-button.sc-ion-searchbar-md {
+  color: var(--ion-color-medium);
+  opacity: .35;
+}
+
+ion-searchbar .searchbar-cancel-button,
+ion-searchbar .searchbar-cancel-button.sc-ion-searchbar-md {
+  color: var(--ion-color-medium);
+  opacity: .35;
+}
+
+/**
+ * Flip-B split pane styles
+ */
+
+ion-split-pane {
+  --side-min-width: 0;
+  --side-max-width: var(--flb-menu-content-width);
+  --border: 0;
+}
+
+/**
+ * Flip-B menu styles
+ */
+
 ion-menu {
   --ion-background-color: var(--flb-menu-background-color);
-  --ion-background-color-rgb: var(--flb-menu-background-color-rgb);
-  --ion-text-color: var(--flb-menu-text-color);
-  --ion-text-color-rgb: var(--flb-menu-text-color-rgb);
   --ion-border-color: var(--flb-menu-border-color);
+  --ion-text-color: var(--flb-menu-text-color);
+  transition: all 100ms ease-in-out;
 }
 
-/*
- * FlibB night theme options
+ion-menu ion-item {
+  cursor: default;
+  border-bottom: 1px solid var(--flb-menu-border-color);
+}
+
+ion-menu ion-item > ion-label {
+  color: var(--flb-menu-text-color);
+  font-size: 14px;
+  font-weight: bold;
+  margin-inline-start: 4px;
+  margin-inline-end: 4px;
+  opacity: .8;
+  transition: all 100ms ease-in-out;
+}
+
+ion-menu ion-item > ion-icon {
+  color: var(--flb-menu-text-color);
+  font-size: 22px;
+  font-weight: bold;
+  margin-inline-start: 4px;
+  margin-inline-end: 4px;
+  opacity: .5;
+  transition: all 100ms ease-in-out;
+}
+
+ion-menu > ion-footer {
+  border-top: 1px solid var(--flb-menu-border-color);
+}
+
+ion-menu > ion-footer > ion-item {
+  border-bottom: 0;
+}
+
+/**
+ * Flip-B menu show styles
  */
-body:not(.user) {
-  --flb-page-background: #202428;
-  --flb-page-background-color: #202428;
-  --flb-page-background-color-rgb: 32,36,40;
-  --flb-page-text-color: #f4f5f8;
-  --flb-page-text-color-rgb: 244,245,248;
-  --flb-page-border-color: rgba(0, 0, 0, .1);
-  --flb-page-content-color: #1e2023;
+
+body.flb-menu-show ion-menu > ion-footer {
+  text-align: center;
+}
+
+body.flb-menu-show ion-menu > ion-footer > ion-item {
+  display: inline-grid;
+}
+
+body.flb-menu-show ion-menu > ion-footer > ion-item > ion-label {
+  display: none !important;
+}
+
+/**
+ * Flip-B menu hide styles
+ */
+
+body.flb-menu-hide ion-menu ion-item > ion-label {
+  opacity: 0;
+}
+
+/**
+ * Flip-B menu title styles
+ */
+
+.flb-menu-title {
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1.2;
+  --xwhite-space: normal;
+}
+
+/**
+ * Flip-B menu label styles
+ */
+
+.flb-menu-label {
+  font-size: 18px;
+  font-weight: normal;
+  line-height: 1.2;
+  --xwhite-space: normal;
+}
+
+/**
+ * Flip-B menu image styles
+ */
+
+.flb-menu-image {
+  max-height: 80px;
+  border: 0;
+  margin: 8px auto;
+  padding: 0;
+}
+
+/**
+ * Flip-B menu button styles
+ */
+
+.flb-menu-button {
+  position: absolute;
+  width: 9px;
+  height: 20px;
+  bottom: 14px;
+  cursor: pointer;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  z-index: 1;
+  transition: left 100ms ease-in-out, opacity 100ms ease-in-out;
+}
+
+body.flb-menu-show .flb-menu-button {
+  background-color: var(--flb-body-background-color);
+  left: calc(var(--flb-menu-content-width) - 9px);
+  border-radius: 9px 0 0 9px;
+}
+
+body.flb-menu-hide .flb-menu-button {
+  background-color: var(--flb-menu-background-color);
+  left: calc(var(--flb-menu-content-width) - 0px);
+  border-radius: 0 9px 9px 0;
+}
+
+/**
+ * Flip-B form styles
+ */
+
+.flb-form {
+  position: absolute;
+  overflow: auto;
+  display: block;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 0;
+  margin: 0;
+  padding: 16px;
+}
+
+.flb-form > .flb-form-content {
+  display: flex;
+  background-color: var(--flb-page-background-color);
+  border: var(--flb-page-content-border);
+  border-radius: var(--flb-page-content-border-radius);
+  margin: var(--flb-page-content-margin);
+  padding: var(--flb-page-content-padding);
+  max-width: var(--flb-page-content-width);
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+
+.flb-form > .flb-form-content > .flb-form-header {
+  display: flex;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.flb-form > .flb-form-content > .flb-form-footer {
+  display: flex;
+  border: 0;
+  border-top: 1px solid var(--flb-page-border-color);
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.flb-form > .flb-form-content > .flb-form-navbar {
+  display: flex;
+  border: 0;
+  border-top: 1px solid var(--flb-page-border-color);
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.flb-form > .flb-form-content > .flb-form-filter {
+  display: flex;
+  background-color: var(--ion-color-light-shade);
+  border: 0;
+  border-top: 1px solid var(--flb-page-border-color);
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.flb-form > .flb-form-content > .flb-form-metric {
+  display: flex;
+  border: 0;
+  border-top: 1px solid var(--flb-page-border-color);
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.flb-form > .flb-form-content > .flb-form-fields {
+  display: flex;
+  border: 0;
+  border-top: 1px solid var(--flb-page-border-color);
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.flb-form > .flb-form-content > .flb-form-values {
+  display: flex;
+  border: 0;
+  border-top: 1px solid var(--flb-page-border-color);
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+
+/**
+ * Flip-B item styles
+ */
+
+.flb-item {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  vertical-align: top;
+}
+
+.flb-item [data-label]:empty:not(:focus)::before {
+  content: attr(data-label);
+  color: var(--ion-color-medium);
+}
+
+/**
+ * Flip-B item title styles
+ */
+
+.flb-item-title {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+/**
+ * Flip-B item label styles
+ */
+
+.flb-item-label {
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.2;
+}
+
+/**
+ * Flip-B item value styles
+ */
+
+.flb-item-value {
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.2;
+}
+
+/**
+ * Flip-B item count styles
+ */
+
+.flb-item-count {
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.2;
+}
+
+/**
+ * Flip-B item total styles
+ */
+
+.flb-item-total {
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1.2;
+}
+
+/**
+ * Flip-B item notes styles
+ */
+
+.flb-item-notes {
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.flb-item-notes:first-child {
+  font-weight: bold;
+}
+
+/**
+ * Flip-B item image styles
+ */
+
+.flb-item-image {
+  text-align: center;
+  width: 100%;
+  height: 100%;
+}
+
+.flb-item-image > ion-icon {
+  width: 90%;
+  height: 100%;
+  margin: auto;
+  opacity: .5;
+}
+
+/**
+ * Flip-B item video styles
+ */
+
+.flb-item-video {
+  text-align: center;
+  width: 100%;
+  height: 100%;
+}
+
+.flb-item-video > ion-icon {
+  width: 90%;
+  height: 100%;
+  margin: auto;
+  opacity: .5;
+}
+
+/**
+ * Flip-B item error styles
+ */
+
+.flb-item-error {
+  color: var(--ion-color-danger);
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1.2;
+  max-height: 20px;
+  padding: 0 16px;
+}
+
+.flb-item-error.success {
+  background-color: var(--ion-color-success-tint);
+}
+
+.flb-item-error.warning {
+  background-color: var(--ion-color-warning-tint);
+}
+
+.flb-item-error.danger {
+  background-color: var(--ion-color-danger-tint);
+}
+
+/**
+ * Flip-B item state styles
+ */
+
+.flb-item-state {
+  position: absolute;
+  left: 48px;
+  width: 8px;
+  height: 8px;
+  bottom: 8px;
+  border: 0;
+  border-radius: 50%;
+  margin: 0;
+  padding: 0;
+}
+
+.flb-item-state.success {
+  background-color: var(--ion-color-success-tint);
+}
+
+.flb-item-state.warning {
+  background-color: var(--ion-color-warning-tint);
+}
+
+.flb-item-state.danger {
+  background-color: var(--ion-color-danger-tint);
+}
+
+/**
+ * Flip-B item map styles
+ */
+
+.flb-item-map {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.flb-item-map a[target=_blank],
+.flb-item-map .gm-style-cc,
+.flb-item-map .gmnoprint,
+.flb-item-map .gmnoscreen {
+  display: none !important;
+}
+body.night .flb-item-map {
+  filter: invert(1);
+}
+
+/**
+ * Flip-B type expand styles
+ */
+
+.flb-item-type-expand {
+  flex: 1;
+}
+
+/**
+ * Flip-B type textarea styles
+ */
+
+.flb-item-type-textarea {
+  width: 100%;
+}
+
+.flb-item-type-textarea .text {
+  display: block;
+  font-size: 14px;
+  width: 100%;
+  height: 100px;
+  background-color: var(--ion-color-light);
+  color: var(--ion-color-light-contrast);
+  border: 0;
+  border-radius: var(--flb-page-content-border-radius);
+  margin: 8px 0;
+  padding: 5px;
+  outline: none;
+  overflow: auto;
+}
+
+/**
+ * Flip-B type richtext styles
+ */
+
+.flb-item-type-richtext {
+  width: 100%;
+}
+
+.flb-item-type-richtext .text {
+  display: block;
+  font-size: 14px;
+  width: 100%;
+  height: 100px;
+  background-color: var(--ion-color-light);
+  color: var(--ion-color-light-contrast);
+  border: 0;
+  border-radius: var(--flb-page-content-border-radius);
+  margin: 8px 0;
+  padding: 5px;
+  outline: none;
+  overflow: auto;
+}
+
+.flb-item-type-richtext .menu {
+  display: inline-block;
+  width: 100%;
+  border: 0;
+  margin: 0;
+  margin-top: 8px;
+  padding: 0;
+}
+
+.flb-item-type-richtext .menu .item {
+  display: inline-block;
+  font-size: 10px;
+  line-height: 22px;
+  text-align: center;
+  width: 22px;
+  height: 22px;
+  background-color: var(--ion-color-light);
+  color: var(--ion-color-light-contrast);
+  cursor: pointer;
+  border: 0;
+  border-radius: 50%;
+  margin: 0;
+  margin-right: 4px;
+  padding: 0;
+  transition: all 100ms ease-in-out;
+}
+
+.flb-item-type-richtext .menu .item:hover,
+.flb-item-type-richtext .menu .item.active {
+  background-color: var(--ion-color-medium);
+  color: var(--ion-color-medium-contrast);
+}
+
+.flb-item-type-richtext .menu .item.b {
+  font-weight: bold;
+}
+
+.flb-item-type-richtext .menu .item.i {
+  font-style: italic;
+}
+
+.flb-item-type-richtext .menu .item.u {
+  text-decoration: underline;
+}
+
+.flb-item-type-richtext .menu .item.s {
+  text-decoration: line-through;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Flip-B form footer styles
+ */
+
+.flb-form > .flb-form-content > .flb-form-footer > .flb-item.flb-item-type-button > .flb-item-content .flb-item-title,
+.flb-form > .flb-form-content > .flb-form-footer > .flb-item.flb-item-type-submit > .flb-item-content .flb-item-title,
+.flb-form > .flb-form-content > .flb-form-footer > .flb-item.flb-item-type-cancel > .flb-item-content .flb-item-title {
+  text-align: center;
+  font-weight: bold;
+}
+
+.flb-form > .flb-form-content > .flb-form-footer > .flb-item.flb-item-type-button > .flb-item-content .flb-item-title {
+  text-align: center;
+  font-weight: normal;
+}
+
+/**
+ * Flip-B form metric styles
+ */
+
+.flb-form > .flb-form-content > .flb-form-metric > .flb-item.flb-item-type-metric > .flb-item-content > ion-item {
+  padding: 8px 0;
+}
+
+/**
+ * Flip-B form values styles
+ */
+
+.flb-form > .flb-form-content > .flb-form-values {
+  overflow: hidden;
+}
+
+.flb-form > .flb-form-content > .flb-form-values .flb-item > .flb-item-content > ion-item {
+  border-bottom: 1px solid var(--flb-page-border-color);
+  margin-bottom: -1px;
+}
+
+/**
+ * Flip-B form fields styles
+ */
+
+.flb-form > .flb-form-content > .flb-form-fields {
+  overflow: hidden;
+}
+
+.flb-form > .flb-form-content > .flb-form-fields .flb-item > .flb-item-content > ion-item {
+  border-bottom: 1px solid var(--flb-page-border-color);
+  margin-bottom: -1px;
+}
+
+.flb-form > .flb-form-content > .flb-form-fields .flb-item.flb-item-type-group,
+.flb-form > .flb-form-content > .flb-form-fields .flb-item.flb-item-type-array,
+.flb-form > .flb-form-content > .flb-form-fields .flb-item.flb-item-type-legend {
+  margin-top: 16px;
+}
+
+.flb-item-group-content,
+.flb-item-array-content {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.flb-item-group-content > .flb-item > .flb-item-content > ion-item,
+.flb-item-array-content > .flb-item > .flb-item-content > ion-item {
+  --min-height: 35px;
+}
+
+.flb-item-array-content > .flb-item > .flb-item-content > ion-item > ion-label {
+  display: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Flip-B item block styles
+ */
+
+.flb-item-block {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.flb-item-block-value {
+  flex: 1;
+  position: relative;
+  background-color: var(--flb-menu-background-color);
+  color: var(--flb-menu-text-color);
+  min-width: 230px;
+  cursor: default;
+  border: 0;
+  border-radius: var(--flb-page-content-border-radius);
+  margin: 0;
+  padding: 8px;
+  padding-right: 56px;
+  outline: 0;
+}
+
+.flb-item-block-value > .flb-item-count {
+  font-size: 28px;
+}
+
+.flb-item-block-value > .flb-item-total {
+  font-size: 22px;
+}
+
+.flb-item-block-value > .flb-item-graph {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 48px;
+  bottom: 8px;
+}
+
+.flb-item-block-value > .flb-item-graph > ion-icon {
+  width: 48px;
+  height: 48px;
+  opacity: .15;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+body:not(.flb-menu) .flb-form-header .flb-item-title {
+  font-size: 30px;
+  text-align: center;
+}
+body:not(.flb-menu) .flb-form-header .flb-item-label {
+  font-size: 22px;
+  text-align: center;
+}
+
+
+
+
+
+
+
+
+/**
+ * Flip-B responsive "xs" styles
+ */
+
+@media all and (max-width: 575px) {
+  .flb-form {
+    padding: 0;
+  }
+  .flb-form > .flb-form-content {
+    max-width: 100%;
+    min-height: 100%;
+    border: 0;
+    border-radius: 0;
+  }
+  .flb-form > .flb-form-content > .flb-form-filter .flb-item {
+    width: 100% !important;
+  }
+  .flb-form > .flb-form-content > .flb-form-metric .flb-item {
+    width: 100% !important;
+  }
+  .flb-form > .flb-form-content > .flb-form-fields .flb-item {
+    width: 100% !important;
+  }
+  ion-item {
+    --padding-start: 8px;
+    --padding-end: 8px;
+  }
+}
+
+/**
+ * Flip-B responsive "sm" styles
+ */
+
+@media all and (min-width: 576px) and (max-width: 767px) {
+}
+
+/**
+ * Flip-B responsive "md" styles
+ */
+
+@media all and (min-width: 768px) and (max-width: 991px) {
+}
+
+/**
+ * Flip-B responsive "lg" styles
+ */
+
+@media all and (min-width: 992px) and (max-width: 1199px) {
+}
+
+/**
+ * Flip-B responsive "xl" styles
+ */
+
+@media all and (min-width: 1200px) and (max-width: 1365px) {
+}
+
+/**
+ * Flip-B responsive "xg" styles
+ */
+
+@media all and (min-width: 1366px) {
+}
+
+/**
+ * Flip-B general styles
+ */
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--flb-menu-background-color);
+}
+
+input[type=submit] {
+  visibility: hidden;
+  position: absolute;
+  top: -90000px;
+  width: 0;
+  height: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+input[type=file] {
+  visibility: hidden;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  max-width: 1px;
+  min-width: 1px;
+  height: 1px;
+  max-height: 1px;
+  min-height: 1px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+input[type=color] {
+  visibility: hidden;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  max-width: 1px;
+  min-width: 1px;
+  height: 1px;
+  max-height: 1px;
+  min-height: 1px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/**
+ * Flip-B toast styles
+ */
+
+ion-toast.flb {
+  font-weight: bold;
+  text-align: center;
+}
+
+/**
+ * Flip-B modal styles
+ */
+
+ion-modal.flb {
+  --box-shadow: none;
+  --width: 100%;
+  --height: 100%;
+  --border-radius: 0;
+}
+
+ion-modal.flb::part(content) {
+  position: relative !important;
+}
+
+@media all and (min-width: 768px) {
+  ion-modal.flb {
+    margin-left: var(--flb-menu-content-width);
+  }
+}
+
+@media all and (min-width: 992px) {
+  ion-modal.flb {
+    margin-left: var(--flb-menu-content-width);
+  }
 }

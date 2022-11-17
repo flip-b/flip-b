@@ -2,9 +2,15 @@
  * Message
  */
 export class Message {
+  // Message definitions
+
+  /**
+   * Message attributes
+   */
   private _id = '';
   private _parent = '';
   private _ticket = '';
+  private _origin = '';
   private _source = '';
   private _target = '';
   private _type = '';
@@ -37,6 +43,7 @@ export class Message {
     this.id = message.id || '';
     this.parent = message.parent || '';
     this.ticket = message.ticket || '';
+    this.origin = message.origin || '';
     this.source = message.source || '';
     this.target = message.target || '';
     this.type = message.type || '';
@@ -62,15 +69,14 @@ export class Message {
    * Set id
    */
   set id(value: string) {
-    this._id = `${value || ''}`.trim();
-
-    if (!this._id) {
-      this._id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c: any) => {
+    if (!value) {
+      value = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c: any) => {
         const r = (Math.random() * 16) | 0,
           v = c == 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
       });
     }
+    this._id = `${value || ''}`.trim();
   }
 
   /**
@@ -99,6 +105,20 @@ export class Message {
    */
   set ticket(value: string) {
     this._ticket = `${value || ''}`.trim();
+  }
+
+  /**
+   * Get origin
+   */
+  get origin(): string {
+    return this._origin;
+  }
+
+  /**
+   * Set origin
+   */
+  set origin(value: string) {
+    this._origin = `${value || ''}`.trim();
   }
 
   /**
@@ -387,6 +407,7 @@ export class Message {
       id: this.id,
       parent: this.parent,
       ticket: this.ticket,
+      origin: this.origin,
       source: this.source,
       target: this.target,
       type: this.type,

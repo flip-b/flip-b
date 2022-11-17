@@ -37,7 +37,6 @@ function getRouter(app: any): any {
 function getPathHandler(app: any, ctx: any): any {
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
-      // Define parameters
       const params: any = {};
       params.auth = {};
       params.body = {...req.body, ...req.query, ...req.params};
@@ -50,7 +49,7 @@ function getPathHandler(app: any, ctx: any): any {
         if (!result) {
           return next(new Error('#402 Invalid authorization'));
         }
-        if (!ctx.current.auth.includes(result.role || 'anonymous')) {
+        if (!ctx.current.auth.includes(result.auth || 'anonymous')) {
           return next(new Error('#401 Unauthorized'));
         }
         params.auth = result;

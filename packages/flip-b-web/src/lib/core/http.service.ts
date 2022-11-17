@@ -1,4 +1,4 @@
-import {Injectable, Inject} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {lastValueFrom} from 'rxjs';
 
@@ -22,6 +22,37 @@ export class HttpService {
    * Request
    */
   async request(params: any): Promise<any> {
+    if (params.search) {
+      params.method = 'GET';
+      params.url = `${this._config.url}`;
+      params.uri = `${this._config.uri}/${params.search}`;
+    } else if (params.select) {
+      params.method = 'GET';
+      params.url = `${this._config.url}`;
+      params.uri = `${this._config.uri}/${params.select}`;
+    } else if (params.create) {
+      params.method = 'POST';
+      params.url = `${this._config.url}`;
+      params.uri = `${this._config.uri}/${params.create}`;
+    } else if (params.update) {
+      params.method = 'PUT';
+      params.url = `${this._config.url}`;
+      params.uri = `${this._config.uri}/${params.update}`;
+    } else if (params.delete) {
+      params.method = 'DELETE';
+      params.url = `${this._config.url}`;
+      params.uri = `${this._config.uri}/${params.delete}`;
+    } else if (params.submit) {
+      params.method = 'POST';
+      params.url = `${this._config.url}`;
+      params.uri = `${this._config.uri}/${params.submit}`;
+    }
+    if (params.data) {
+      params.uri = params.uri.replace(':index', params.data.index);
+    }
+    if (params.type === 'blob') {
+      params.observe = 'response';
+    }
     const method = this.formatMethod(params.method);
     const url = this.formatUrl(params.url);
     const uri = this.formatUri(params.uri);
@@ -46,14 +77,14 @@ export class HttpService {
    * Format URL
    */
   private formatUrl(url: any): string {
-    return `${url || this._config.url || ''}`.trim();
+    return `${url || ''}`.trim();
   }
 
   /**
    * Format URI
    */
   private formatUri(uri: any): string {
-    return `${uri || this._config.uri || ''}`.trim();
+    return `${uri || ''}`.trim();
   }
 
   /**

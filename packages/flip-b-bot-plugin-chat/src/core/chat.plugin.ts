@@ -1,86 +1,122 @@
 import {Plugin, Message, Request, Response} from '@flip-b/bot';
-import {client} from './chat.client';
+import {getChatClientLib} from './chat.client.lib';
+import {getChatClientWeb} from './chat.client.web';
 
 /**
  * Chat plugin
  */
 export class ChatPlugin extends Plugin {
-  override status: any = ['human side', 'incoming'];
-  client: any;
+  // Plugin definitions
+
+  /**
+   * Socket
+   */
   socket: any;
 
   /**
    * Register
    */
   override async register(): Promise<any> {
-    // Define plugin methods
+    // Register
 
-    // Define server route
-    this.bot.server.router.get(`${this.bot.config.server.path}/${this.plugin}/status`, (req: Request, res: Response) => {
-      res.send({plugin: this.plugin, status: this.status, method: req.method});
+    // Define route
+    this.bot.registerRoute('get', `/${this.plugin}/:origin/`, (req: Request, res: Response) => {
+      try {
+        const origin: any = this.bot.config.origins[`${req.params.origin || ''}`] || {};
+        const config: any = origin[`${this.plugin}`] || this.bot.config.plugins[`${this.plugin}`] || undefined;
+        if (!config || !config.enabled) {
+          res.status(404).send();
+          return;
+        }
+        let result: any = getChatClientWeb(config, req.query);
+        result = result.replace(/_URL_/g, `${req.protocol}://${req.get('host')}`);
+        result = result.replace(/_PLUGIN_/g, `${req.params.plugin || this.plugin}`);
+        result = result.replace(/_ORIGIN_/g, `${req.params.origin || ''}`);
+        res.status(200).send(result);
+      } catch (error: any) {
+        res.status(400).send();
+      }
     });
 
-    // Define server route
-    this.bot.server.router.get(`${this.bot.config.server.path}/${this.plugin}/chat.js`, (req: Request, res: Response) => {
-      let client = `${this.client.standard || ''}`;
-      client = client.replace('_URL_ROOT_', `${req.protocol}://${req.get('host')}`);
-      client = client.replace('_URL_PATH_', `${this.bot.config.server.path}/${this.plugin}`);
-      res.send(client);
+    // Define route
+    this.bot.registerRoute('get', `/${this.plugin}/:origin/chat.js`, (req: Request, res: Response) => {
+      try {
+        const origin: any = this.bot.config.origins[`${req.params.origin || ''}`] || {};
+        const config: any = origin[`${this.plugin}`] || this.bot.config.plugins[`${this.plugin}`] || undefined;
+        if (!config || !config.enabled) {
+          res.status(404).send();
+          return;
+        }
+        let result: any = getChatClientLib(config, req.query);
+        result = result.replace(/_URL_/g, `${req.protocol}://${req.get('host')}`);
+        result = result.replace(/_PLUGIN_/g, `${req.params.plugin || this.plugin}`);
+        result = result.replace(/_ORIGIN_/g, `${req.params.origin || ''}`);
+        res.status(200).send(result);
+      } catch (error: any) {
+        res.status(400).send();
+      }
     });
 
-    // Define server route
-    this.bot.server.router.get(`${this.bot.config.server.path}/${this.plugin}/chat.min.js`, (req: Request, res: Response) => {
-      let client = `${this.client.minified || ''}`;
-      client = client.replace('_URL_ROOT_', `${req.protocol}://${req.get('host')}`);
-      client = client.replace('_URL_PATH_', `${this.bot.config.server.path}/${this.plugin}`);
-      res.send(client);
+    // Define route
+    this.bot.registerRoute('get', `/${this.plugin}/:origin/chat.min.js`, (req: Request, res: Response) => {
+      try {
+        const origin: any = this.bot.config.origins[`${req.params.origin || ''}`] || {};
+        const config: any = origin[`${this.plugin}`] || this.bot.config.plugins[`${this.plugin}`] || undefined;
+        if (!config || !config.enabled) {
+          res.status(404).send();
+          return;
+        }
+        let result: any = getChatClientLib(config, req.query);
+        result = result.replace(/_URL_/g, `${req.protocol}://${req.get('host')}`);
+        result = result.replace(/_PLUGIN_/g, `${req.params.plugin || this.plugin}`);
+        result = result.replace(/_ORIGIN_/g, `${req.params.origin || ''}`);
+        result = this.bot.helper.uglifyJs.minify(result).code;
+        res.status(200).send(result);
+      } catch (error: any) {
+        res.status(400).send();
+      }
     });
 
-    // Define Client
-    this.client = {
-      standard: client(this.bot, this.config.client),
-      minified: client(this.bot, this.config.client, {minify: true})
-    };
-
-    // Define Socket.io
+    // Define socket.io
     this.socket = new this.bot.helper.socketIo.Server(this.bot.server.server, {
-      path: `${this.bot.config.queues.path}/${this.plugin}/socket.io`,
+      path: `/${this.plugin}/socket.io`,
       cookie: false,
       transports: ['websocket', 'polling']
     });
 
-    // Define Redis Pub
-    const pubClient = this.bot.helper.redis.createClient({url: `redis://${this.bot.config.queues.host}:${this.bot.config.queues.port}`});
-    await pubClient.connect();
+    // Define socket.io redis adapter
+    this.socket.adapter(this.bot.helper.socketIoRedisAdapter.createAdapter(this.bot.pubsub.pub, this.bot.pubsub.sub));
 
-    // Define Redis Sub
-    const subClient = pubClient.duplicate();
-    await subClient.connect();
-
-    // Define Socket.io Redis Adapter
-    this.socket.adapter(this.bot.helper.socketIoRedisAdapter.createAdapter(pubClient, subClient));
-
-    // Define Socket.io connection event
+    // Define socket.io connection event
     this.socket.on('connection', (socket: any) => {
-      const session = `${socket.handshake.query.session}`;
-      socket.join(session);
+      const plugin = `${socket.handshake.query.plugin || this.plugin}`;
+      const origin = `${socket.handshake.query.origin || ''}`;
+      const ticket = `${socket.handshake.query.ticket || ''}`;
+
+      const configOrigin: any = this.bot.config.origins[`${origin || ''}`] || {};
+      const configPlugin: any = configOrigin[`${plugin || ''}`] || this.bot.config.plugins[`${plugin || ''}`] || undefined;
+      if (!configPlugin || !configPlugin.enabled || !plugin || !origin || !ticket) {
+        return;
+      }
+
+      socket.join(`${ticket}`);
       socket.on('message', async (message: any) => {
-        this.bot.addIncomingMessages([{ticket: session, source: `${this.plugin}`, ...message}]);
+        this.bot.addIncomingMessages([{ticket, origin, source: `${plugin}`, ...message}]);
       });
       socket.on('disconnect', () => {
-        const timeout = typeof this.config.timeout === 'undefined' ? 15000 : this.config.timeout || 0;
+        const waiting: number = parseInt(`${configPlugin.system_waiting || 30}`) * 1000;
         setTimeout(async () => {
-          const sockets = await this.socket.in(session).allSockets();
-          if (sockets.size === 0 && timeout > 0) {
-            this.bot.addIncomingMessages([{ticket: session, source: `${this.plugin}`, action: 'waiting'}]);
+          const sockets: any = await this.socket.in(ticket).allSockets();
+          if (sockets.size === 0 && waiting > 0) {
+            this.bot.addIncomingMessages([{ticket, origin, source: `${plugin}`, action: 'waiting'}]);
           }
         }, 100);
         setTimeout(async () => {
-          const sockets = await this.socket.in(session).allSockets();
+          const sockets: any = await this.socket.in(ticket).allSockets();
           if (sockets.size === 0) {
-            this.bot.addIncomingMessages([{ticket: session, source: `${this.plugin}`, action: 'disconnect'}]);
+            this.bot.addIncomingMessages([{ticket, origin, source: `${plugin}`, action: 'disconnect'}]);
           }
-        }, 500 + timeout);
+        }, 100 + waiting);
       });
     });
   }

@@ -1,7 +1,301 @@
-<ng-container *ngIf="form?._config?.init">
-  <ng-container *ngFor="let item of form._config.fields">
-    <flb-item [item]="form.value[item.name]">
-      <ng-content></ng-content>
-    </flb-item>
+<div class="flb-form-content" *ngIf="view?.init && form">
+  <div class="flb-form-header" *ngIf="form.header.length" [ngClass]="form.headerClass" [style]="form.headerStyle">
+    <div class="flb-item flb-item-type-{{ item.type }} flb-item-name-{{ item.name }}" *ngFor="let item of form.header" [ngClass]="item.class" [style]="item.style">
+      <ng-container [ngTemplateOutlet]="itemContent" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </div>
+  </div>
+  <div class="flb-form-navbar" *ngIf="form.navbar.length" [ngClass]="form.navbarClass" [style]="form.navbarStyle">
+    <div class="flb-item flb-item-type-{{ item.type }} flb-item-name-{{ item.name }}" *ngFor="let item of form.navbar" [ngClass]="item.class" [style]="item.style">
+      <ng-container [ngTemplateOutlet]="itemContent" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </div>
+  </div>
+  <div class="flb-form-filter" *ngIf="form.filter.length" [ngClass]="form.filterClass" [style]="form.filterStyle">
+    <div class="flb-item flb-item-type-{{ item.type }} flb-item-name-{{ item.name }}" *ngFor="let item of form.filter" [ngClass]="item.class" [style]="item.style">
+      <ng-container [ngTemplateOutlet]="itemContent" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </div>
+  </div>
+  <div class="flb-form-metric" *ngIf="form.metric.length" [ngClass]="form.metricClass" [style]="form.metricStyle">
+    <div class="flb-item flb-item-type-{{ item.type }} flb-item-name-{{ item.name }}" *ngFor="let item of form.metric" [ngClass]="item.class" [style]="item.style">
+      <ng-container [ngTemplateOutlet]="itemContent" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </div>
+  </div>
+  <div class="flb-form-fields" *ngIf="form.fields.length" [ngClass]="form.fieldsClass" [style]="form.fieldsStyle">
+    <div class="flb-item flb-item-type-{{ item.type }} flb-item-name-{{ item.name }}" *ngFor="let item of form.fields" [ngClass]="item.class" [style]="item.style">
+      <ng-container [ngTemplateOutlet]="itemContent" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </div>
+  </div>
+  <div class="flb-form-values" *ngIf="form.values.length" [ngClass]="form.valuesClass" [style]="form.valuesStyle">
+    <div class="flb-item flb-item-type-{{ item.type }} flb-item-name-{{ item.name }}" *ngFor="let item of form.values" [ngClass]="item.class" [style]="item.style">
+      <ng-container [ngTemplateOutlet]="itemContent" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </div>
+  </div>
+  <div class="flb-form-footer" *ngIf="form.footer.length" [ngClass]="form.footerClass" [style]="form.footerStyle">
+    <div class="flb-item flb-item-type-{{ item.type }} flb-item-name-{{ item.name }}" *ngFor="let item of form.footer" [ngClass]="item.class" [style]="item.style">
+      <ng-container [ngTemplateOutlet]="itemContent" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- Item content -->
+<ng-template #itemContent let-item="item" let-drop="drop">
+  <div class="flb-item-content">
+    <ng-container [ngTemplateOutlet]="item.$input?.input ? inputControl : item.$input?.group ? groupControl : item.$input?.array ? arrayControl : fieldControl" [ngTemplateOutletContext]="{item: item, drop: drop}"></ng-container>
+  </div>
+</ng-template>
+
+<!-- Input control -->
+<ng-template #inputControl let-item="item" let-drop="drop">
+  <ion-item lines="none" [button]="item.isButton" [detail]="false" title="{{ 'title' | i18n: item }}" [disabled]="item.disabled" (click)="item.isButton ? trigger('item.onClick', item, $event) : null">
+    <ng-container *ngIf="item.text">
+      <ion-label position="stacked">
+        <div class="flb-item-title">{{ ('title' | i18n: item) || item.name }}</div>
+      </ion-label>
+    </ng-container>
+
+    <ng-container *ngIf="item.type !== 'textarea' && item.type !== 'richtext'">
+      <ion-input [readonly]="item.readonly" [value]="item.value" placeholder="{{ 'label' | i18n: item }}" [type]="item.$input.type" [inputmode]="item.$input.mode" (ionFocus)="trigger('item.onEnter', item, $event)" (ionBlur)="trigger('item.onLeave', item, $event)" (ionInput)="trigger('item.onInput', item, $event)" (keyup.enter)="trigger('form.onSubmit')"></ion-input>
+    </ng-container>
+
+    <ng-container *ngIf="item.type === 'textarea' || item.type === 'richtext'">
+      <ng-container [ngTemplateOutlet]="richtextControl" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="item.icon">
+      <ion-button slot="end" fill="clear" title="{{ 'iconTitle' | i18n: item }}" tabindex="-1" [disabled]="!item.isButtonIcon" (click)="trigger('item.onClick', item, $event)">
+        <ion-icon slot="icon-only" [name]="item.icon" [color]="item.iconColor || 'medium'" [style]="item.iconStyle"></ion-icon>
+      </ion-button>
+    </ng-container>
+
+    <ng-container *ngIf="!item.isButton && !item.isCustom && !item.readonly && drop !== undefined">
+      <ion-button slot="end" fill="clear" title="{{ 'dropTitle' | i18n: item }}" tabindex="-1" (click)="trigger('item.onClick', item, $event)">
+        <ion-icon slot="icon-only" name="remove-circle" color="medium"></ion-icon>
+      </ion-button>
+    </ng-container>
+
+    <ng-container *ngIf="!item.isButton && !item.isCustom && item.type === 'checkbox'">
+      <ion-checkbox slot="end" tabindex="-1" [disabled]="item.readonly" [checked]="item.value" (ionChange)="trigger('item.onChange', item, $event)"></ion-checkbox>
+    </ng-container>
+
+    <ng-container *ngIf="!item.isButton && !item.isCustom && item.type === 'toggle'">
+      <ion-toggle slot="end" tabindex="-1" [disabled]="item.readonly" [checked]="item.value" (ionChange)="trigger('item.onChange', item, $event)"></ion-toggle>
+    </ng-container>
+
+    <ng-container *ngIf="!item.isButton && !item.isCustom && item.pick === 'datetime'">
+      <ng-container [ngTemplateOutlet]="datetimePicker" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="!item.isButton && !item.isCustom && item.pick === 'select'">
+      <ng-container [ngTemplateOutlet]="selectPicker" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="!item.isButton && !item.isCustom && item.pick === 'location'">
+      <ng-container [ngTemplateOutlet]="locationPicker" [ngTemplateOutletContext]="{item: item}"></ng-container>
+    </ng-container>
+
+  </ion-item>
+  <ng-container *ngIf="item.error">
+    <div class="flb-item-error">{{ item.error || '' }}</div>
   </ng-container>
-</ng-container>
+</ng-template>
+
+<!-- Group control -->
+<ng-template #groupControl let-item="item">
+  <ion-item lines="none" [button]="item.isButton" [detail]="false" title="{{ 'title' | i18n: item }}" [disabled]="item.disabled" (click)="item.isButton ? trigger('item.onClick', item, $event) : null">
+    <ng-container *ngIf="item.text">
+      <ion-label>
+        <div class="flb-item-title">{{ 'title' | i18n: item }}</div>
+        <div class="flb-item-label">{{ 'label' | i18n: item }}</div>
+      </ion-label>
+    </ng-container>
+    <ng-container *ngIf="item.icon">
+      <ion-button slot="end" fill="clear" title="{{ 'iconTitle' | i18n: item }}" tabindex="-1" [disabled]="!item.isButtonIcon" (click)="trigger('item.onClick', item, $event)">
+        <ion-icon slot="icon-only" [name]="item.icon" [color]="item.iconColor || 'medium'" [style]="item.iconStyle"></ion-icon>
+      </ion-button>
+    </ng-container>
+  </ion-item>
+  <ng-container *ngIf="item.value">
+    <div class="flb-item-group-content">
+      <div class="flb-item flb-item-type-{{ i.type }} flb-item-name-{{ i.name }}" *ngFor="let i of item.value" [ngClass]="i.class" [style]="i.style">
+        <ng-container [ngTemplateOutlet]="itemContent" [ngTemplateOutletContext]="{item: i}"></ng-container>
+      </div>
+    </div>
+  </ng-container>
+</ng-template>
+
+<!-- Array control -->
+<ng-template #arrayControl let-item="item">
+  <ion-item lines="none" [button]="item.isButton" [detail]="false" title="{{ 'title' | i18n: item }}" [disabled]="item.disabled" (click)="item.isButton ? trigger('item.onClick', item, $event) : null">
+    <ng-container *ngIf="item.text">
+      <ion-label>
+        <div class="flb-item-title">{{ 'title' | i18n: item }}</div>
+        <div class="flb-item-label">{{ 'label' | i18n: item }}</div>
+      </ion-label>
+    </ng-container>
+    <ng-container *ngIf="item.icon">
+      <ion-button slot="end" fill="clear" title="{{ 'iconTitle' | i18n: item }}" tabindex="-1" [disabled]="!item.isButtonIcon" (click)="trigger('item.onClick', item, $event)">
+        <ion-icon slot="icon-only" [name]="item.icon" [color]="item.iconColor || 'medium'" [style]="item.iconStyle"></ion-icon>
+      </ion-button>
+    </ng-container>
+  </ion-item>
+  <ng-container *ngIf="item.value">
+    <div class="flb-item-array-content" *ngFor="let v of item.value; let index = index">
+      <div class="flb-item flb-item-type-{{ i.type }} flb-item-name-{{ i.name }}" *ngFor="let i of v; let last = last" [ngClass]="i.class" [style]="i.style">
+        <ng-container [ngTemplateOutlet]="itemContent" [ngTemplateOutletContext]="{item: i, drop: last ? index : undefined}"></ng-container>
+      </div>
+    </div>
+  </ng-container>
+</ng-template>
+
+<!-- Field control -->
+<ng-template #fieldControl let-item="item">
+  <ion-item lines="none" [button]="item.isButton" [detail]="false" title="{{ 'title' | i18n: item }}" [disabled]="item.disabled" (click)="item.isButton ? trigger('item.onClick', item, $event) : null">
+
+    <ng-container *ngIf="['button', 'submit', 'cancel'].includes(item.type)">
+      <ng-container *ngIf="item.icon && item.iconOnly">
+        <ion-icon [name]="item.icon" [color]="item.iconColor || 'medium'" [style]="item.iconStyle"></ion-icon>
+      </ng-container>
+      <ng-container *ngIf="item.icon && !item.iconOnly">
+        <ion-icon [name]="item.icon" [color]="item.iconColor || 'medium'" [style]="item.iconStyle" [slot]="item.iconSlot"></ion-icon>
+      </ng-container>
+      <ng-container *ngIf="item.text">
+        <ion-label>
+          <div class="flb-item-title">{{ 'title' | i18n: item }}</div>
+          <div class="flb-item-label">{{ 'label' | i18n: item }}</div>
+        </ion-label>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="['header', 'footer', 'legend', 'values'].includes(item.type)">
+
+      <ng-container *ngIf="item.value && (item.value?.image !== undefined || item.value?.state !== undefined)">
+        <ion-thumbnail slot="start">
+          <div class="flb-item-image" *ngIf="!item.value?.image"><ion-icon name="{{ (view.name + '.' + view.type + '.header.icon' | i18n) || 'camera' }}"></ion-icon></div>
+          <div class="flb-item-image" *ngIf="item.value?.image"><img [src]="item.value.image" (error)="data._onFormImageError($event)" /></div>
+          <div class="flb-item-state" *ngIf="item.value?.state" [ngClass]="item.value.state"></div>
+        </ion-thumbnail>
+      </ng-container>
+
+      <ng-container>
+        <ion-label class="ion-text-wrap">
+          <div class="flb-item-title">{{ item.value?.title || ('title' | i18n: item) }}</div>
+          <div class="flb-item-label">{{ item.value?.label || ('label' | i18n: item) }}</div>
+        </ion-label>
+      </ng-container>
+
+      <ng-container *ngIf="item.value && item.value?.notes !== undefined">
+        <ion-label class="ion-text-wrap">
+          <div class="flb-item-notes" *ngFor="let note of item.value.notes">{{ note }}</div>
+        </ion-label>
+      </ng-container>
+
+    </ng-container>
+
+    <ng-container *ngIf="item.type === 'search'">
+      <ion-searchbar [(ngModel)]="item.query" placeholder="{{ 'title' | i18n: item }}" (ionChange)="(null)"></ion-searchbar>
+    </ng-container>
+
+    <ng-container *ngIf="['header', 'search'].includes(item.type) && modal">
+      <ion-button slot="end" fill="clear" tabindex="-1" color="medium" title="{{ '.cancel' || 'i18n' }}" (click)="modal.dismiss()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ng-container>
+
+    <ng-container *ngIf="['header', 'search'].includes(item.type) && !modal">
+      <ion-button slot="end" fill="clear" tabindex="-1" color="medium" title="{{ '.menu' || 'i18n' }}" class="ion-hide-lg-up" (click)="data._onMenuToggleClick($event)">
+        <ion-icon slot="icon-only" name="menu"></ion-icon>
+      </ion-button>
+    </ng-container>
+
+    <div class="flb-item-block" *ngIf="item.type === 'metric'">
+      <div class="flb-item-block-value" *ngFor="let value of item.items">
+        <div class="flb-item-count" *ngIf="value.count !== undefined">{{ value.count }}</div>
+        <div class="flb-item-title" *ngIf="value.title !== undefined || value.index !== undefined">{{ value.title || value.index }}</div>
+        <div class="flb-item-label" *ngIf="value.label !== undefined">{{ value.label }}</div>
+        <div class="flb-item-total" *ngIf="value.total !== undefined">{{ value.total }}</div>
+        <div class="flb-item-graph" *ngIf="value.graph !== undefined"><ion-icon [name]="value.graph"></ion-icon></div>
+      </div>
+    </div>
+
+  </ion-item>
+</ng-template>
+
+<!-- Datetime picker -->
+<ng-template #datetimePicker let-item="item">
+  <ion-popover #picker side="left" alignment="end" [showBackdrop]="false" [event]="item.pickEvent" [isOpen]="item.pick" (didDismiss)="item.pick = undefined">
+    <ng-template>
+      <ion-item lines="full">
+        <ion-input type="text" [value]="item.value" placeholder="{{ 'title' | i18n: item }}"></ion-input>
+        <ion-button *ngIf="!item.readonly" slot="end" fill="clear" tabindex="-1" color="medium" title="{{ 'apply' | i18n }}" (click)="trigger('item.onChange', item, $event); picker.dismiss()">
+          <ion-icon slot="icon-only" name="checkmark-circle"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="item.readonly" slot="end" fill="clear" tabindex="-1" color="medium" title="{{ 'close' || 'i18n' }}" (click)="picker.dismiss()">
+          <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <ion-datetime size="fixed" [value]="item.value" [presentation]="item.$input.format" [locale]="item.$input.locale" [showClearButton]="false" [showDefaultButtons]="false" [showDefaultTitle]="false" [showDefaultTimeLabel]="false"></ion-datetime>
+    </ng-template>
+  </ion-popover>
+</ng-template>
+
+<!-- Location picker -->
+<ng-template #locationPicker let-item="item">
+  <ion-popover #picker side="left" alignment="end" [showBackdrop]="false" [event]="item.pickEvent" [isOpen]="item.pick" (didDismiss)="item.pick = undefined">
+    <ng-template>
+      <ion-item lines="full">
+        <ion-input type="text" [value]="item.value" placeholder="{{ 'title' | i18n: item }}"></ion-input>
+        <ion-button *ngIf="!item.readonly" slot="end" fill="clear" tabindex="-1" color="medium" title="{{ 'apply' | i18n }}" (click)="trigger('item.onChange', item, $event); picker.dismiss()">
+          <ion-icon slot="icon-only" name="checkmark-circle"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="item.readonly" slot="end" fill="clear" tabindex="-1" color="medium" title="{{ 'close' || 'i18n' }}" (click)="picker.dismiss()">
+          <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <ion-item lines="none" class="ion-no-border ion-no-margin ion-no-padding" style="--inner-padding-end: 0">
+        <div class="flb-item-map flb-item-map-{{ item.name }}" tabindex="-1"></div>
+      </ion-item>
+    </ng-template>
+  </ion-popover>
+</ng-template>
+
+<!-- Select picker -->
+<ng-template #selectPicker let-item="item">
+  <ion-popover #picker side="left" alignment="end" [showBackdrop]="false" [event]="item.pickEvent" [isOpen]="item.pick" (didDismiss)="item.pick = undefined">
+    <ng-template>
+      <ion-item lines="full">
+        <ion-input type="text" [value]="item.value" placeholder="{{ 'title' | i18n: item }}"></ion-input>
+        <ion-button *ngIf="!item.readonly" slot="end" fill="clear" tabindex="-1" color="medium" title="{{ 'apply' | i18n }}" (click)="trigger('item.onChange', item, $event); picker.dismiss()">
+          <ion-icon slot="icon-only" name="checkmark-circle"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="item.readonly" slot="end" fill="clear" tabindex="-1" color="medium" title="{{ 'close' || 'i18n' }}" (click)="picker.dismiss()">
+          <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <ion-item lines="full" [button]="true" [detail]="false" *ngFor="let value of item.items" (click)="item.setValue(value.index)">
+        <ion-label class="ion-text-wrap" *ngIf="value.index !== undefined || value.title !== undefined || value.label !== undefined">
+          <div class="flb-item-title" *ngIf="value.title !== undefined || value.index !== undefined">{{ value.title || value.index }}</div>
+          <div class="flb-item-label" *ngIf="value.label !== undefined">{{ value.label }}</div>
+        </ion-label>
+        <ion-label class="ion-text-wrap" *ngIf="value.total !== undefined || value.count !== undefined">
+          <div class="flb-item-total" *ngIf="value.total !== undefined">{{ value.total }}</div>
+          <div class="flb-item-count" *ngIf="value.count !== undefined">{{ value.count }}</div>
+        </ion-label>
+      </ion-item>
+    </ng-template>
+  </ion-popover>
+</ng-template>
+
+<!-- Richtext control -->
+<ng-template #richtextControl let-item="item">
+  <div class="menu" *ngIf="!item.readonly && item.$input.type === 'richtext'">
+    <div class="item b {{ item._richtext.includes('b') ? ' active' : '' }}" (click)="item._richtextSet('b', 'bold')">{{ ('richtext.item.b' | i18n) || 'B' }}</div>
+    <div class="item i {{ item._richtext.includes('i') ? ' active' : '' }}" (click)="item._richtextSet('i', 'italic')">{{ ('richtext.item.i' | i18n) || 'I' }}</div>
+    <div class="item u {{ item._richtext.includes('u') ? ' active' : '' }}" (click)="item._richtextSet('u', 'underline')">{{ ('richtext.item.u' | i18n) || 'U' }}</div>
+    <div class="item s {{ item._richtext.includes('s') ? ' active' : '' }}" (click)="item._richtextSet('s', 'strikethrough')">{{ ('richtext.item.s' | i18n) || 'S' }}</div>
+  </div>
+  <div style="width: 100%" *ngIf="!item.readonly">
+    <div class="text" [innerHTML]="item.value" attr.data-title="{{ 'title' | i18n: item }}" attr.data-label="{{ 'label' | i18n: item }}" contenteditable="true" spellcheck="false" (click)="item._richtextInput($event, item)" (keyup)="item._richtextInput($event, item)"></div>
+  </div>
+  <div style="width: 100%" *ngIf="item.readonly">
+    <div class="text" [innerHTML]="item.value" attr.data-title="{{ 'title' | i18n: item }}" attr.data-label="{{ 'label' | i18n: item }}"></div>
+  </div>
+</ng-template>

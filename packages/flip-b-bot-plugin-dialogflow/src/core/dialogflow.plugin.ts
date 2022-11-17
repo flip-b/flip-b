@@ -1,58 +1,63 @@
-import {Plugin, Message, Request, Response} from '@flip-b/bot';
+import {Plugin, Message} from '@flip-b/bot';
 import * as dialogflow from '@google-cloud/dialogflow';
 
 /**
  * Dialogflow plugin
  */
 export class DialogflowPlugin extends Plugin {
-  override status: any = ['agent side', 'outgoing', 'transfer'];
-
-  /**
-   * Register
-   */
-  override async register(): Promise<any> {
-    // Define plugin methods
-
-    // Define server route
-    this.bot.server.router.get(`${this.bot.config.server.path}/${this.plugin}/status`, (req: Request, res: Response) => {
-      res.send({plugin: this.plugin, status: this.status, method: req.method});
-    });
-  }
+  // Plugin definitions
 
   /**
    * Dispatch incoming message
    */
   override async dispatchIncomingMessage(message: Message): Promise<any> {
-    const client: any = new dialogflow.SessionsClient({credentials: {private_key: this.config.privateKey, client_email: this.config.clientEmail}});
-
-    let session: string;
-    if (this.config.environment) {
-      session = `projects/${this.config.projectId}/agent/environments/${this.config.environment}/users/-/sessions/${message.ticket}:detectIntent`;
-    } else {
-      session = client.projectAgentSessionPath(this.config.projectId, message.ticket);
-    }
-
-    const input: any = {session: session, queryParams: {}, queryInput: {}};
-    if (message.text) {
-      input.queryInput.text = {text: `${message.text}`, languageCode: `${message.language}`};
-    }
-    if (message.file) {
-      input.queryInput.text = {text: `${message.file}`, languageCode: `${message.language}`};
-    }
-    if (message.action && !['show_dialog', 'hide_dialog', 'quit_dialog', 'talking', 'silence', 'waiting', 'disconnect'].includes(message.action)) {
-      input.queryInput.event = {name: `${message.action}`, languageCode: `${message.language}`};
-    }
-    if (message.action && message.data.length && input.queryInput.event) {
-      input.queryInput.event.parameters = jsonToStructProto(message.getDataObject());
-    }
-    if (message.settings?.contexts?.length > 0) {
-      input.queryParams.contexts = message.settings.contexts;
-    }
-    if (!input.queryInput.text && !input.queryInput.event) {
+    const origin: any = this.bot.config.origins[`${message.origin || ''}`] || {};
+    const config: any = origin[`${this.plugin}`] || this.bot.config.plugins[`${this.plugin}`] || undefined;
+    if (!config || !config.enabled) {
       return;
     }
 
-    const result = await client.detectIntent(input);
+    // Define client
+    const client: any = new dialogflow.SessionsClient({
+      credentials: {private_key: config.account_secrets.replace(/\\n/g, '\n'), client_email: config.account_id}
+    });
+
+    // Define client session
+    let clientSession: string;
+    if (message.settings.environment) {
+      clientSession = `projects/${config.project_id}/agent/environments/${message.settings.environment}/users/-/sessions/${message.ticket}:detectIntent`;
+    } else {
+      clientSession = `projects/${config.project_id}/agent/sessions/${message.ticket}`;
+    }
+
+    // Define client payload
+    const clientPayload: any = {session: clientSession, queryParams: {}, queryInput: {}};
+    if (message.text) {
+      clientPayload.queryInput.text = {text: `${message.text}`, languageCode: `${message.language}`};
+    }
+    if (message.file) {
+      clientPayload.queryInput.text = {text: `${message.file}`, languageCode: `${message.language}`};
+    }
+    if (message.action && !['show_dialog', 'hide_dialog', 'quit_dialog', 'talking', 'silence', 'waiting', 'disconnect'].includes(message.action)) {
+      clientPayload.queryInput.event = {name: `${message.action}`, languageCode: `${message.language}`};
+    }
+    if (message.action && message.data.length && clientPayload.queryInput.event) {
+      clientPayload.queryInput.event.parameters = jsonToStructProto(message.getDataObject());
+    }
+    if (message.settings?.contexts?.length > 0) {
+      clientPayload.queryParams.contexts = message.settings.contexts;
+    }
+    if (!clientPayload.queryInput.text && !clientPayload.queryInput.event) {
+      return;
+    }
+
+    // Define result
+    let result: any;
+    try {
+      result = await client.detectIntent(clientPayload);
+    } catch (error: any) {
+      return;
+    }
     if (result[0]?.queryResult?.intent?.displayName) {
       message.intent = result[0]?.queryResult?.intent?.displayName;
     }
@@ -60,9 +65,13 @@ export class DialogflowPlugin extends Plugin {
       message.settings.contexts = result[0].queryResult.outputContexts;
     }
 
+    // Define outgoing messages
     const outgoingMessages: any[] = [];
     if (result[0]?.queryResult?.fulfillmentMessages) {
       for (const m in result[0].queryResult.fulfillmentMessages) {
+        // Verify items
+
+        // Verify text items
         const textItems = result[0].queryResult.fulfillmentMessages[m].text?.text || [];
         if (textItems.length > 0) {
           for (const t in textItems) {
@@ -70,6 +79,7 @@ export class DialogflowPlugin extends Plugin {
             if (text) {
               const outgoingMessage: any = {};
               outgoingMessage.parent = message.id;
+              outgoingMessage.origin = message.origin;
               outgoingMessage.ticket = message.ticket;
               outgoingMessage.source = message.source;
               outgoingMessage.target = message.target;
@@ -84,6 +94,7 @@ export class DialogflowPlugin extends Plugin {
           }
         }
 
+        // Verify list items
         const listItems = result[0].queryResult.fulfillmentMessages[m].payload?.fields?.richContent?.listValue?.values || [];
         if (listItems.length > 0) {
           for (const m in listItems) {
@@ -94,8 +105,6 @@ export class DialogflowPlugin extends Plugin {
 
             for (const item of listItems[m].listValue?.values || []) {
               const r = structProtoToJson(item.structValue);
-
-              // Text object
               if (typeof r.type === 'undefined' && typeof r.text !== 'undefined') {
                 if (typeof r.text === 'object') {
                   r.text = r.text[Math.floor(Math.random() * r.text.length)];
@@ -103,8 +112,6 @@ export class DialogflowPlugin extends Plugin {
                 _text.push(`${r.text || ''}`);
                 continue;
               }
-
-              // File object
               if (typeof r.type === 'undefined' && typeof r.file !== 'undefined') {
                 if (typeof r.file === 'object') {
                   r.file = r.file[Math.floor(Math.random() * r.file.length)];
@@ -112,8 +119,6 @@ export class DialogflowPlugin extends Plugin {
                 _file.push(`${r.file || ''}`);
                 continue;
               }
-
-              // Menu object
               if (typeof r.type === 'undefined' && typeof r.menu !== 'undefined') {
                 if (typeof r.menu === 'object') {
                   r.menu = r.menu[Math.floor(Math.random() * r.menu.length)];
@@ -123,8 +128,6 @@ export class DialogflowPlugin extends Plugin {
                 }
                 continue;
               }
-
-              // Form object
               if (typeof r.type === 'undefined' && typeof r.form !== 'undefined') {
                 if (typeof r.form === 'object') {
                   r.form = r.form[Math.floor(Math.random() * r.form.length)];
@@ -135,7 +138,7 @@ export class DialogflowPlugin extends Plugin {
                 continue;
               }
 
-              // Type object (old format)
+              // Verify old format
               if (typeof r.type !== 'undefined') {
                 if (typeof r.rawUrl === 'object') {
                   r.rawUrl = r.rawUrl[Math.floor(Math.random() * r.rawUrl.length)];
@@ -144,7 +147,6 @@ export class DialogflowPlugin extends Plugin {
                   r.attr = r.attr || {};
                   r.attr.display = r.display;
                 }
-
                 if (r.type == 'text') {
                   _text.push(`${r.text || r.title || r.subtitle || ''}`);
                 }
@@ -174,9 +176,11 @@ export class DialogflowPlugin extends Plugin {
               }
             }
 
+            // Define outgoing message
             if (_text.length > 0 || _file.length > 0 || _menu.length > 0 || _form.length > 0) {
               const outgoingMessage: any = {};
               outgoingMessage.parent = message.id;
+              outgoingMessage.origin = message.origin;
               outgoingMessage.ticket = message.ticket;
               outgoingMessage.source = message.source;
               outgoingMessage.target = message.target;
@@ -204,8 +208,10 @@ export class DialogflowPlugin extends Plugin {
         }
       }
     }
+
+    // Verify outgoing messages
     if (outgoingMessages.length > 0) {
-      this.bot.addOutgoingMessages(outgoingMessages);
+      await this.bot.addOutgoingMessages(outgoingMessages);
     }
   }
 }

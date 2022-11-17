@@ -8,8 +8,21 @@ import http from 'http';
  * Server
  */
 export class Server {
+  // Server definitions
+
+  /**
+   * Bot
+   */
   bot: any;
+
+  /**
+   * Router
+   */
   router: any;
+
+  /**
+   * Server
+   */
   server: any;
 
   /**
@@ -17,7 +30,6 @@ export class Server {
    */
   constructor(bot: Bot) {
     this.bot = bot;
-    this.initialize();
   }
 
   /**
@@ -36,37 +48,19 @@ export class Server {
     this.router.use(express.json(this.bot.config.router.json));
     this.router.use(express.urlencoded(this.bot.config.router.urlencoded));
     this.router.use(this.bot.config.router.public.path, express.static(this.bot.config.router.public.dest));
+    await this.server.listen(this.bot.config.server.port, () => {
+      console.info(`! listening server on port ${this.bot.config.server.port} (#${process.pid})`);
+    });
   }
 
   /**
    * Start
    */
   async start(): Promise<any> {
-    console.info(`> listening server on ${this.bot.config.server.host}:${this.bot.config.server.port} (#${process.pid})`);
-    this.server.listen(this.bot.config.server.port);
-  }
-
-  /**
-   * Stop
-   */
-  async stop(): Promise<any> {
-    console.info(`> stopping server`);
+    await this.initialize();
   }
 }
 
-export interface Request extends express.Request {
-  auth: any;
-  file: any;
-}
-
-export interface Response extends express.Response {
-  auth: any;
-  file: any;
-}
-
+export type Request = express.Request;
+export type Response = express.Response;
 export type Next = express.NextFunction;
-export type RequestHandler = express.RequestHandler;
-export type ErrorRequestHandler = express.ErrorRequestHandler;
-
-export const Router: any = express.Router;
-export const Static: any = express.static;

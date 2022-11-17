@@ -1,45 +1,35 @@
 <ion-app>
   <ion-split-pane contentId="main">
-    <ion-menu #ctrl menuId="main" contentId="main" type="overlay" [disabled]="!data.user">
-      <ion-header *ngIf="data.user">
-        <ion-item lines="none" button detail="false" (click)="ctrl.toggle(); data.goto(data.user._config.route_1)">
-          <ion-thumbnail slot="start">
-            <img class="flb-item-image" *ngIf="data.user._config.image" [src]="data.user._config.image" [alt]="data.user._config.title" (error)="data._onLoadImageError($event)" />
-            <div class="flb-item-icon" *ngIf="!data.user._config.image"><ion-icon name="infinite"></ion-icon></div>
-          </ion-thumbnail>
-          <ion-label>
-            <div class="flb-item-title" *ngIf="data.user._config.title">{{ data.user._config.title }}</div>
-            <div class="flb-item-label" *ngIf="data.user._config.label">{{ data.user._config.label }}</div>
+    <ion-menu #ct contentId="main" menuId="main" type="overlay" [disabled]="!data.menu">
+      <ion-header *ngIf="data.menu?.image || data.menu?.title || data.menu?.label">
+        <ion-item lines="none">
+          <img class="flb-menu-image" *ngIf="data.menu.image" [src]="data.menu.image" (error)="data._onMenuImageError($event)" />
+          <ion-label *ngIf="data.menu.title || data.menu.label">
+            <div class="flb-menu-title" *ngIf="data.menu.title">{{ data.menu.title }}</div>
+            <div class="flb-menu-label" *ngIf="data.menu.label">{{ data.menu.label }}</div>
           </ion-label>
         </ion-item>
       </ion-header>
-
-      <ion-content *ngIf="data.user">
-        <ion-item lines="none" button detail="false" (click)="ctrl.toggle(); data.goto(item.path)" *ngFor="let item of data.user._config.items">
-          <ion-icon slot="start" name="{{ item.icon }}"></ion-icon>
-          <ion-label>
+      <ion-content *ngIf="data.menu?.mainMenu?.length">
+        <ion-item lines="none" button [detail]="false" [title]="item.title" (click)="ct.toggle(); item.onClick ? item.onClick(item) : data.gotoRoot(item.path)" *ngFor="let item of data.menu.mainMenu">
+          <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
+          <ion-label *ngIf="item.title || item.label">
             <div class="flb-item-title" *ngIf="item.title">{{ item.title }}</div>
             <div class="flb-item-label" *ngIf="item.label">{{ item.label }}</div>
           </ion-label>
         </ion-item>
       </ion-content>
-
-      <ion-footer *ngIf="data.user">
-        <ion-item lines="none" button detail="false" (click)="ctrl.toggle(); data.goto(data.user._config.route_2)">
-          <ion-avatar slot="start">
-            <img class="flb-item-image" *ngIf="data.user._config.image" [src]="data.user._config.image" [alt]="data.user._config.name" (error)="data._onLoadImageError($event)" />
-            <div class="flb-item-icon" *ngIf="!data.user._config.image"><ion-icon name="person"></ion-icon></div>
-          </ion-avatar>
-          <ion-label>
-            <div class="flb-item-title">{{ data.user._config.name }}</div>
-            <div class="flb-item-label">{{ data.user._config.username }}</div>
+      <ion-footer *ngIf="data.menu?.userMenu?.length">
+        <ion-item lines="none" button [detail]="false" [title]="item.title" (click)="ct.toggle(); item.onClick ? item.onClick(item) : data.gotoRoot(item.path)" *ngFor="let item of data.menu.userMenu">
+          <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
+          <ion-label *ngIf="item.title || item.label">
+            <div class="flb-item-title" *ngIf="item.title">{{ item.title }}</div>
+            <div class="flb-item-label" *ngIf="item.label">{{ item.label }}</div>
           </ion-label>
-          <ion-button slot="end" fill="clear" tabindex="-1" color="medium" title="{{ 'global.night' }}" (click)="ctrl.toggle(); data.toggleNight($event)">
-            <ion-icon slot="icon-only" [name]="data.user._config.night ? 'sunny' : 'moon'"></ion-icon>
-          </ion-button>
         </ion-item>
       </ion-footer>
     </ion-menu>
     <ion-router-outlet id="main"></ion-router-outlet>
   </ion-split-pane>
+  <div class="flb-menu-button ion-hide-lg-down" *ngIf="data.menu" (click)="data._onMenuButtonClick($event)"></div>
 </ion-app>

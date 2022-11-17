@@ -4,55 +4,46 @@ import {Plugin, Message, Request, Response} from '@flip-b/bot';
  * Pipe plugin
  */
 export class PipePlugin extends Plugin {
-  override status: any = ['agent side', 'outgoing', 'transfer'];
+  // Plugin definitions
 
   /**
    * Register
    */
   override async register(): Promise<any> {
-    // Define plugin methods
+    // Register
 
-    // Define server route
-    this.bot.server.router.get(`${this.bot.config.server.path}/${this.plugin}/status`, (req: Request, res: Response) => {
-      res.send({plugin: this.plugin, status: this.status, method: req.method});
+    // Define route
+    this.bot.registerRoute('post', `/${this.plugin}/response`, async (req: Request, res: Response) => {
+      try {
+        await this.bot.addOutgoingMessages(req.body.messages);
+        res.status(200).send();
+      } catch (error: any) {
+        res.status(400).send();
+      }
     });
 
-    // Define server route
-    this.bot.server.router.post(`${this.bot.config.server.path}/${this.plugin}/response`, (req: Request, res: Response) => {
-      this.bot.addOutgoingMessages(req.body.messages);
-      res.send({status: 200});
-    });
-
-    // Define shipping event
-    this.bot.on('shipping', async (messages: Message[]): Promise<any> => {
-       await this.bot.helper.axios
-        .request({
-          url: this.config.url,
-          method: this.config.method || 'POST',
-          headers: this.config.headers || {},
-          timeout: this.config.timeout || 10000,
+    // Define event
+    this.bot.registerShippingEvent(async (messages: Message[]): Promise<any> => {
+      try {
+        const origin: any = this.bot.config.origins[`${messages[0].origin || ''}`] || {};
+        const config: any = origin[`${this.plugin}`] || this.bot.config.plugins[`${this.plugin}`] || undefined;
+        if (!config || !config.enabled) {
+          return;
+        }
+        await this.bot.helper.axios.request({
+          url: config.url,
+          method: config.method || 'POST',
+          headers: config.headers || {},
+          timeout: config.timeout || 10000,
           data: {
             messages: messages.map((message: Message) => message.toObject()),
-            response: this.config.response || {
-              url: `http://localhost:8081${this.bot.config.server.path}/${this.plugin}/response`,
-              method: 'POST',
-              headers: {},
-              timeout: 10000
-            }
+            response: {...this.bot.config.local, ...(config.response || {})}
           }
-        })
-        .catch((error: any) => {
-          console.log(`${error}`);
         });
-   });
-  }
-
-  /**
-   * Dispatch incoming message
-   */
-  override async dispatchIncomingMessage(message: Message): Promise<any> {
-    if (message) {
-      return true;
-    }
+        return true;
+      } catch (error: any) {
+        return false;
+      }
+    });
   }
 }

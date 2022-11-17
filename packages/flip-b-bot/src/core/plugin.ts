@@ -5,38 +5,50 @@ import {Message} from './message';
  * Plugin
  */
 export abstract class Plugin {
+  // Plugin definitions
+
+  /**
+   * Bot
+   */
   bot: Bot;
+
+  /**
+   * Plugin
+   */
   plugin: string;
-  config: any;
-  status: any;
 
   /**
    * Constructor
    */
-  constructor(bot: Bot, plugin: string, config: any) {
+  constructor(bot: Bot, plugin: string) {
     this.bot = bot;
     this.plugin = plugin;
-    this.config = config;
   }
 
   /**
    * Register
    */
   async register(): Promise<any> {
-    console.warn(`! unsupported ${this.plugin}.register method`);
+    if (this.plugin) {
+      return true;
+    }
   }
 
   /**
    * Dispatch incoming message
    */
   async dispatchIncomingMessage(message: Message): Promise<any> {
-    console.warn(`! unsupported ${this.plugin}.dispatchIncomingMessage method`, message);
+    if (this.plugin && message) {
+      return true;
+    }
   }
 
   /**
    * Dispatch outgoing message
    */
   async dispatchOutgoingMessage(message: Message): Promise<any> {
-    console.warn(`! unsupported ${this.plugin}.dispatchOutgoingMessage method`, message);
+    if (this.plugin && message) {
+      return true;
+    }
   }
 }
