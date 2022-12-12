@@ -2,6 +2,6 @@
   "name": "@flip-b/monorepo",
   "private": true,
   "devDependencies": {
-    "lerna": "~6.0.3"
+    "lerna": "~6.1.0"
   }
 }

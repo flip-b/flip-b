@@ -64,7 +64,6 @@ export class DataService {
     public _platform: Platform,
     public _router: Router
   ) {
-
     // Fix ionic popover
     setInterval(() => {
       const $elements: any = document.querySelectorAll('ion-popover');
@@ -93,7 +92,7 @@ export class DataService {
       });
     }, 500);
 
-    // Define router event handler
+    // Define router eventr event handler
     this._router.events.subscribe(async (event: any): Promise<any> => {
       if (event instanceof NavigationEnd && event.url) {
         this._history.push(event.urlAfterRedirects);
@@ -124,7 +123,6 @@ export class DataService {
    * Init event handler
    */
   async onInit(): Promise<any> {
-
     this.user = await this.getUser();
     this.user = this.user || undefined;
 
@@ -260,7 +258,10 @@ export class DataService {
       document.body.classList.toggle('flb-menu', false);
       document.body.classList.toggle('flb-menu-show', false);
       document.body.classList.toggle('flb-menu-hide', false);
-      document.body.style.setProperty('--flb-body-background', `#222 url("https://www.flip-b.com/assets/backgrounds/background-${('000' + (Math.floor(Math.random() * 440) + 1)).substr(-3)}.jpg") 0 0/100% 100% no-repeat`);
+      document.body.style.setProperty(
+        '--flb-body-background',
+        `#222 url("https://www.flip-b.com/assets/backgrounds/background-${('000' + (Math.floor(Math.random() * 440) + 1)).substr(-3)}.jpg") 0 0/100% 100% no-repeat`
+      );
     }
   }
 
@@ -329,7 +330,6 @@ export class DataService {
    */
   async goto(path: string, params: any = {}, options: any = {}): Promise<any> {
     try {
-
       if (typeof params.setUser !== 'undefined') {
         await this.setUser(params.setUser);
         await this.onInit();
@@ -710,7 +710,6 @@ export class DataService {
       parts.shift();
 
       for (const t of tests) {
-
         //if (this.i18n.values[`${t}`] && this.i18n.values[`${t}`][`${value}[${this.i18n.region}]`]) {
         //  result = this.i18n.values[`${t}`][`${value}[${this.i18n.region}]`];
         //  break;

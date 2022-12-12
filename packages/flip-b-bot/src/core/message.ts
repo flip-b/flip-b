@@ -5,57 +5,159 @@ export class Message {
   // Message definitions
 
   /**
-   * Message attributes
+   * Id
    */
   private _id = '';
+
+  /**
+   * Parent Id
+   */
   private _parent = '';
+
+  /**
+   * Ticket Id
+   */
   private _ticket = '';
+
+  /**
+   * Origin Id
+   */
   private _origin = '';
+
+  /**
+   * Source (plugin name)
+   */
   private _source = '';
+
+  /**
+   * Target (plugin name)
+   */
   private _target = '';
-  private _type = '';
-  private _time = 0;
-  private _text = '';
-  private _file = '';
-  private _data: any[] = [];
-  private _menu: any[] = [];
-  private _form: any[] = [];
-  private _action = '';
-  private _intent = '';
+
+  /**
+   * Holder
+   */
+  private _holder = '';
+
+  /**
+   * Status
+   */
   private _status = '';
-  private _language = '';
+
+  /**
+   * Action
+   */
+  private _action = '';
+
+  /**
+   * Intent
+   */
+  private _intent = '';
+
+  /**
+   * Text
+   */
+  private _text = '';
+
+  /**
+   * File
+   */
+  private _file = '';
+
+  /**
+   * Menu
+   */
+  private _menu: any[] = [];
+
+  /**
+   * Form
+   */
+  private _form: any[] = [];
+
+  /**
+   * Data
+   */
+  private _data: any[] = [];
+
+  /**
+   * Feel
+   */
+  private _feel = '';
+
+  /**
+   * Tags
+   */
+  private _tags = [];
+
+  /**
+   * Time
+   */
+  private _time = 0;
+
+  /**
+   * Type
+   */
+  private _type = '';
+
+  /**
+   * Delivery
+   */
+  private _delivery = '';
+
+  /**
+   * User
+   */
+  private _user: any = {};
+
+  /**
+   * Customer
+   */
+  private _customer: any = {};
+
+  /**
+   * Settings
+   */
   private _settings: any = {};
+
+  /**
+   * Incoming
+   */
   private _incoming: any = {};
 
   /**
+   * Language
+   */
+  private _language = '';
+
+  /**
    * Constructor
-   *
-   * Status:
-   * - "sent": Message has been submitted to the carrier for delivery.
-   * - "delivered": confirmation the message has reached the recipient's but fails to show if it has been "seen" yet.
-   * - "failed": Service provider did not accept the message of the carrier and delivery is not possible.
    */
   constructor(message: any = {}) {
-    this.language = message.language || 'en-US';
-    this.settings = message.settings || {};
-    this.incoming = message.incoming || {};
-
     this.id = message.id || '';
     this.parent = message.parent || '';
     this.ticket = message.ticket || '';
     this.origin = message.origin || '';
     this.source = message.source || '';
     this.target = message.target || '';
-    this.type = message.type || '';
-    this.time = message.time || 0;
+    this.holder = message.holder || '';
+    this.status = message.status || '';
+    this.action = message.action || '';
+    this.intent = message.intent || '';
     this.text = message.text || '';
     this.file = message.file || '';
-    this.data = message.data || [];
     this.menu = message.menu || [];
     this.form = message.form || [];
-    this.intent = message.intent || '';
-    this.action = message.action || '';
-    this.status = message.status || 'sent';
+    this.data = message.data || [];
+    this.feel = message.feel || '';
+    this.tags = message.tags || [];
+    this.time = message.time || Date.now();
+    this.type = message.type || '';
+    this.delivery = message.delivery || '';
+    this.user = message.user || {};
+    this.customer = message.customer || {};
+    this.settings = message.settings || {};
+    this.incoming = message.incoming || {};
+    this.language = message.language || 'en-US';
   }
 
   /**
@@ -69,14 +171,11 @@ export class Message {
    * Set id
    */
   set id(value: string) {
-    if (!value) {
-      value = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c: any) => {
-        const r = (Math.random() * 16) | 0,
-          v = c == 'x' ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-      });
-    }
-    this._id = `${value || ''}`.trim();
+    this._id = `${value || ''}`.trim() || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c: any) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
   }
 
   /**
@@ -150,101 +249,31 @@ export class Message {
   }
 
   /**
-   * Get type
+   * Get holder
    */
-  get type(): string {
-    return this._type;
+  get holder(): string {
+    return this._holder;
   }
 
   /**
-   * Set type
+   * Set status
    */
-  set type(value: string) {
-    this._type = `${value || ''}`.toLowerCase().trim();
+  set holder(value: string) {
+    this._holder = `${value || ''}`.toLowerCase().trim();
   }
 
   /**
-   * Get time
+   * Get status
    */
-  get time(): number {
-    return this._time;
+  get status(): string {
+    return this._status;
   }
 
   /**
-   * Set time
+   * Set status
    */
-  set time(value: number) {
-    this._time = value || Date.now();
-  }
-
-  /**
-   * Get text
-   */
-  get text(): string {
-    return this._text;
-  }
-
-  /**
-   * Set text
-   */
-  set text(value: string) {
-    this._text = this.formatText(`${value || ''}`);
-  }
-
-  /**
-   * Get file
-   */
-  get file(): string {
-    return this._file;
-  }
-
-  /**
-   * Set file
-   */
-  set file(value: string) {
-    this._file = this.formatFile(`${value || ''}`);
-  }
-
-  /**
-   * Get data
-   */
-  get data(): any[] {
-    return this._data;
-  }
-
-  /**
-   * Set data
-   */
-  set data(items: any[]) {
-    this._data = this.formatData(items);
-  }
-
-  /**
-   * Get menu
-   */
-  get menu(): any[] {
-    return this._menu;
-  }
-
-  /**
-   * Set menu
-   */
-  set menu(items: any[]) {
-    this._menu = this.formatMenu(items);
-  }
-
-  /**
-   * Get form
-   */
-  get form(): any[] {
-    return this._form;
-  }
-
-  /**
-   * Set form
-   */
-  set form(items: any[]) {
-    this._form = this.formatForm(items);
+  set status(value: string) {
+    this._status = `${value || ''}`.toLowerCase().trim();
   }
 
   /**
@@ -276,31 +305,171 @@ export class Message {
   }
 
   /**
-   * Get status
+   * Get text
    */
-  get status(): string {
-    return this._status;
+  get text(): string {
+    return this.formatText(this._text);
   }
 
   /**
-   * Set status
+   * Set text
    */
-  set status(value: string) {
-    this._status = `${value || ''}`.toLowerCase().trim();
+  set text(value: string) {
+    this._text = `${value || ''}`.trim();
   }
 
   /**
-   * Get language
+   * Get file
    */
-  get language(): string {
-    return this._language;
+  get file(): string {
+    return this.formatFile(this._file);
   }
 
   /**
-   * Set language
+   * Set file
    */
-  set language(value: string) {
-    this._language = `${value || ''}`.trim();
+  set file(value: string) {
+    this._file = `${value || ''}`.trim();
+  }
+
+  /**
+   * Get menu
+   */
+  get menu(): any[] {
+    return this.formatMenu(this._menu);
+  }
+
+  /**
+   * Set menu
+   */
+  set menu(items: any[]) {
+    this._menu = items;
+  }
+
+  /**
+   * Get form
+   */
+  get form(): any[] {
+    return this.formatForm(this._form);
+  }
+
+  /**
+   * Set form
+   */
+  set form(items: any[]) {
+    this._form = items;
+  }
+
+  /**
+   * Get data
+   */
+  get data(): any[] {
+    return this._data;
+  }
+
+  /**
+   * Set data
+   */
+  set data(items: any[]) {
+    this._data = items;
+  }
+
+  /**
+   * Get feel
+   */
+  get feel(): string {
+    return this._feel;
+  }
+
+  /**
+   * Set feel
+   */
+  set feel(value: string) {
+    this._feel = `${value || ''}`.trim();
+  }
+
+  /**
+   * Get tags
+   */
+  get tags(): any[] {
+    return this._tags;
+  }
+
+  /**
+   * Set data
+   */
+  set tags(items: any[]) {
+    this._tags = items;
+  }
+
+  /**
+   * Get time
+   */
+  get time(): number {
+    return this._time;
+  }
+
+  /**
+   * Set time
+   */
+  set time(value: number) {
+    this._time = value;
+  }
+
+  /**
+   * Get type
+   */
+  get type(): string {
+    return this._type;
+  }
+
+  /**
+   * Set type
+   */
+  set type(value: string) {
+    this._type = `${value || ''}`.toLowerCase().trim();
+  }
+
+  /**
+   * Get delivery
+   */
+  get delivery(): string {
+    return this._delivery;
+  }
+
+  /**
+   * Set delivery
+   */
+  set delivery(value: string) {
+    this._delivery = `${value || ''}`.toLowerCase().trim();
+  }
+
+  /**
+   * Get user
+   */
+  get user(): any {
+    return this._user;
+  }
+
+  /**
+   * Set user
+   */
+  set user(value: any) {
+    this._user = value;
+  }
+
+  /**
+   * Get customer
+   */
+  get customer(): any {
+    return this._customer;
+  }
+
+  /**
+   * Set customer
+   */
+  set customer(value: any) {
+    this._customer = value;
   }
 
   /**
@@ -332,17 +501,96 @@ export class Message {
   }
 
   /**
-   * Get data object
+   * Get language
    */
-  getDataObject(): any {
-    return this.data.reduce((a: any, v: any) => ({...a, [v.index]: v.value}), {}) || {};
+  get language(): string {
+    return this._language;
   }
 
   /**
-   * Get data value by index
+   * Set language
    */
-  getDataValueByIndex(index: string): any {
-    return (this.data.find((o) => o.index == index) || {}).value || '';
+  set language(value: string) {
+    this._language = `${value || ''}`.trim();
+  }
+
+  /**
+   * To object
+   */
+  toObject(): any {
+    const result: any = {
+      id: this.id,
+      parent: this.parent,
+      ticket: this.ticket,
+      origin: this.origin,
+      source: this.source,
+      target: this.target,
+      holder: this.holder,
+      status: this.status,
+      action: this.action,
+      intent: this.intent,
+      text: this.text,
+      file: this.file,
+      menu: this.menu,
+      form: this.form,
+      data: this.data,
+      feel: this.feel,
+      tags: this.tags,
+      time: this.time,
+      type: this.type,
+      delivery: this.delivery,
+      user: this.user,
+      customer: this.customer,
+      settings: this.settings,
+      incoming: this.incoming,
+      language: this.language
+    };
+    for (const k of Object.keys(result)) {
+      if (typeof result[`${k}`] === 'undefined') {
+        delete result[`${k}`];
+      } if (typeof result[`${k}`] === 'string' && result[`${k}`] === '') {
+        delete result[`${k}`];
+      } if (typeof result[`${k}`] === 'number' && result[`${k}`] === 0) {
+        delete result[`${k}`];
+      } if (typeof result[`${k}`] === 'object' && Array.isArray(result[`${k}`]) && !result[`${k}`].length) {
+        delete result[`${k}`];
+      } if (typeof result[`${k}`] === 'object' && !Object.keys(result[`${k}`]).length) {
+        delete result[`${k}`];
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Clone
+   */
+  clone(value: any = {}): Message {
+    const message: any = {};
+    message.parent = value.parent || this.id;
+    message.ticket = value.ticket || this.ticket;
+    message.origin = value.origin || this.origin;
+    message.source = value.source || this.source;
+    message.target = value.target || this.target;
+    message.holder = value.holder || this.holder;
+    message.status = value.status || this.status;
+    message.action = value.action || this.action;
+    message.intent = value.intent || this.intent;
+    message.text = value.text;
+    message.file = value.file;
+    message.menu = value.menu;
+    message.form = value.form;
+    message.data = value.data;
+    message.feel = value.feel;
+    message.tags = value.tags;
+    message.time = value.time;
+    message.type = value.type;
+    message.delivery = value.delivery;
+    message.user = value.user || this.user;
+    message.customer = value.customer || this.customer;
+    message.settings = value.settings || this.settings;
+    message.incoming = value.incoming || this.toObject();
+    message.language = value.language || this.language;
+    return new Message(message);
   }
 
   /**
@@ -360,13 +608,6 @@ export class Message {
    */
   formatFile(file: any): any {
     return file;
-  }
-
-  /**
-   * Format data
-   */
-  formatData(data: any[]): any[] {
-    return data;
   }
 
   /**
@@ -400,44 +641,16 @@ export class Message {
   }
 
   /**
-   * Object methods
+   * Get data object
    */
-  toObject(): any {
-    const result: any = {
-      id: this.id,
-      parent: this.parent,
-      ticket: this.ticket,
-      origin: this.origin,
-      source: this.source,
-      target: this.target,
-      type: this.type,
-      time: this.time,
-      text: this.text,
-      file: this.file,
-      data: this.data,
-      menu: this.menu,
-      form: this.form,
-      action: this.action,
-      intent: this.intent,
-      status: this.status,
-      language: this.language,
-      settings: this.settings,
-      incoming: this.incoming
-    };
-    for (const k of Object.keys(result)) {
-      if (typeof result[`${k}`] == 'string' && result[`${k}`] === '') {
-        delete result[`${k}`];
-        continue;
-      }
-      if (typeof result[`${k}`] == 'number' && result[`${k}`] === 0) {
-        delete result[`${k}`];
-        continue;
-      }
-      if (typeof result[`${k}`] == 'object' && Object.keys(result[`${k}`]).length == 0) {
-        delete result[`${k}`];
-        continue;
-      }
-    }
-    return result;
+  getDataObject(): any {
+    return this.data.reduce((a: any, v: any) => ({...a, [v.index]: v.value}), {}) || {};
+  }
+
+  /**
+   * Get data value by index
+   */
+  getDataValueByIndex(index: string): any {
+    return (this.data.find((o) => o.index === index) || {}).value || '';
   }
 }

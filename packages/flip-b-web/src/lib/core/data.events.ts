@@ -1184,8 +1184,6 @@ async function _defaultFormSetup({self, data, view, form, item, $event, result}:
  */
 async function _defaultItemSetup({self, data, view, form, item, $event, result}: any): Promise<any> {
   if (!item.$input) {
-
-
     // Types​
     // "text", "password", "email", "number", "search", "tel", and "url".
 
@@ -1202,11 +1200,6 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
       item.size = 100;
       item.slot = undefined;
       item.type = 'array';
-
-
-
-
-
     } else if (item.type === 'array') {
       item.$input = {array: true};
       item.$input.onRead = {};
@@ -1216,11 +1209,6 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
       item.items = item.items || [];
       item.size = 100;
       item.slot = undefined;
-
-
-
-
-
     } else if (item.type === 'group') {
       item.$input = {group: true};
       item.$input.onRead = {};
@@ -1230,288 +1218,203 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
       item.items = item.items || [];
       item.size = 100;
       item.slot = undefined;
-
-
-
-
-
     } else if (item.type === 'id') {
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || '';
-
-
-
-
-
     } else if (item.type === 'unix-time' || item.type === 'unixtime') {
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'date-time'};
       item.$input.onRead = {icon: 'calendar', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]+$/;
-
     } else if (item.type === 'date-time' || item.type === 'datetime') {
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'date-time'};
       item.$input.onRead = {icon: 'calendar', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(.*?)/;
-
     } else if (item.type === 'date') {
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'date'};
       item.$input.onRead = {icon: 'calendar-number', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar-number', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
-
     } else if (item.type === 'time') {
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'time'};
       item.$input.onRead = {icon: 'time', pick: 'datetime'};
       item.$input.onEdit = {icon: 'time', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{2}:[0-9]{2}$/;
-
     } else if (item.type === 'year') {
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'year'};
       item.$input.onRead = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{4}$/;
-
     } else if (item.type === 'year-month') {
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'year-month'};
       item.$input.onRead = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{4}-[0-9]{2}$/;
-
     } else if (item.type === 'month-year') {
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'month-year'};
       item.$input.onRead = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{2}-[0-9]{4}$/;
-
-
-
-
-
     } else if (item.type === 'decimal') {
       item.$input = {input: true, type: 'text', mode: 'decimal'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
-
     } else if (item.type === 'integer') {
       item.$input = {input: true, type: 'text', mode: 'numeric'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^-?[0-9]{1,20}$/;
-
     } else if (item.type === 'percent') {
       item.$input = {input: true, type: 'text', mode: 'decimal'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
-
     } else if (item.type === 'currency') {
       item.$input = {input: true, type: 'text', mode: 'decimal'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
-
-
-
-
-
     } else if (item.type === 'select') {
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {icon: 'search-circle', pick: 'select'};
       item.$input.onEdit = {icon: 'search-circle', pick: 'select'};
       item.$input.onDrop = {icon: 'close-circle'};
-
     } else if (item.type === 'toggle') {
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
       item.pattern = item.pattern || /^(true|false)$/;
-
     } else if (item.type === 'checkbox') {
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
       item.pattern = item.pattern || /^(true|false)$/;
-
-
-
-
-
     } else if (item.type === 'text') {
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
-
     } else if (item.type === 'textarea') {
       item.$input = {input: true, type: 'textarea', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
-
     } else if (item.type === 'richtext') {
       item.$input = {input: true, type: 'richtext', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
-
-
-
-
-
     } else if (item.type === 'attachment') {
       item.$input = {input: true, type: 'url', mode: 'url', accept: '*/*'};
       item.$input.onRead = {icon: 'document-attach', pick: 'link'};
       item.$input.onEdit = {icon: 'document-attach', pick: 'file'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
-
     } else if (item.type === 'image') {
       item.$input = {input: true, type: 'url', mode: 'url', accept: 'image/*'};
       item.$input.onRead = {icon: 'image', pick: 'link'};
       item.$input.onEdit = {icon: 'image', pick: 'file'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
-
     } else if (item.type === 'video') {
       item.$input = {input: true, type: 'url', mode: 'url', accept: 'video/*'};
       item.$input.onRead = {icon: 'videocam', pick: 'link'};
       item.$input.onEdit = {icon: 'videocam', pick: 'file'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
-
     } else if (item.type === 'audio') {
       item.$input = {input: true, type: 'url', mode: 'url', accept: 'audio/*'};
       item.$input.onRead = {icon: 'recording', pick: 'link'};
       item.$input.onEdit = {icon: 'recording', pick: 'file'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
-
     } else if (item.type === 'url') {
       item.$input = {input: true, type: 'url', mode: 'url'};
       item.$input.onRead = {icon: 'link', pick: 'link'};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
-
     } else if (item.type === 'phone') {
       item.$input = {input: true, type: 'tel', mode: 'tel'};
       item.$input.onRead = {icon: 'call', pick: 'link'};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{8,12}$/;
-
-
     } else if (item.type === 'email') {
       item.$input = {input: true, type: 'email', mode: 'email'};
       item.$input.onRead = {icon: 'mail', pick: 'link'};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
     } else if (item.type === 'color') {
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {icon: 'color-fill', pick: 'color'};
       item.$input.onEdit = {icon: 'color-fill', pick: 'color'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^#(?:[0-9a-f]{3}){1,2}$/;
-
-
-
-
-
     } else if (item.type === 'location') {
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {icon: 'navigate-circle', pick: 'location'};
       item.$input.onEdit = {icon: 'navigate-circle', pick: 'location'};
       item.$input.onDrop = {icon: 'close-circle'};
-
     } else if (item.type === 'username') {
       item.$input = {input: true, type: 'text', mode: 'text', icon: 'person-circle'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
-
     } else if (item.type === 'password') {
       item.$input = {input: true, type: 'password', mode: 'text', icon: 'eye', toggleType: ['password', 'text'], toggleIcon: ['eye', 'eye-off']};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
-
-
-
-
-
     } else if (item.type === 'header') {
       item.$input = {field: true};
-
     } else if (item.type === 'footer') {
       item.$input = {field: true};
-
     } else if (item.type === 'legend') {
       item.$input = {field: true};
-
     } else if (item.type === 'search') {
       item.$input = {field: true};
-
     } else if (item.type === 'metric') {
       item.$input = {field: true};
-
     } else if (item.type === 'expand') {
       item.$input = {field: true};
-
-
-
-
-
     } else if (item.type === 'values') {
       item.$input = {field: true};
       item.isButton = true;
-
     } else if (item.type === 'button') {
       item.$input = {field: true};
       item.isButton = true;
-
     } else if (item.type === 'submit') {
       item.$input = {field: true};
       item.isButton = true;
-
     } else if (item.type === 'cancel') {
       item.$input = {field: true};
       item.isButton = true;
-
     }
-
-
-
-
 
     item.$input = item.$input || {input: true};
     item.type = item.type || 'text';
     item.size = item.size || 100;
     item.slot = item.slot || undefined;
-
-
-
-
 
     item.getValue = async (): Promise<any> => {
       return await getItemValue({self, data, view, form, item, $event, result});
@@ -1521,7 +1424,6 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
       return await setItemValue({self, data, view, form, item, $event, result}, value, error);
     };
 
-
     item.getInput = async (): Promise<any> => {
       return await getItemInput({self, data, view, form, item, $event, result});
     };
@@ -1529,10 +1431,6 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
     item.setInput = async (value: any = undefined, error: any = undefined): Promise<any> => {
       return await setItemInput({self, data, view, form, item, $event, result}, value, error);
     };
-
-
-
-
 
     if (item.type === 'expand') {
       item.size = undefined;
@@ -1604,7 +1502,6 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
  * Default item setup end
  */
 async function _defaultItemSetupEnd({self, data, view, form, item, $event, result}: any): Promise<any> {
-
   if (!item.isButton && !item.isCustom) {
     if (item.readonly) {
       item.icon = (typeof item.value === 'undefined' ? item.$input.onNone?.icon : item.$input.onRead?.icon) || undefined;
@@ -1651,7 +1548,6 @@ async function _defaultItemSetupEnd({self, data, view, form, item, $event, resul
  */
 async function _defaultItemEvent({self, data, view, form, item, $event, result}: any): Promise<any> {
   if ($event.type === 'item.onClick') {
-
     if (typeof item.disabled === 'undefined') {
       item.disabled = true;
     }
@@ -1692,7 +1588,6 @@ async function _defaultItemEvent({self, data, view, form, item, $event, result}:
           await _defaultLinkPicker({self, data, view, form, item, $event, result});
         }
       }
-
     }
   } else if ($event.type === 'item.onEnter') {
   } else if ($event.type === 'item.onLeave') {
@@ -1701,9 +1596,9 @@ async function _defaultItemEvent({self, data, view, form, item, $event, result}:
   } else if ($event.type === 'item.onChange') {
     await item.setValue($event.detail.$event.target.value);
   } else if ($event.type === 'item.onSubmit') {
-    console.log(`${item.name} ${$event.type}`)
+    console.log(`${item.name} ${$event.type}`);
   } else if ($event.type === 'item.onCancel') {
-    console.log(`${item.name} ${$event.type}`)
+    console.log(`${item.name} ${$event.type}`);
   }
   return result;
 }
@@ -2124,7 +2019,6 @@ async function _defaultSendmailClick({self, data, view, form, item, $event, resu
  */
 async function _defaultTextareaSetup({item}: any): Promise<any> {
   try {
-
     item._richtext = [];
     item._richtextInput = ($event: any) => {
       item._richtext = [];
@@ -2345,8 +2239,8 @@ function loadCurrentPosition(): Promise<any> {
  * Get form value
  */
 function getFormValue({form}: any): any {
-  let result: any = {};
-  for (let f of form.fields) {
+  const result: any = {};
+  for (const f of form.fields) {
     result[f.name] = f.value;
   }
   return result;
@@ -2388,15 +2282,12 @@ async function getItemValue({item}: any): Promise<any> {
   return result;
 }
 
-
-
-
 /**
  * Set form value
  */
 function setFormValue({form}: any, value: any = undefined, error: any = undefined): any {
-  let result: any = {};
-  for (let f of form.fields) {
+  const result: any = {};
+  for (const f of form.fields) {
     result[f.name] = f.value;
   }
   return result;
@@ -2406,7 +2297,6 @@ function setFormValue({form}: any, value: any = undefined, error: any = undefine
  * Set item input
  */
 async function setItemInput({self, item}: any, value: any = undefined, error: any = undefined): Promise<any> {
-
   //if (typeof $event.detail.$event.target.checked !== 'undefined') {
   //  await item.setValue($event.detail.$event.target.checked ? true : false);
   //} else {
@@ -2472,7 +2362,6 @@ async function setItemInput({self, item}: any, value: any = undefined, error: an
  * Set item value
  */
 async function setItemValue({self, item}: any, value: any = undefined, error: any = undefined): Promise<any> {
-
   //try {
   //  this.showLoading({message: `${$form.view.name}.upload.loading`});
   //  const result: any = await this.http.request({
@@ -2567,7 +2456,6 @@ async function setItemValue({self, item}: any, value: any = undefined, error: an
   //  }
   //}
 
-
   if (!item.$input) {
   } else if (item.$input.array) {
     value = value || [];
@@ -2594,7 +2482,6 @@ async function setItemValue({self, item}: any, value: any = undefined, error: an
   // } else if (item.$input.format === 'boolean') {
   //   value = this.getBool(value) || undefined;
   // }
-
 
   if (!item.readonly) {
     if (typeof value === 'undefined') {

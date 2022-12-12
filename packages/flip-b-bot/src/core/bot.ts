@@ -1,11 +1,14 @@
-import {Server} from './server';
-import {Pubsub} from './pubsub';
-import {Queues} from './queues';
-import {Plugin} from './plugin';
+import express from 'express';
+import compression from 'compression';
+import cors from 'cors';
+import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import {camelCase} from 'change-case';
+import {camelCase, paramCase} from 'change-case';
+
+import {Plugin} from './plugin';
+import {Message} from './message';
 
 /**
  * Bot
@@ -24,29 +27,69 @@ export class Bot {
   helper: any = {};
 
   /**
-   * Server
+   * Database
    */
-  server: Server | any;
+  database: any;
 
   /**
-   * Pubsub
+   * Controllers
    */
-  pubsub: Pubsub | any;
+  controllers: any = {};
+
+  /**
+   * Models
+   */
+  models: any = {};
+
+  /**
+   * Routes
+   */
+  routes: any = {};
+
+  /**
+   * Router
+   */
+  router: any;
+
+  /**
+   * Server
+   */
+  server: any;
+
+  /**
+   * Worker
+   */
+  worker: any;
 
   /**
    * Queues
    */
-  queues: Queues | any;
+  queues: any;
+
+  /**
+   * Memory
+   */
+  memory: any;
+
+  /**
+   * Pub
+   */
+  pub: any;
+
+  /**
+   * Sub
+   */
+  sub: any;
+
+  /**
+   * Socket
+   */
+  socket: any;
 
   /**
    * Plugins
    */
-  plugins: {[key: string]: Plugin} = {};
-
-  /**
-   * Events callbacks
-   */
-  $events: any[] = [];
+  private plugins: {[key: string]: Plugin} = {};
 
   /**
    * Constructor
@@ -57,37 +100,61 @@ export class Bot {
 
     // Define global options
     this.config = config;
+    this.config.app = this.config.app || process.env.NODE_APP || 'app';
     this.config.env = this.config.env || process.env.NODE_ENV || 'development';
     this.config.cwd = this.config.cwd || process.env.NODE_CWD || path.dirname(folder);
     this.config.src = this.config.src || process.env.NODE_SRC || path.resolve(folder);
     this.config.var = this.config.var || process.env.NODE_VAR || path.resolve(this.config.cwd, 'var');
     this.config.tmp = this.config.tmp || process.env.NODE_TMP || path.resolve(this.config.cwd, 'tmp');
 
-    // Define server options
-    this.config.server = this.config.server || {};
-    this.config.server.port = this.config.server.port || process.env.SERVER_PORT || process.env.PORT || '8080';
-
-    // Define router options
+    // Define router eventr options
     this.config.router = this.config.router || {};
     this.config.router.compression = this.config.router.compression || {};
     this.config.router.cors = this.config.router.cors || {};
     this.config.router.json = this.config.router.json || {};
     this.config.router.urlencoded = this.config.router.urlencoded || {extended: true};
-    this.config.router.public = this.config.router.static || {dest: `${this.config.var}/public`, path: `/`};
-    this.config.router.upload = this.config.router.upload || {dest: `${this.config.var}/upload`, path: '/upload'};
-    this.config.router.render = this.config.router.render || {dest: `${this.config.var}/render`, type: 'ejs'};
 
-    // Define local options
-    this.config.local = this.config.local || {};
-    this.config.local.url = this.config.local.url || process.env.LOCAL_URL || `http://localhost:${this.config.server.port}`;
+    // Define server options
+    this.config.server = this.config.server || {};
+    this.config.server.host = this.config.server.host || process.env.SERVER_HOST || process.env.HOST || '0.0.0.0';
+    this.config.server.port = this.config.server.port || process.env.SERVER_PORT || process.env.PORT || '8080';
 
     // Define redis options
     this.config.redis = this.config.redis || {};
-    this.config.redis.url = this.config.redis.url || process.env.REDIS_URL || `redis://localhost`;
+    this.config.redis.url = this.config.redis.url || process.env.REDIS_URL || `redis://${this.config.server.host}:6379`;
 
-    // Define plugins and origins
+    // Define mongo options
+    this.config.mongo = this.config.mongo || {};
+    this.config.mongo.url = this.config.mongo.url || process.env.MONGO_URL || `mongodb://root:toor@${this.config.server.host}:27017/${this.config.app}?authSource=admin`;
+
+    // Define token options
+    this.config.token = this.config.token || {};
+    this.config.token.expire = this.config.token.expire || process.env.TOKEN_EXPIRE || '1d';
+    this.config.token.secret = this.config.token.secret || process.env.TOKEN_SECRET || 's3cr3t@t0k3n';
+
+    // Define plugins
     this.config.plugins = this.config.plugins || {};
+
+    // Define origins
     this.config.origins = this.config.origins || {};
+
+    // Define helpers
+    this.config.helpers = this.config.helpers || [];
+    this.config.helpers.push('axios');
+    this.config.helpers.push('bull');
+    this.config.helpers.push('bcryptjs');
+    this.config.helpers.push('busboy');
+    this.config.helpers.push('change-case');
+    this.config.helpers.push('crypto');
+    this.config.helpers.push('ejs');
+    this.config.helpers.push('express');
+    this.config.helpers.push('jsonwebtoken');
+    this.config.helpers.push('moment');
+    this.config.helpers.push('mongoose');
+    this.config.helpers.push('redis');
+    this.config.helpers.push('socket.io');
+    this.config.helpers.push('@socket.io/redis-adapter');
+    this.config.helpers.push('uglify-js');
   }
 
   /**
@@ -96,10 +163,18 @@ export class Bot {
   private async initialize(): Promise<any> {
     await this.initializeConfig();
     await this.initializeHelper();
+    await this.initializeDatabase();
+    await this.initializeControllers();
+    await this.initializeModels();
+    await this.initializeRoutes();
     await this.initializeServer();
-    await this.initializePubsub();
+    await this.initializeWorker();
     await this.initializeQueues();
-    await this.initializePlugins();
+    await this.initializeMemory();
+    await this.initializePub();
+    await this.initializeSub();
+    await this.initializeSocket();
+    await this.initializeSystem();
   }
 
   /**
@@ -108,12 +183,12 @@ export class Bot {
   private async initializeConfig(): Promise<any> {
     console.info(`> initializing config`);
     try {
-      const file = `${this.config.var}/config/${process.env.CONFIG_FILE || 'default'}.json`;
+      const file = `${this.config.var}/config/${this.config.app}.${this.config.env}.json`;
       if (fs.existsSync(file)) {
         this.config = {...this.config, ...JSON.parse(fs.readFileSync(file).toString())};
       }
     } catch (error: any) {
-      console.error(`A fatal error occurred while initializing the config module. ${error}`);
+      console.error(`- a fatal error occurred while initializing the config module. ${error}`);
     }
   }
 
@@ -123,12 +198,82 @@ export class Bot {
   private async initializeHelper(): Promise<any> {
     console.info(`> initializing helper`);
     try {
-      const items: any[] = await this.getItems();
-      for (const i of items) {
+      for (const i of await this.getItems()) {
         this.helper[`${i.name}`] = i.call.default || i.call;
       }
     } catch (error: any) {
-      console.error(`A fatal error occurred while initializing the helper module. ${error}`);
+      console.error(`- a fatal error occurred while initializing the helper module. ${error}`);
+    }
+  }
+
+  /**
+   * Initialize database
+   */
+  private async initializeDatabase(): Promise<any> {
+    console.info(`> initializing database`);
+    try {
+      if (this.config.disableDatabase) {
+        console.warn(`- the database module has been disabled.`);
+        return;
+      }
+      this.helper.mongoose.set('strictQuery', false);
+      this.database = await this.helper.mongoose.connect(this.config.mongo.url, this.config.mongo.options);
+    } catch (error: any) {
+      console.error(`- a fatal error occurred while initializing the database module. ${error}`);
+    }
+  }
+
+  /**
+   * Initialize controllers
+   */
+  private async initializeControllers(): Promise<any> {
+    console.info(`> initializing controllers`);
+    try {
+      if (this.config.disableControllers) {
+        console.warn(`- the controllers module has been disabled.`);
+        return;
+      }
+      for (const f of await this.getFiles(path.resolve(`${this.config.src}/app/controllers`))) {
+        this.controllers[`${f.name}`] = f.call.default(this);
+      }
+    } catch (error: any) {
+      console.error(`- a fatal error occurred while initializing the controllers module. ${error}`);
+    }
+  }
+
+  /**
+   * Initialize models
+   */
+  private async initializeModels(): Promise<any> {
+    console.info(`> initializing models`);
+    try {
+      if (this.config.disableModels) {
+        console.warn(`- the models module has been disabled.`);
+        return;
+      }
+      for (const f of await this.getFiles(path.resolve(`${this.config.src}/app/models`))) {
+        this.models[`${f.name}`] = f.call.default(this);
+      }
+    } catch (error: any) {
+      console.error(`- a fatal error occurred while initializing the models module. ${error}`);
+    }
+  }
+
+  /**
+   * Initialize routes
+   */
+  private async initializeRoutes(): Promise<any> {
+    console.info(`> initializing routes`);
+    try {
+      if (this.config.disableRoutes) {
+        console.warn(`- the routes module has been disabled.`);
+        return;
+      }
+      for (const f of await this.getFiles(path.resolve(`${this.config.src}/app/routes`))) {
+        this.routes[`${f.name}`] = f.call.default(this);
+      }
+    } catch (error: any) {
+      console.error(`- a fatal error occurred while initializing the routes module. ${error}`);
     }
   }
 
@@ -138,23 +283,45 @@ export class Bot {
   private async initializeServer(): Promise<any> {
     console.info(`> initializing server`);
     try {
-      this.server = new Server(this);
-      await this.server.start();
+      if (this.config.disableServer) {
+        console.warn(`- the server module has been disabled.`);
+        return;
+      }
+      this.router = express();
+      this.server = http.createServer(this.router);
+      this.router.set('trust proxy', true);
+      this.router.set('views', `${this.config.var}/views`);
+      this.router.set('view engine', 'ejs');
+      this.router.set('etag', false);
+      this.router.set('x-powered-by', false);
+      this.router.use(compression(this.config.router.compression));
+      this.router.use(cors(this.config.router.cors));
+      this.router.use(express.json(this.config.router.json));
+      this.router.use(express.urlencoded(this.config.router.urlencoded));
     } catch (error: any) {
-      console.error(`A fatal error occurred while initializing the server module. ${error}`);
+      console.error(`- a fatal error occurred while initializing the server module. ${error}`);
     }
   }
 
   /**
-   * Initialize pubsub
+   * Initialize queues
    */
-  private async initializePubsub(): Promise<any> {
-    console.info(`> initializing pubsub`);
+  private async initializeWorker(): Promise<any> {
+    console.info(`> initializing worker`);
     try {
-      this.pubsub = new Pubsub(this);
-      await this.pubsub.start();
+      if (this.config.disableWorker) {
+        console.warn(`- the worker module has been disabled.`);
+        return;
+      }
+      this.worker = new this.helper.bull('worker', `${this.config.redis.url}`, {prefix: `${this.config.app}`});
+      this.worker._events = [];
+      this.worker.push = (type: string, callback: any) => this.worker._events.push({type, callback});
+      this.worker.pushJob = async (messages: any[]): Promise<any> => await this.worker.add('default', {messages}, {jobId: 'default'});
+      this.worker.on('completed', (job: any) => job.remove());
+      this.worker.on('failed', (job: any) => job.remove());
+      this.worker.process('default', 1, async (job: any, done: any) => await this.executeWorkerJob(job, done));
     } catch (error: any) {
-      console.error(`A fatal error occurred while initializing the pubsub module. ${error}`);
+      console.error(`- a fatal error occurred while initializing the worker module. ${error}`);
     }
   }
 
@@ -164,57 +331,216 @@ export class Bot {
   private async initializeQueues(): Promise<any> {
     console.info(`> initializing queues`);
     try {
-      this.queues = new Queues(this);
-      await this.queues.start();
+      if (this.config.disableQueues) {
+        console.warn(`- the queues module has been disabled.`);
+        return;
+      }
+      this.queues = new this.helper.bull('queues', `${this.config.redis.url}`, {prefix: `${this.config.app}`});
+      this.queues._events = [];
+      this.queues.push = (type: string, callback: any) => this.queues._events.push({type, callback});
+      this.queues.pushJob = async (messages: any[]): Promise<any> => await this.queues.add('default', {messages});
+      this.queues.on('completed', (job: any) => job.remove());
+      this.queues.on('failed', (job: any) => job.remove());
+      this.queues.process('default', 1, async (job: any, done: any) => await this.executeQueuesJob(job, done));
     } catch (error: any) {
-      console.error(`A fatal error occurred while initializing the queues module. ${error}`);
+      console.error(`- a fatal error occurred while initializing the queues module. ${error}`);
     }
   }
 
   /**
-   * Initialize plugins
+   * Initialize memory
    */
-  private async initializePlugins(): Promise<any> {
-    this.debug(`> initializing plugins`);
+  private async initializeMemory(): Promise<any> {
+    console.info(`> initializing memory`);
     try {
-      for (const callback of this.config.use || []) {
+      if (this.config.disableMemory) {
+        console.warn(`- the memory module has been disabled.`);
+        return;
+      }
+      this.memory = this.helper.redis.createClient({url: `${this.config.redis.url}`});
+      await this.memory.connect();
+    } catch (error: any) {
+      console.error(`- a fatal error occurred while initializing the memory module. ${error}`);
+    }
+  }
+
+  /**
+   * Initialize pub
+   */
+  private async initializePub(): Promise<any> {
+    console.info(`> initializing pub`);
+    try {
+      if (this.config.disablePub) {
+        console.warn(`- the pub module has been disabled.`);
+        return;
+      }
+      this.pub = this.memory.duplicate();
+      await this.pub.connect();
+    } catch (error: any) {
+      console.error(`- a fatal error occurred while initializing the pub module. ${error}`);
+    }
+  }
+
+  /**
+   * Initialize sub
+   */
+  private async initializeSub(): Promise<any> {
+    console.info(`> initializing sub`);
+    try {
+      if (this.config.disableSub) {
+        console.warn(`- the sub module has been disabled.`);
+        return;
+      }
+      this.sub = this.memory.duplicate();
+      await this.sub.connect();
+    } catch (error: any) {
+      console.error(`- a fatal error occurred while initializing the sub module. ${error}`);
+    }
+  }
+
+  /**
+   * Initialize socket
+   */
+  private async initializeSocket(): Promise<any> {
+    console.info(`> initializing socket`);
+    try {
+      if (this.config.disableSocket) {
+        console.warn(`- the socket module has been disabled.`);
+        return;
+      }
+      this.socket = new this.helper.socketIo.Server(this.server, {path: `/socket.io`, transports: ['websocket', 'polling']});
+      this.socket.adapter(this.helper.socketIoRedisAdapter.createAdapter(this.pub, this.sub));
+    } catch (error: any) {
+      console.error(`- a fatal error occurred while initializing the socket module. ${error}`);
+    }
+  }
+
+  /**
+   * Initialize system
+   */
+  private async initializeSystem(): Promise<any> {
+    console.info(`> initializing system`);
+    try {
+      if (this.config.disableSystem || this.config.disablePlugins || !this.config.use?.length) {
+        console.warn(`- the system module has been disabled.`);
+        return;
+      }
+      for (const callback of this.config.use) {
         const name = camelCase(`${callback.name}`).replace(/Plugin$/, '');
-        await this.registerPlugin(`${name}`, callback);
+        this.plugins[`${name}`] = new callback(this, `${name}`);
+        await this.plugins[`${name}`].register();
       }
     } catch (error: any) {
-      console.error(`A fatal error occurred while initializing the plugins module. ${error}`);
+      console.error(`- a fatal error occurred while initializing the system module. ${error}`);
     }
+  }
+
+  /**
+   * Execute worker job
+   */
+  private async executeWorkerJob(job: any, done: any): Promise<any> {
+    try {
+      for (const event of this.worker._events) {
+        if (event && event.type && typeof event.callback === 'function') {
+          try {
+            await event.callback();
+            await this.sleep(1000);
+          } catch (error: any) {
+            console.error(`! worker job callback error. ${error}`);
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error(`! worker job error. ${error}`);
+    }
+    done();
+  }
+
+  /**
+   * Execute queues job
+   */
+  private async executeQueuesJob(job: any, done: any): Promise<any> {
+    try {
+      (async () => {
+        const messages: Message[] = [];
+        for (const m of job.data.messages) {
+          messages.push(new Message(m));
+        }
+
+        // Define lock
+        const lock = `lock:${messages[0].ticket}`;
+        while (await this.memory.exists(lock)) {
+          await this.sleep(1000);
+        }
+        await this.memory.set(lock, '1', {EX: 60});
+
+        // Process incoming events
+        for (const event of this.queues._events) {
+          if (event && event.type === 'incoming' && typeof event.callback === 'function' && messages.length) {
+            try {
+              await event.callback(messages);
+            } catch (error: any) {
+              console.error(`! queues job incoming error. ${error}`);
+            }
+          }
+        }
+
+        // Process outgoing events
+        for (const event of this.queues._events) {
+          if (messages.length && event && event.type === 'outgoing' && typeof event.callback === 'function') {
+            try {
+              await event.callback(messages);
+            } catch (error: any) {
+              console.error(`! queues job outgoing error. ${error}`);
+            }
+          }
+        }
+
+        // Process messages
+        for (const m of messages) {
+          try {
+            m.delivery = 'pending';
+            if (!m.type || !['incoming', 'outgoing'].includes(m.type)) {
+              throw new Error('Invalid message type');
+            } else if (m.type === 'incoming' && m.target && this.plugins[`${m.target}`]) {
+              await this.plugins[`${m.target}`].dispatchIncomingMessage(m);
+            } else if (m.type === 'outgoing' && m.source && this.plugins[`${m.source}`]) {
+              await this.plugins[`${m.source}`].dispatchOutgoingMessage(m);
+            }
+            m.delivery = 'success';
+          } catch (error: any) {
+            m.delivery = 'error';
+          }
+        }
+
+        // Process shipping events
+        for (const event of this.queues._events) {
+          if (event && event.type === 'shipping' && typeof event.callback === 'function' && messages.length) {
+            try {
+              await event.callback(messages);
+            } catch (error: any) {
+              console.error(`! queues job shipping error. ${error}`);
+            }
+          }
+        }
+
+        // Remove lock
+        await this.memory.del(lock);
+      })();
+    } catch (error: any) {
+      console.error(`! queues job error. ${error}`);
+    }
+    done();
   }
 
   /**
    * Get items
    */
   private async getItems(): Promise<any[]> {
-    const values: any = [
-      '@socket.io/redis-adapter',
-      'axios',
-      'bcryptjs',
-      'bull',
-      'busboy',
-      'change-case',
-      'crypto',
-      'ejs',
-      'express',
-      'fs',
-      'http',
-      'https',
-      'jsonwebtoken',
-      'mime-types',
-      'moment',
-      'path',
-      'redis',
-      'socket.io',
-      'uglify-js'
-    ];
     const result: any[] = [];
-    for (const v of values) {
+    for (const h of this.config.helpers) {
       try {
-        result.push({name: camelCase(v), call: await import(v)});
+        result.push({name: camelCase(h), call: await import(h)});
       } catch (error: any) {
         console.error(`${error}`);
       }
@@ -223,119 +549,25 @@ export class Bot {
   }
 
   /**
-   * Register plugin
+   * Get files
    */
-  async registerPlugin(name: string, callback: any): Promise<any> {
-    this.plugins[`${name}`] = new callback(this, `${name}`);
-    await this.plugins[`${name}`].register();
-  }
-
-  /**
-   * Register training event
-   */
-  async registerTrainingEvent(callback: any): Promise<any> {
-    this.$events.push({name: 'training', callback});
-  }
-
-  /**
-   * Register incoming event
-   */
-  async registerIncomingEvent(callback: any): Promise<any> {
-    this.$events.push({name: 'incoming', callback});
-  }
-
-  /**
-   * Register outgoing event
-   */
-  async registerOutgoingEvent(callback: any): Promise<any> {
-    this.$events.push({name: 'outgoing', callback});
-  }
-
-  /**
-   * Register shipping event
-   */
-  async registerShippingEvent(callback: any): Promise<any> {
-    this.$events.push({name: 'shipping', callback});
-  }
-
-  /**
-   * Register event
-   */
-  async registerEvent(name: string, callback: any): Promise<any> {
-    this.$events.push({name, callback});
-  }
-
-  /**
-   * Register route
-   */
-  async registerRoute(name: string, path: string, callback: any): Promise<any> {
-    this.server.router[name](path, callback);
-  }
-
-  /**
-   * Add incoming messages
-   */
-  async addIncomingMessages(messages: any[]): Promise<any> {
-    await this.queues.incomingQueue.add({messages});
-  }
-
-  /**
-   * Add outgoing message
-   */
-  async addOutgoingMessages(messages: any[]): Promise<any> {
-    await this.queues.outgoingQueue.add({messages});
-  }
-
-  /**
-   * Add sessions value
-   */
-  async addSessionsValue(index: string, value: any, expire: any = undefined): Promise<any> {
-    const store: any = JSON.stringify(value);
-    await this.queues.sessionsStore.set(index, store, {EX: expire || 60 * 60 * 24});
-  }
-
-  /**
-   * Get sessions value
-   */
-  async getSessionsValue(index: string): Promise<any> {
-    const value: any = await this.queues.sessionsStore.get(index);
-    return value ? JSON.parse(value) : {};
-  }
-
-  /**
-   * On
-   */
-  async on(name: string, callback: any): Promise<any> {
-    this.registerEvent(name, callback);
-  }
-
-  /**
-   * Execute events
-   */
-  async executeEvents(name: string, messages: any[]): Promise<any> {
-    for (const $event of this.$events) {
-      if ($event.name === name && typeof $event.callback === 'function' && messages.length) {
-        await $event.callback(messages);
-      }
+  private async getFiles(base: string): Promise<any[]> {
+    if (!fs.existsSync(base)) {
+      return [];
     }
-  }
-
-  /**
-   * Execute action
-   */
-  async executeAction(name: string, messages: any[]): Promise<any> {
-    for (const m of messages) {
+    const result: any[] = [];
+    const values = fs.readdirSync(base);
+    for (const v of values) {
+      if (!v.match(/\.(ts|js)$/) || v.match(/\.(d|test|spec)\./)) {
+        continue;
+      }
       try {
-        if (name === 'incoming' && m.target && this.plugins[`${m.target}`]) {
-          await this.plugins[`${m.target}`].dispatchIncomingMessage(m);
-        } else if (name === 'outgoing' && m.source && this.plugins[`${m.source}`]) {
-          await this.plugins[`${m.source}`].dispatchOutgoingMessage(m);
-        }
-        m.status = 'delivered';
+        result.push({name: camelCase(v.split('.')[0]), call: await import(`${base}/${v}`)});
       } catch (error: any) {
-        m.status = 'failed';
+        console.error(`${error}`);
       }
     }
+    return result;
   }
 
   /**
@@ -353,6 +585,8 @@ export class Bot {
    */
   async start(): Promise<any> {
     await this.initialize();
+
+    // Listen signals
     process.on('SIGINT', () => {
       console.info('> sigint received, shutting down');
       this.stop();
@@ -361,21 +595,91 @@ export class Bot {
       console.info('> sigterm received, shutting down');
       this.stop();
     });
+    process.on('SIGUSR2', async () => {
+      console.info('> sigusr2 received, shutting down');
+      await this.stop();
+    });
+
+    // Verify worker
+    if (!this.config.disableWorker) {
+      const check = async () => {
+        const job = await this.worker.getJob('default');
+        if (!job) {
+          const c = parseInt((await this.memory.get(`${this.config.app}:worker-check`)) || 0) + 1;
+          await this.memory.set(`${this.config.app}:worker-check`, `${c}`);
+          await this.worker.add('default', {check: `${c}`}, {jobId: 'default'});
+        }
+        await this.sleep(1000);
+        check();
+      };
+      check();
+    }
+
+    // Define routes
+    if (!this.config.disableRouter && !this.config.disableRoutes) {
+      this.router.use('/api/', (req: any, res: any, next: express.NextFunction) => {
+        try {
+          req.data = {};
+          req.data.body = {...req.body, ...req.query, ...req.params};
+          req.data.auth = req.headers['authorization'] ? this.helper.jsonwebtoken.verify(req.headers['authorization'].split(' ').pop(), this.config.token.secret) : false;
+          res.data = req.data;
+          next();
+        } catch (error: any) {
+          next(error);
+        }
+      });
+      for (const route in this.routes) {
+        this.router.use(`/api/${paramCase(route)}`, this.routes[`${route}`]);
+      }
+    }
+
+    // Define public route
+    if (!this.config.disableRouter && !this.config.disablePublic) {
+      this.router.use(express.static(`${this.config.var}/public`, {dotfiles: 'deny', maxAge: 0, etag: false}));
+    }
+
+    // Define error 404 route
+    if (!this.config.disableRouter && !this.config.disableError404) {
+      this.router.use((req: express.Request, res: express.Response) => {
+        res.status(404).send();
+        if (this.config.env === 'development') {
+          console.warn(`- Route 404 (${req.url})`);
+        }
+      });
+    }
+
+    // Define error 500 route
+    if (!this.config.disableRouter && !this.config.disableError500) {
+      this.router.use((error: any, req: express.Request, res: express.Response) => {
+        res.status(500).send();
+        if (this.config.env === 'development') {
+          console.warn(`- Route 500 (${req.url}) ${error}`);
+        }
+      });
+    }
+
+    // Listen server
+    if (!this.config.disableServer) {
+      await this.server.listen(this.config.server.port, () => {
+        console.info(`! listening server on port ${this.config.server.port} (#${process.pid})`);
+      });
+    }
   }
 
   /**
    * Stop
    */
   async stop(): Promise<any> {
+    if (this.socket) {
+      await this.socket.close();
+    }
+    if (this.database) {
+      await this.database.disconnect();
+    }
     process.exit(0);
   }
-
-  /**
-   * Debug
-   */
-  async debug(...args: any): Promise<any> {
-    if (this.config.env === 'development') {
-      console.info(...args);
-    }
-  }
 }
+
+export type Request = express.Request;
+export type Response = express.Response;
+export type Next = express.NextFunction;

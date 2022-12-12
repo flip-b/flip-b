@@ -14,7 +14,7 @@ export function getChatClientWeb(params: any = {}, query: any = {}) {
 
   // Define chat options
   const chatLibrary = query.nominify ? 'chat.js' : 'chat.min.js';
-  const chatOptions = encodeSettingsObject(query);
+  const chatOptions = encodeOptions(query);
 
   // Define result
   return String.raw`<!DOCTYPE html>
@@ -87,7 +87,7 @@ export function getChatClientWeb(params: any = {}, query: any = {}) {
     </div>
 
     <!-- Javascript -->
-    <script src="_URL_/_PLUGIN_/socket.io/socket.io.min.js"></script>
+    <script src="_URL_/socket.io/socket.io.min.js"></script>
     <script src="_URL_/_PLUGIN_/_ORIGIN_/${chatLibrary}${chatOptions ? '?' + chatOptions : ''}"></script>
     <script>
       setTimeout(function() {
@@ -102,15 +102,13 @@ export function getChatClientWeb(params: any = {}, query: any = {}) {
 /**
  * Encode settings
  */
-export function encodeSettingsObject(params: any, prefix: any = ''): any {
+export function encodeOptions(params: any, prefix: any = ''): any {
   const result = [];
   for (const p in params) {
-    if (params.hasOwnProperty(p)) {
-      const k = prefix ? prefix + '[' + p + ']' : p;
-      const v = params[p];
-      if (v !== null && v !== false && v !== undefined) {
-        result.push(typeof v === 'object' ? encodeSettingsObject(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v));
-      }
+    const k = prefix ? prefix + '[' + p + ']' : p;
+    const v = params[p];
+    if (v !== null && v !== false && v !== undefined) {
+      result.push(typeof v === 'object' ? encodeOptions(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v));
     }
   }
   return result.filter((v: any) => !!v).join('&');

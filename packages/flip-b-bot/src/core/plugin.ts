@@ -8,9 +8,9 @@ export abstract class Plugin {
   // Plugin definitions
 
   /**
-   * Bot
+   * Application
    */
-  bot: Bot;
+  app: Bot;
 
   /**
    * Plugin
@@ -20,8 +20,8 @@ export abstract class Plugin {
   /**
    * Constructor
    */
-  constructor(bot: Bot, plugin: string) {
-    this.bot = bot;
+  constructor(app: Bot, plugin: string) {
+    this.app = app;
     this.plugin = plugin;
   }
 

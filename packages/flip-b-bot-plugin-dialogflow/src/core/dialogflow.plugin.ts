@@ -11,9 +11,9 @@ export class DialogflowPlugin extends Plugin {
    * Dispatch incoming message
    */
   override async dispatchIncomingMessage(message: Message): Promise<any> {
-    const origin: any = this.bot.config.origins[`${message.origin || ''}`] || {};
-    const config: any = origin[`${this.plugin}`] || this.bot.config.plugins[`${this.plugin}`] || undefined;
-    if (!config || !config.enabled) {
+    const origin: any = this.app.config.origins[`${message.origin || ''}`] || {};
+    const config: any = origin[`${this.plugin}`] || this.app.config.plugins[`${this.plugin}`] || undefined;
+    if (!config || !config.enabled || message.intent) {
       return;
     }
 
@@ -35,16 +35,13 @@ export class DialogflowPlugin extends Plugin {
     if (message.text) {
       clientPayload.queryInput.text = {text: `${message.text}`, languageCode: `${message.language}`};
     }
-    if (message.file) {
-      clientPayload.queryInput.text = {text: `${message.file}`, languageCode: `${message.language}`};
-    }
     if (message.action && !['show_dialog', 'hide_dialog', 'quit_dialog', 'talking', 'silence', 'waiting', 'disconnect'].includes(message.action)) {
       clientPayload.queryInput.event = {name: `${message.action}`, languageCode: `${message.language}`};
     }
     if (message.action && message.data.length && clientPayload.queryInput.event) {
       clientPayload.queryInput.event.parameters = jsonToStructProto(message.getDataObject());
     }
-    if (message.settings?.contexts?.length > 0) {
+    if (message.settings?.contexts?.length) {
       clientPayload.queryParams.contexts = message.settings.contexts;
     }
     if (!clientPayload.queryInput.text && !clientPayload.queryInput.event) {
@@ -52,12 +49,7 @@ export class DialogflowPlugin extends Plugin {
     }
 
     // Define result
-    let result: any;
-    try {
-      result = await client.detectIntent(clientPayload);
-    } catch (error: any) {
-      return;
-    }
+    const result: any = await client.detectIntent(clientPayload);
     if (result[0]?.queryResult?.intent?.displayName) {
       message.intent = result[0]?.queryResult?.intent?.displayName;
     }
@@ -73,30 +65,18 @@ export class DialogflowPlugin extends Plugin {
 
         // Verify text items
         const textItems = result[0].queryResult.fulfillmentMessages[m].text?.text || [];
-        if (textItems.length > 0) {
+        if (textItems.length) {
           for (const t in textItems) {
             const text = textItems[t];
             if (text) {
-              const outgoingMessage: any = {};
-              outgoingMessage.parent = message.id;
-              outgoingMessage.origin = message.origin;
-              outgoingMessage.ticket = message.ticket;
-              outgoingMessage.source = message.source;
-              outgoingMessage.target = message.target;
-              outgoingMessage.action = message.action;
-              outgoingMessage.intent = message.intent;
-              outgoingMessage.language = message.language;
-              outgoingMessage.settings = message.settings;
-              outgoingMessage.incoming = message.toObject();
-              outgoingMessage.text = `${text}`;
-              outgoingMessages.push(outgoingMessage);
+              outgoingMessages.push(message.clone({text: `${text}`, type: 'outgoing'}));
             }
           }
         }
 
         // Verify list items
         const listItems = result[0].queryResult.fulfillmentMessages[m].payload?.fields?.richContent?.listValue?.values || [];
-        if (listItems.length > 0) {
+        if (listItems.length) {
           for (const m in listItems) {
             const _text = [];
             const _file = [];
@@ -177,32 +157,8 @@ export class DialogflowPlugin extends Plugin {
             }
 
             // Define outgoing message
-            if (_text.length > 0 || _file.length > 0 || _menu.length > 0 || _form.length > 0) {
-              const outgoingMessage: any = {};
-              outgoingMessage.parent = message.id;
-              outgoingMessage.origin = message.origin;
-              outgoingMessage.ticket = message.ticket;
-              outgoingMessage.source = message.source;
-              outgoingMessage.target = message.target;
-              outgoingMessage.action = message.action;
-              outgoingMessage.intent = message.intent;
-              outgoingMessage.language = message.language;
-              outgoingMessage.settings = message.settings;
-              outgoingMessage.incoming = message.toObject();
-
-              if (_text.length > 0) {
-                outgoingMessage.text = _text[0];
-              }
-              if (_file.length > 0) {
-                outgoingMessage.file = _file[0];
-              }
-              if (_menu.length > 0) {
-                outgoingMessage.menu = _menu;
-              }
-              if (_form.length > 0) {
-                outgoingMessage.form = _form;
-              }
-              outgoingMessages.push(outgoingMessage);
+            if (_text.length || _file.length || _menu.length || _form.length) {
+              outgoingMessages.push(message.clone({type: 'outgoing', text: _text[0] || '',  file: _file[0] || '', menu: _menu, form: _form}));
             }
           }
         }
@@ -210,20 +166,21 @@ export class DialogflowPlugin extends Plugin {
     }
 
     // Verify outgoing messages
-    if (outgoingMessages.length > 0) {
-      await this.bot.addOutgoingMessages(outgoingMessages);
+    if (outgoingMessages.length) {
+      await this.app.queues.pushJob(outgoingMessages);
     }
   }
 }
 
-const JSON_SIMPLE_TYPE_TO_PROTO_KIND_MAP: any = {
-  [typeof 0]: 'numberValue',
-  [typeof '']: 'stringValue',
-  [typeof false]: 'boolValue'
-};
+/**
+ * Const
+ */
+const KINDS: any = new Set(['numberValue', 'stringValue', 'boolValue']);
+const KINDS_MAP: any = {[typeof 0]: 'numberValue', [typeof '']: 'stringValue', [typeof false]: 'boolValue'};
 
-const JSON_SIMPLE_VALUE_KINDS: any = new Set(['numberValue', 'stringValue', 'boolValue']);
-
+/**
+ * Json to struct proto
+ */
 function jsonToStructProto(json: any) {
   const fields: any = {};
   for (const k in json) {
@@ -232,6 +189,9 @@ function jsonToStructProto(json: any) {
   return {fields};
 }
 
+/**
+ * Json value to proto
+ */
 function jsonValueToProto(value: any) {
   const valueProto: any = {};
   if (value === null) {
@@ -243,8 +203,8 @@ function jsonValueToProto(value: any) {
   } else if (typeof value === 'object') {
     valueProto.kind = 'structValue';
     valueProto.structValue = jsonToStructProto(value);
-  } else if (typeof value in JSON_SIMPLE_TYPE_TO_PROTO_KIND_MAP) {
-    const kind = JSON_SIMPLE_TYPE_TO_PROTO_KIND_MAP[typeof value];
+  } else if (typeof value in KINDS_MAP) {
+    const kind = KINDS_MAP[typeof value];
     valueProto.kind = kind;
     valueProto[kind] = value;
   } else {
@@ -253,6 +213,9 @@ function jsonValueToProto(value: any) {
   return valueProto;
 }
 
+/**
+ * Struct proto to json
+ */
 function structProtoToJson(proto: any) {
   if (!proto || !proto.fields) {
     return {};
@@ -264,11 +227,14 @@ function structProtoToJson(proto: any) {
   return json;
 }
 
+/**
+ * Value proto to json
+ */
 function valueProtoToJson(proto: any) {
   if (!proto || !proto.kind) {
     return null;
   }
-  if (JSON_SIMPLE_VALUE_KINDS.has(proto.kind)) {
+  if (KINDS.has(proto.kind)) {
     return proto[proto.kind];
   } else if (proto.kind === 'nullValue') {
     return null;

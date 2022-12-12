@@ -12,32 +12,32 @@ export class PipePlugin extends Plugin {
   override async register(): Promise<any> {
     // Register
 
-    // Define route
-    this.bot.registerRoute('post', `/${this.plugin}/response`, async (req: Request, res: Response) => {
+    // Define router event
+    this.app.router.post(`/${this.plugin}/response`, async (req: Request, res: Response) => {
       try {
-        await this.bot.addOutgoingMessages(req.body.messages);
+        await this.app.queues.pushJob(req.body.messages);
         res.status(200).send();
       } catch (error: any) {
         res.status(400).send();
       }
     });
 
-    // Define event
-    this.bot.registerShippingEvent(async (messages: Message[]): Promise<any> => {
+    // Define queues event
+    this.app.queues.push('shipping', async (messages: Message[]): Promise<any> => {
       try {
-        const origin: any = this.bot.config.origins[`${messages[0].origin || ''}`] || {};
-        const config: any = origin[`${this.plugin}`] || this.bot.config.plugins[`${this.plugin}`] || undefined;
+        const origin: any = this.app.config.origins[`${messages[0].origin || ''}`] || {};
+        const config: any = origin[`${this.plugin}`] || this.app.config.plugins[`${this.plugin}`] || undefined;
         if (!config || !config.enabled) {
           return;
         }
-        await this.bot.helper.axios.request({
+        await this.app.helper.axios.request({
           url: config.url,
           method: config.method || 'POST',
           headers: config.headers || {},
           timeout: config.timeout || 10000,
           data: {
             messages: messages.map((message: Message) => message.toObject()),
-            response: {...this.bot.config.local, ...(config.response || {})}
+            response: config.response || {}
           }
         });
         return true;
