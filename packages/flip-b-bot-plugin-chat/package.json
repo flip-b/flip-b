@@ -1,7 +1,7 @@
 {
   "name": "@flip-b/bot-plugin-chat",
   "description": "Flip-B Bot Plugin Chat",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "license": "MIT",
   "homepage": "https://www.flip-b.com/",
   "keywords": [
@@ -20,7 +20,7 @@
     "lint": "eslint 'src/**/*'"
   },
   "dependencies": {
-    "@flip-b/bot": "~1.0.22"
+    "@flip-b/bot": "~1.0.23"
   },
   "devDependencies": {
     "@types/jest": "~29.2.4",

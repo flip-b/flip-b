@@ -20,7 +20,8 @@ export class ChatPlugin extends Plugin {
         const origin: any = this.app.config.origins[`${req.params.origin || ''}`] || {};
         const config: any = origin[`${this.plugin}`] || this.app.config.plugins[`${this.plugin}`] || undefined;
         if (!config || !config.enabled) {
-          return res.status(404).send();
+          res.status(404).send();
+          return;
         }
         let result: any = getChatClientWeb(config, req.query);
         result = result.replace(/_URL_/g, `${req.protocol}://${req.get('host')}`);
@@ -38,7 +39,8 @@ export class ChatPlugin extends Plugin {
         const origin: any = this.app.config.origins[`${req.params.origin || ''}`] || {};
         const config: any = origin[`${this.plugin}`] || this.app.config.plugins[`${this.plugin}`] || undefined;
         if (!config || !config.enabled) {
-          return res.status(404).send();
+          res.status(404).send();
+          return;
         }
         let result: any = getChatClientLib(config, req.query);
         result = result.replace(/_URL_/g, `${req.protocol}://${req.get('host')}`);
@@ -56,7 +58,8 @@ export class ChatPlugin extends Plugin {
         const origin: any = this.app.config.origins[`${req.params.origin || ''}`] || {};
         const config: any = origin[`${this.plugin}`] || this.app.config.plugins[`${this.plugin}`] || undefined;
         if (!config || !config.enabled) {
-          return res.status(404).send();
+          res.status(404).send();
+          return;
         }
         let result: any = getChatClientLib(config, req.query);
         result = result.replace(/_URL_/g, `${req.protocol}://${req.get('host')}`);
