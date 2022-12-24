@@ -32,6 +32,7 @@ export class FormComponent implements OnInit {
    * Init angular handler
    */
   async ngOnInit(): Promise<any> {
+
     if (typeof this.view === 'undefined') {
       const snap: any = this.data._router.routerState.snapshot.root.firstChild;
       const view: any = {};

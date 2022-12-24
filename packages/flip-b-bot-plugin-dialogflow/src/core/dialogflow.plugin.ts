@@ -8,12 +8,32 @@ export class DialogflowPlugin extends Plugin {
   // Plugin definitions
 
   /**
-   * Dispatch incoming message
+   * Register
    */
-  override async dispatchIncomingMessage(message: Message): Promise<any> {
-    const origin: any = this.app.config.origins[`${message.origin || ''}`] || {};
-    const config: any = origin[`${this.plugin}`] || this.app.config.plugins[`${this.plugin}`] || undefined;
-    if (!config || !config.enabled || message.intent) {
+  override async register(): Promise<any> {
+    // Register
+
+    // Define queues event
+    this.app.queues.push('incoming', async (messages: Message[]): Promise<any> => {
+      try {
+        const origin: any = this.app.config.origins[`${messages[0].origin || ''}`] || {};
+        const config: any = origin[`${this.plugin}`] || this.app.config.plugins[`${this.plugin}`] || undefined;
+        if (!config || !config.enabled) {
+          return;
+        }
+        return await this.processIncomingMessages({messages, config});
+      } catch (error: any) {
+        return false;
+      }
+    });
+  }
+
+  /**
+   * Process incoming messages
+   */
+  private async processIncomingMessages({messages, config}: any): Promise<any> {
+    const message: any = messages[0];
+    if (message.intent || (!message.text && !message.action) || ['show_dialog', 'hide_dialog', 'quit_dialog', 'talking', 'silence', 'waiting', 'disconnect'].includes(message.action)) {
       return;
     }
 
@@ -32,142 +52,133 @@ export class DialogflowPlugin extends Plugin {
 
     // Define client payload
     const clientPayload: any = {session: clientSession, queryParams: {}, queryInput: {}};
+
     if (message.text) {
       clientPayload.queryInput.text = {text: `${message.text}`, languageCode: `${message.language}`};
-    }
-    if (message.action && !['show_dialog', 'hide_dialog', 'quit_dialog', 'talking', 'silence', 'waiting', 'disconnect'].includes(message.action)) {
+    } else if (message.action) {
       clientPayload.queryInput.event = {name: `${message.action}`, languageCode: `${message.language}`};
     }
+
     if (message.action && message.data.length && clientPayload.queryInput.event) {
       clientPayload.queryInput.event.parameters = jsonToStructProto(message.getDataObject());
     }
+
     if (message.settings?.contexts?.length) {
       clientPayload.queryParams.contexts = message.settings.contexts;
     }
+
     if (!clientPayload.queryInput.text && !clientPayload.queryInput.event) {
       return;
     }
 
     // Define result
     const result: any = await client.detectIntent(clientPayload);
+
     if (result[0]?.queryResult?.intent?.displayName) {
+      message.target = `${this.plugin}`;
       message.intent = result[0]?.queryResult?.intent?.displayName;
     }
+
     if (result[0]?.queryResult?.outputContexts) {
       message.settings.contexts = result[0].queryResult.outputContexts;
     }
 
-    // Define outgoing messages
-    const outgoingMessages: any[] = [];
-    if (result[0]?.queryResult?.fulfillmentMessages) {
-      for (const m in result[0].queryResult.fulfillmentMessages) {
-        // Verify items
+    // Define values
+    const values: any = result[0]?.queryResult?.fulfillmentMessages || [];
+    for (const m in values) {
 
-        // Verify text items
-        const textItems = result[0].queryResult.fulfillmentMessages[m].text?.text || [];
-        if (textItems.length) {
-          for (const t in textItems) {
-            const text = textItems[t];
-            if (text) {
-              outgoingMessages.push(message.clone({text: `${text}`, type: 'outgoing'}));
-            }
-          }
-        }
-
-        // Verify list items
-        const listItems = result[0].queryResult.fulfillmentMessages[m].payload?.fields?.richContent?.listValue?.values || [];
-        if (listItems.length) {
-          for (const m in listItems) {
-            const _text = [];
-            const _file = [];
-            const _menu = [];
-            const _form = [];
-
-            for (const item of listItems[m].listValue?.values || []) {
-              const r = structProtoToJson(item.structValue);
-              if (typeof r.type === 'undefined' && typeof r.text !== 'undefined') {
-                if (typeof r.text === 'object') {
-                  r.text = r.text[Math.floor(Math.random() * r.text.length)];
-                }
-                _text.push(`${r.text || ''}`);
-                continue;
-              }
-              if (typeof r.type === 'undefined' && typeof r.file !== 'undefined') {
-                if (typeof r.file === 'object') {
-                  r.file = r.file[Math.floor(Math.random() * r.file.length)];
-                }
-                _file.push(`${r.file || ''}`);
-                continue;
-              }
-              if (typeof r.type === 'undefined' && typeof r.menu !== 'undefined') {
-                if (typeof r.menu === 'object') {
-                  r.menu = r.menu[Math.floor(Math.random() * r.menu.length)];
-                }
-                for (const x of r.menu) {
-                  _menu.push(x);
-                }
-                continue;
-              }
-              if (typeof r.type === 'undefined' && typeof r.form !== 'undefined') {
-                if (typeof r.form === 'object') {
-                  r.form = r.form[Math.floor(Math.random() * r.form.length)];
-                }
-                for (const x of r.form) {
-                  _form.push(x);
-                }
-                continue;
-              }
-
-              // Verify old format
-              if (typeof r.type !== 'undefined') {
-                if (typeof r.rawUrl === 'object') {
-                  r.rawUrl = r.rawUrl[Math.floor(Math.random() * r.rawUrl.length)];
-                }
-                if (typeof r.display === 'string') {
-                  r.attr = r.attr || {};
-                  r.attr.display = r.display;
-                }
-                if (r.type == 'text') {
-                  _text.push(`${r.text || r.title || r.subtitle || ''}`);
-                }
-                if (r.type == 'file' || r.type == 'image' || r.type == 'video' || r.type == 'audio' || r.type == 'document') {
-                  _file.push(`${r.file || r.rawUrl || ''}`);
-                }
-                if (r.type == 'menu' || r.type == 'list') {
-                  _menu.push({
-                    text: `${r.text || r.title || ''}`,
-                    help: `${r.help || r.subtitle || ''}`,
-                    file: `${r.file || ''}`,
-                    attr: r.attr || r.attributes,
-                    action: r.action || r.event,
-                    intent: r.intent
-                  });
-                }
-                if (r.type == 'form') {
-                  _form.push({
-                    text: `${r.text || r.title || ''}`,
-                    help: `${r.help || r.subtitle || ''}`,
-                    file: `${r.file || ''}`,
-                    attr: r.attr || r.attributes,
-                    action: r.action || r.event,
-                    intent: r.intent
-                  });
-                }
-              }
-            }
-
-            // Define outgoing message
-            if (_text.length || _file.length || _menu.length || _form.length) {
-              outgoingMessages.push(message.clone({type: 'outgoing', text: _text[0] || '',  file: _file[0] || '', menu: _menu, form: _form}));
-            }
-          }
+      const textItems: any = values[m].text?.text || [];
+      for (const t in textItems) {
+        if (textItems[t]) {
+          messages.push(message.clone({text: `${textItems[t]}`, type: 'outgoing'}));
         }
       }
-    }
 
-    // Verify outgoing messages
-    if (outgoingMessages.length) {
-      await this.app.queues.pushJob(outgoingMessages);
+      const listItems: any = values[m].payload?.fields?.richContent?.listValue?.values || [];
+      for (const m in listItems) {
+        const _text: any = [];
+        const _file: any = [];
+        const _menu: any = [];
+        const _form: any = [];
+
+        for (const item of listItems[m].listValue?.values || []) {
+          const r = structProtoToJson(item.structValue);
+          if (typeof r.type === 'undefined' && typeof r.text !== 'undefined') {
+            if (typeof r.text === 'object') {
+              r.text = r.text[Math.floor(Math.random() * r.text.length)];
+            }
+            _text.push(`${r.text || ''}`);
+            continue;
+          }
+          if (typeof r.type === 'undefined' && typeof r.file !== 'undefined') {
+            if (typeof r.file === 'object') {
+              r.file = r.file[Math.floor(Math.random() * r.file.length)];
+            }
+            _file.push(`${r.file || ''}`);
+            continue;
+          }
+          if (typeof r.type === 'undefined' && typeof r.menu !== 'undefined') {
+            if (typeof r.menu === 'object') {
+              r.menu = r.menu[Math.floor(Math.random() * r.menu.length)];
+            }
+            for (const x of r.menu) {
+              _menu.push(x);
+            }
+            continue;
+          }
+          if (typeof r.type === 'undefined' && typeof r.form !== 'undefined') {
+            if (typeof r.form === 'object') {
+              r.form = r.form[Math.floor(Math.random() * r.form.length)];
+            }
+            for (const x of r.form) {
+              _form.push(x);
+            }
+            continue;
+          }
+
+          // Verify old format
+          if (typeof r.type !== 'undefined') {
+            if (typeof r.rawUrl === 'object') {
+              r.rawUrl = r.rawUrl[Math.floor(Math.random() * r.rawUrl.length)];
+            }
+            if (typeof r.display === 'string') {
+              r.attr = r.attr || {};
+              r.attr.display = r.display;
+            }
+            if (r.type == 'text') {
+              _text.push(`${r.text || r.title || r.subtitle || ''}`);
+            }
+            if (r.type == 'file' || r.type == 'image' || r.type == 'video' || r.type == 'audio' || r.type == 'document') {
+              _file.push(`${r.file || r.rawUrl || ''}`);
+            }
+            if (r.type == 'menu' || r.type == 'list') {
+              _menu.push({
+                text: `${r.text || r.title || ''}`,
+                help: `${r.help || r.subtitle || ''}`,
+                file: `${r.file || ''}`,
+                attr: r.attr || r.attributes,
+                action: r.action || r.event,
+                intent: r.intent
+              });
+            }
+            if (r.type == 'form') {
+              _form.push({
+                text: `${r.text || r.title || ''}`,
+                help: `${r.help || r.subtitle || ''}`,
+                file: `${r.file || ''}`,
+                attr: r.attr || r.attributes,
+                action: r.action || r.event,
+                intent: r.intent
+              });
+            }
+          }
+        }
+
+        // Define outgoing message
+        if (_text.length || _file.length || _menu.length || _form.length) {
+          messages.push(message.clone({type: 'outgoing', text: _text[0] || '',  file: _file[0] || '', menu: _menu, form: _form}));
+        }
+      }
     }
   }
 }

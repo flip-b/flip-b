@@ -1,5 +1,4 @@
 import {Bot} from './bot';
-import {Message} from './message';
 
 /**
  * Plugin
@@ -30,24 +29,6 @@ export abstract class Plugin {
    */
   async register(): Promise<any> {
     if (this.plugin) {
-      return true;
-    }
-  }
-
-  /**
-   * Dispatch incoming message
-   */
-  async dispatchIncomingMessage(message: Message): Promise<any> {
-    if (this.plugin && message) {
-      return true;
-    }
-  }
-
-  /**
-   * Dispatch outgoing message
-   */
-  async dispatchOutgoingMessage(message: Message): Promise<any> {
-    if (this.plugin && message) {
       return true;
     }
   }

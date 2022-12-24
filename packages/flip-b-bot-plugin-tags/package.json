@@ -1,7 +1,7 @@
 {
   "name": "@flip-b/bot-plugin-tags",
   "description": "Flip-B Bot Plugin Tags",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "license": "MIT",
   "homepage": "https://www.flip-b.com/",
   "keywords": [
@@ -20,15 +20,15 @@
     "lint": "eslint 'src/**/*'"
   },
   "dependencies": {
-    "@flip-b/bot": "~1.0.22"
+    "@flip-b/bot": "~1.0.23"
   },
   "devDependencies": {
     "@types/jest": "~29.2.4",
-    "@types/node": "~18.11.11",
+    "@types/node": "~18.11.17",
     "@types/rimraf": "~3.0.2",
-    "@typescript-eslint/eslint-plugin": "~5.45.1",
-    "@typescript-eslint/parser": "~5.45.1",
-    "eslint": "~8.29.0",
+    "@typescript-eslint/eslint-plugin": "~5.47.0",
+    "@typescript-eslint/parser": "~5.47.0",
+    "eslint": "~8.30.0",
     "eslint-config-prettier": "~8.5.0",
     "eslint-plugin-prettier": "~4.2.1",
     "jest": "~29.3.1",

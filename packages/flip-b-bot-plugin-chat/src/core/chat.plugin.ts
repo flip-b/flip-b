@@ -95,7 +95,7 @@ export class ChatPlugin extends Plugin {
           const waiting: number = parseInt(`${configPlugin.system_waiting || 30}`) * 1000;
           setTimeout(async () => {
             const sockets: any = await this.app.socket.of(`/${this.plugin}`).in(`${ticket}`).allSockets();
-            if (sockets.size === 0 && waiting > 0) {
+            if (sockets.size === 0) {
               this.app.queues.pushJob([{ticket, origin, source, target, type: 'incoming', action: 'waiting'}]);
             }
           }, 100);
@@ -110,12 +110,28 @@ export class ChatPlugin extends Plugin {
         console.error(`${error}`);
       }
     });
-  }
 
-  /**
-   * Dispatch outgoing message
-   */
-  override async dispatchOutgoingMessage(message: Message): Promise<any> {
-    return await this.app.socket.of(`/${this.plugin}`).to(`${message.ticket}`).emit('message', message.toObject());
+    // Define queues event
+    this.app.queues.push('outgoing', async (messages: Message[]): Promise<any> => {
+      try {
+        const origin: any = this.app.config.origins[`${messages[0].origin || ''}`] || {};
+        const config: any = origin[`${this.plugin}`] || this.app.config.plugins[`${this.plugin}`] || undefined;
+        if (!config || !config.enabled) {
+          return;
+        }
+        const values: any = [];
+        for (const message of messages) {
+          if (message.source === `${this.plugin}` && message.type === 'outgoing') {
+            values.push(message.toObject());
+          }
+        }
+        if (values.length) {
+          await this.app.socket.of(`/${this.plugin}`).to(`${messages[0].ticket}`).emit('message', values);
+        }
+        return true;
+      } catch (error: any) {
+        return false;
+      }
+    });
   }
 }

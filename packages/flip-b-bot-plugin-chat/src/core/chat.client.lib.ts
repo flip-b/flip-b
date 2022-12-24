@@ -328,7 +328,7 @@ window.${prefix}Chat = {
       self.dialog.style.display = 'block';
       self.dialog_form_text_control.value = '';
       self.dialog_form_text_control.focus();
-      self.sendAction('show_dialog');
+      //self.sendAction('show_dialog');
       if (!self.welcome) {
         self.sendAction('welcome');
         self.welcome = true;
@@ -345,7 +345,7 @@ window.${prefix}Chat = {
     self.dialog_head_hide_control.addEventListener('click', function(event) {
       event.preventDefault();
       self.dialog.style.display = 'none';
-      self.sendAction('hide_dialog');
+      //self.sendAction('hide_dialog');
     }, false);
 
     // Define dialog head quit control click event
@@ -371,7 +371,7 @@ window.${prefix}Chat = {
     self.window_quit_dialog_positive_control.addEventListener('click', function(event) {
       self.window_quit_dialog.style.display = 'none';
       self.window.style.display = 'none';
-      self.sendAction('quit_dialog');
+      //self.sendAction('quit_dialog');
       self.__quit();
     }, false);
 
@@ -718,7 +718,12 @@ window.${prefix}Chat = {
 
     // Define socket message event
     self.socket.on('message', function(update) {
-      self.__drawMessage(update);
+      if (!Array.isArray(update)) {
+        update = [update];
+      }
+      for (var i = 0; i < update.length; i++) {
+        self.__drawMessage(update[i]);
+      }
     });
   },
 

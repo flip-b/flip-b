@@ -50,9 +50,11 @@ events['search.form.onSetup'] = async ({self, data, view, form, item, $event, re
     if (form.onSetup) {
       result = await form.onSetup({self, data, view, form, item, $event, result});
     }
+
     if (view.onSetup) {
       result = await view.onSetup({self, data, view, form, item, $event, result});
     }
+
     return result;
   } catch (error: any) {
     return false;
@@ -75,6 +77,7 @@ events['search.form.onSelect'] = async ({self, data, view, form, item, $event, r
     if (form.onSearch) {
       result = await form.onSearch({self, data, view, form, item, $event, result});
     }
+
     if (view.onSearch) {
       result = await view.onSearch({self, data, view, form, item, $event, result});
     }
@@ -125,9 +128,11 @@ events['select.form.onSetup'] = async ({self, data, view, form, item, $event, re
     if (form.onSetup) {
       result = await form.onSetup({self, data, view, form, item, $event, result});
     }
+
     if (view.onSetup) {
       result = await view.onSetup({self, data, view, form, item, $event, result});
     }
+
     return result;
   } catch (error: any) {
     return false;
@@ -150,6 +155,7 @@ events['select.form.onSelect'] = async ({self, data, view, form, item, $event, r
     if (form.onSelect) {
       result = await form.onSelect({self, data, view, form, item, $event, result});
     }
+
     if (view.onSelect) {
       result = await view.onSelect({self, data, view, form, item, $event, result});
     }
@@ -180,6 +186,7 @@ events['select.form.onCancel'] = async ({self, data, view, form, item, $event, r
     if (form.onCancel) {
       result = await form.onCancel({self, data, view, form, item, $event, result});
     }
+
     if (view.onCancel) {
       result = await view.onCancel({self, data, view, form, item, $event, result});
     }
@@ -226,9 +233,11 @@ events['create.form.onSetup'] = async ({self, data, view, form, item, $event, re
     if (form.onSetup) {
       result = await form.onSetup({self, data, view, form, item, $event, result});
     }
+
     if (view.onSetup) {
       result = await view.onSetup({self, data, view, form, item, $event, result});
     }
+
     return result;
   } catch (error: any) {
     return false;
@@ -459,17 +468,24 @@ events['update.form.onCancel'] = async ({self, data, view, form, item, $event, r
  */
 events['delete.form.onSetup'] = async ({self, data, view, form, item, $event, result}: any): Promise<any> => {
   try {
+
     form.header = [];
     form.header.push({name: 'delete', type: 'header'});
+
     form.footer = [];
+    form.footer.push({name: 'expand', type: 'expand'});
     form.footer.push({name: 'submit', type: 'submit', size: 50});
     form.footer.push({name: 'cancel', type: 'cancel', size: 50});
+
     form.navbar = [];
     form.navbar.push({name: 'expand', type: 'expand'});
     form.navbar.push({name: 'submit', type: 'submit'});
     form.navbar.push({name: 'cancel', type: 'cancel'});
+
     form.filter = [];
+
     form.metric = [];
+
     form.values = [];
 
     if (form.onSetup) {
@@ -493,6 +509,7 @@ events['delete.form.onSelect'] = async ({self, data, view, form, item, $event, r
 
     if (view.rest) {
       result = await data.http.request({select: view.rest, data: view.data});
+
     } else if (view.data.setResult) {
       result = view.data.setResult.value;
     }
@@ -500,6 +517,7 @@ events['delete.form.onSelect'] = async ({self, data, view, form, item, $event, r
     if (form.onSelect) {
       result = await form.onSelect({self, data, view, form, item, $event, result});
     }
+
     if (view.onSelect) {
       result = await view.onSelect({self, data, view, form, item, $event, result});
     }
@@ -1184,6 +1202,7 @@ async function _defaultFormSetup({self, data, view, form, item, $event, result}:
  */
 async function _defaultItemSetup({self, data, view, form, item, $event, result}: any): Promise<any> {
   if (!item.$input) {
+
     // Types​
     // "text", "password", "email", "number", "search", "tel", and "url".
 
@@ -1191,6 +1210,7 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
     // "none", "text", "tel", "url", "email", "numeric", "decimal", and "search".
 
     if (item.type && item.type.match(/\[\]$/)) {
+
       item.$input = {array: true};
       item.$input.onRead = {};
       item.$input.onEdit = {icon: 'add-circle'};
@@ -1200,7 +1220,9 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
       item.size = 100;
       item.slot = undefined;
       item.type = 'array';
+
     } else if (item.type === 'array') {
+
       item.$input = {array: true};
       item.$input.onRead = {};
       item.$input.onEdit = {icon: 'add-circle'};
@@ -1209,7 +1231,9 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
       item.items = item.items || [];
       item.size = 100;
       item.slot = undefined;
+
     } else if (item.type === 'group') {
+
       item.$input = {group: true};
       item.$input.onRead = {};
       item.$input.onEdit = {icon: 'add-circle'};
@@ -1218,197 +1242,275 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
       item.items = item.items || [];
       item.size = 100;
       item.slot = undefined;
+
     } else if (item.type === 'id') {
+
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || '';
+
     } else if (item.type === 'unix-time' || item.type === 'unixtime') {
+
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'date-time'};
       item.$input.onRead = {icon: 'calendar', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]+$/;
+
     } else if (item.type === 'date-time' || item.type === 'datetime') {
+
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'date-time'};
       item.$input.onRead = {icon: 'calendar', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(.*?)/;
+
     } else if (item.type === 'date') {
+
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'date'};
       item.$input.onRead = {icon: 'calendar-number', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar-number', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
+
     } else if (item.type === 'time') {
+
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'time'};
       item.$input.onRead = {icon: 'time', pick: 'datetime'};
       item.$input.onEdit = {icon: 'time', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{2}:[0-9]{2}$/;
+
     } else if (item.type === 'year') {
+
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'year'};
       item.$input.onRead = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{4}$/;
+
     } else if (item.type === 'year-month') {
+
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'year-month'};
       item.$input.onRead = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{4}-[0-9]{2}$/;
+
     } else if (item.type === 'month-year') {
+
       item.$input = {input: true, type: 'text', mode: 'text', locale: data.i18n.calendar, format: 'month-year'};
       item.$input.onRead = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onEdit = {icon: 'calendar-clear', pick: 'datetime'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{2}-[0-9]{4}$/;
+
     } else if (item.type === 'decimal') {
+
       item.$input = {input: true, type: 'text', mode: 'decimal'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
+
     } else if (item.type === 'integer') {
+
       item.$input = {input: true, type: 'text', mode: 'numeric'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^-?[0-9]{1,20}$/;
+
     } else if (item.type === 'percent') {
+
       item.$input = {input: true, type: 'text', mode: 'decimal'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
+
     } else if (item.type === 'currency') {
+
       item.$input = {input: true, type: 'text', mode: 'decimal'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^-?[0-9]{1,20}(.[0-9]{1,20})?$/;
+
     } else if (item.type === 'select') {
+
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {icon: 'search-circle', pick: 'select'};
       item.$input.onEdit = {icon: 'search-circle', pick: 'select'};
       item.$input.onDrop = {icon: 'close-circle'};
+
     } else if (item.type === 'toggle') {
+
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
       item.pattern = item.pattern || /^(true|false)$/;
+
     } else if (item.type === 'checkbox') {
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
       item.pattern = item.pattern || /^(true|false)$/;
+
     } else if (item.type === 'text') {
+
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
+
     } else if (item.type === 'textarea') {
+
       item.$input = {input: true, type: 'textarea', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
+
     } else if (item.type === 'richtext') {
+
       item.$input = {input: true, type: 'richtext', mode: 'text'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
+
     } else if (item.type === 'attachment') {
+
       item.$input = {input: true, type: 'url', mode: 'url', accept: '*/*'};
       item.$input.onRead = {icon: 'document-attach', pick: 'link'};
       item.$input.onEdit = {icon: 'document-attach', pick: 'file'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
+
     } else if (item.type === 'image') {
+
       item.$input = {input: true, type: 'url', mode: 'url', accept: 'image/*'};
       item.$input.onRead = {icon: 'image', pick: 'link'};
       item.$input.onEdit = {icon: 'image', pick: 'file'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
+
     } else if (item.type === 'video') {
+
       item.$input = {input: true, type: 'url', mode: 'url', accept: 'video/*'};
       item.$input.onRead = {icon: 'videocam', pick: 'link'};
       item.$input.onEdit = {icon: 'videocam', pick: 'file'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
+
     } else if (item.type === 'audio') {
+
       item.$input = {input: true, type: 'url', mode: 'url', accept: 'audio/*'};
       item.$input.onRead = {icon: 'recording', pick: 'link'};
       item.$input.onEdit = {icon: 'recording', pick: 'file'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
+
     } else if (item.type === 'url') {
+
       item.$input = {input: true, type: 'url', mode: 'url'};
       item.$input.onRead = {icon: 'link', pick: 'link'};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$/;
+
     } else if (item.type === 'phone') {
+
       item.$input = {input: true, type: 'tel', mode: 'tel'};
       item.$input.onRead = {icon: 'call', pick: 'link'};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^[0-9]{8,12}$/;
+
     } else if (item.type === 'email') {
+
       item.$input = {input: true, type: 'email', mode: 'email'};
       item.$input.onRead = {icon: 'mail', pick: 'link'};
       item.$input.onEdit = {};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
     } else if (item.type === 'color') {
+
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {icon: 'color-fill', pick: 'color'};
       item.$input.onEdit = {icon: 'color-fill', pick: 'color'};
       item.$input.onDrop = {icon: 'close-circle'};
       item.pattern = item.pattern || /^#(?:[0-9a-f]{3}){1,2}$/;
+
     } else if (item.type === 'location') {
+
       item.$input = {input: true, type: 'text', mode: 'text'};
       item.$input.onRead = {icon: 'navigate-circle', pick: 'location'};
       item.$input.onEdit = {icon: 'navigate-circle', pick: 'location'};
       item.$input.onDrop = {icon: 'close-circle'};
+
     } else if (item.type === 'username') {
+
       item.$input = {input: true, type: 'text', mode: 'text', icon: 'person-circle'};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
+
     } else if (item.type === 'password') {
+
       item.$input = {input: true, type: 'password', mode: 'text', icon: 'eye', toggleType: ['password', 'text'], toggleIcon: ['eye', 'eye-off']};
       item.$input.onRead = {};
       item.$input.onEdit = {};
       item.$input.onDrop = {};
+
     } else if (item.type === 'header') {
+
       item.$input = {field: true};
+
     } else if (item.type === 'footer') {
+
       item.$input = {field: true};
+
     } else if (item.type === 'legend') {
+
       item.$input = {field: true};
+
     } else if (item.type === 'search') {
+
       item.$input = {field: true};
+
     } else if (item.type === 'metric') {
+
       item.$input = {field: true};
+
     } else if (item.type === 'expand') {
+
       item.$input = {field: true};
+
     } else if (item.type === 'values') {
+
       item.$input = {field: true};
       item.isButton = true;
+
     } else if (item.type === 'button') {
+
       item.$input = {field: true};
       item.isButton = true;
+
     } else if (item.type === 'submit') {
+
       item.$input = {field: true};
       item.isButton = true;
+
     } else if (item.type === 'cancel') {
+
       item.$input = {field: true};
       item.isButton = true;
+
     }
 
     item.$input = item.$input || {input: true};
@@ -1503,11 +1605,13 @@ async function _defaultItemSetup({self, data, view, form, item, $event, result}:
  */
 async function _defaultItemSetupEnd({self, data, view, form, item, $event, result}: any): Promise<any> {
   if (!item.isButton && !item.isCustom) {
+
     if (item.readonly) {
       item.icon = (typeof item.value === 'undefined' ? item.$input.onNone?.icon : item.$input.onRead?.icon) || undefined;
     } else {
       item.icon = (typeof item.value === 'undefined' ? item.$input.onEdit?.icon : item.$input.onDrop?.icon) || undefined;
     }
+
     item.pick = undefined;
     item.pickEvent = undefined;
     item.isButtonIcon = item.icon ? true : false;
@@ -1516,12 +1620,15 @@ async function _defaultItemSetupEnd({self, data, view, form, item, $event, resul
       item.iconColor = typeof item.value === 'undefined' ? undefined : 'default';
       item.iconStyle = typeof item.value === 'undefined' ? undefined : {'--ion-color-base': `${item.value}`};
     }
+
     if (item.type === 'metric' && !item.items && view.rest) {
       item.items = await data.http.request({search: view.rest.replace(/\/:[A-Za-z_-]+/g, ''), data: view.data, qs: {facet: item.name}}).catch(() => true);
     }
+
     if (item.type === 'select' && !item.items && view.rest) {
       item.items = await data.http.request({search: view.rest.replace(/\/:[A-Za-z_-]+/g, ''), data: view.data, qs: {facet: item.name}}).catch(() => true);
     }
+
     if (item.type === 'textarea' || item.type === 'richtext') {
       _defaultTextareaSetup({self, data, view, form, item, $event, result});
     }
@@ -1530,10 +1637,12 @@ async function _defaultItemSetupEnd({self, data, view, form, item, $event, resul
   if (typeof result === 'boolean' && !result) {
     item.hide = true;
   }
+
   if (item.hide) {
     item.style = {...(item.style || {})};
     item.style.display = 'none';
   }
+
   if (item.size) {
     item.style = {...(item.style || {})};
     item.style.width = `${item.size}%`;
@@ -2459,8 +2568,8 @@ async function setItemValue({self, item}: any, value: any = undefined, error: an
   if (!item.$input) {
   } else if (item.$input.array) {
     value = value || [];
-    value.push(await Promise.all(item.items.map(async (i: any) => await self.formatItem(i, item, item._type))));
-    value.push(await Promise.all(item.items.map(async (i: any) => await self.formatItem(i, item, item._type))));
+    //value.push(await Promise.all(item.items.map(async (i: any) => await self.formatItem(i, item, item._type))));
+    //value.push(await Promise.all(item.items.map(async (i: any) => await self.formatItem(i, item, item._type))));
   } else if (item.$input.group) {
     value = value || {};
     value = await Promise.all(item.items.map(async (i: any) => await self.formatItem(i, item, item._type)));

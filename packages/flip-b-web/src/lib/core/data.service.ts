@@ -48,7 +48,7 @@ export class DataService {
   /**
    * Default events
    */
-  events: any = events;
+  events: any;
 
   /**
    * Constructor
@@ -64,33 +64,36 @@ export class DataService {
     public _platform: Platform,
     public _router: Router
   ) {
-    // Fix ionic popover
-    setInterval(() => {
-      const $elements: any = document.querySelectorAll('ion-popover');
-      [...($elements || [])].map(($element: any) => {
-        if ($element?.shadowRoot) {
-          const $target1: any = $element.shadowRoot.querySelector('.popover-content');
-          if ($target1 && $target1.style?.top !== '150px') {
-            //console.log($target1.style.top); // calc(628px + var(--offset-y, 0px))
-            //console.log(window.getComputedStyle($target1));
-            //$target1.style.top = '150px';
-          }
-        }
-      });
-    }, 500);
 
-    // Fix ionic popover
-    setInterval(() => {
-      const $elements: any = document.querySelectorAll('ion-popover ion-datetime');
-      [...($elements || [])].map(($element: any) => {
-        if ($element?.shadowRoot) {
-          const $target1: any = $element.shadowRoot.querySelector('.calendar-month-year');
-          if ($target1) {
-            $target1.style.width = '150px';
-          }
-        }
-      });
-    }, 500);
+    this.events = this._config.events;
+
+    //// Fix ionic popover
+    //setInterval(() => {
+    //  const $elements: any = document.querySelectorAll('ion-popover');
+    //  [...($elements || [])].map(($element: any) => {
+    //    if ($element?.shadowRoot) {
+    //      const $target1: any = $element.shadowRoot.querySelector('.popover-content');
+    //      if ($target1 && $target1.style?.top !== '150px') {
+    //        //console.log($target1.style.top); // calc(628px + var(--offset-y, 0px))
+    //        //console.log(window.getComputedStyle($target1));
+    //        //$target1.style.top = '150px';
+    //      }
+    //    }
+    //  });
+    //}, 500);
+
+    //// Fix ionic popover
+    //setInterval(() => {
+    //  const $elements: any = document.querySelectorAll('ion-popover ion-datetime');
+    //  [...($elements || [])].map(($element: any) => {
+    //    if ($element?.shadowRoot) {
+    //      const $target1: any = $element.shadowRoot.querySelector('.calendar-month-year');
+    //      if ($target1) {
+    //        $target1.style.width = '150px';
+    //      }
+    //    }
+    //  });
+    //}, 500);
 
     // Define router eventr event handler
     this._router.events.subscribe(async (event: any): Promise<any> => {

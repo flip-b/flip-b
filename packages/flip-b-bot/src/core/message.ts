@@ -87,7 +87,7 @@ export class Message {
   /**
    * Tags
    */
-  private _tags = [];
+  private _tags: any[] = [];
 
   /**
    * Time
@@ -152,7 +152,7 @@ export class Message {
     this.tags = message.tags || [];
     this.time = message.time || Date.now();
     this.type = message.type || '';
-    this.delivery = message.delivery || '';
+    this.delivery = message.delivery || 'pending';
     this.user = message.user || {};
     this.customer = message.customer || {};
     this.settings = message.settings || {};
@@ -314,7 +314,12 @@ export class Message {
   /**
    * Set text
    */
-  set text(value: string) {
+  set text(value: any) {
+
+    if (typeof value === 'object' && Array.isArray(value)) {
+      value = value[Math.floor(Math.random() * value.length)];
+    }
+
     this._text = `${value || ''}`.trim();
   }
 
@@ -328,7 +333,12 @@ export class Message {
   /**
    * Set file
    */
-  set file(value: string) {
+  set file(value: any) {
+
+    if (typeof value === 'object' && Array.isArray(value)) {
+      value = value[Math.floor(Math.random() * value.length)];
+    }
+
     this._file = `${value || ''}`.trim();
   }
 
@@ -575,6 +585,7 @@ export class Message {
     message.status = value.status || this.status;
     message.action = value.action || this.action;
     message.intent = value.intent || this.intent;
+
     message.text = value.text;
     message.file = value.file;
     message.menu = value.menu;
@@ -584,12 +595,15 @@ export class Message {
     message.tags = value.tags;
     message.time = value.time;
     message.type = value.type;
+
     message.delivery = value.delivery;
+
     message.user = value.user || this.user;
     message.customer = value.customer || this.customer;
     message.settings = value.settings || this.settings;
     message.incoming = value.incoming || this.toObject();
     message.language = value.language || this.language;
+
     return new Message(message);
   }
 
@@ -597,10 +611,26 @@ export class Message {
    * Format text
    */
   formatText(text: any): any {
-    return (text || '').replace(/@[A-Za-z0-9_]+/g, (match: any): string => {
-      const index = `${match}`.replace(/^@/, '');
-      return this.settings.customer && this.settings.customer[`${index}`] ? this.settings.customer[`${index}`] : match;
+    const data: any = {
+      user: this.user,
+      customer: this.customer
+    };
+    text = text || '';
+    text = text.replace(/\s\s+/g, ' ').trim();
+    text = text.replace(/\{\{(\s+)?([A-Za-z0-9_]+)\.([A-Za-z0-9_]+)(\s+)?\}\}/g, (...match: any): string => {
+      if (data[`${match[2]}`][`${match[3]}`]) {
+        return `${match[1]||''}` + data[`${match[2]}`][`${match[3]}`] + `${match[4]||''}`;
+      }
+      return '';
     });
+    text = text.replace(/@([A-Za-z0-9_]+)/g, (...match: any): string => {
+      if (data.customer[`${match[1]}`]) {
+        return data.customer[`${match[1]}`];
+      }
+      return '';
+    });
+    text = text.replace(/\s\s+/g, ' ').trim();
+    return text;
   }
 
   /**
@@ -619,6 +649,7 @@ export class Message {
         if (item) {
           item.text = this.formatText(item.text || '');
           item.help = this.formatText(item.help || '');
+          Object.keys(item).forEach((k: any) => (typeof item[k] === 'undefined' ? delete item[k] : {}));
         }
       }
     }
@@ -634,6 +665,7 @@ export class Message {
         if (item) {
           item.text = this.formatText(item.text || '');
           item.help = this.formatText(item.help || '');
+          Object.keys(item).forEach((k: any) => (typeof item[k] === 'undefined' ? delete item[k] : {}));
         }
       }
     }
