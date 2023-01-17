@@ -77,6 +77,7 @@ export class App {
     console.info(`> initializing database`);
     try {
       if (this.config.database) {
+        this.helper.mongoose.set('strictQuery', false);
         this.database = await this.helper.mongoose.connect(`${this.config.database.url}`, this.config.database.options);
       }
     } catch (error: any) {

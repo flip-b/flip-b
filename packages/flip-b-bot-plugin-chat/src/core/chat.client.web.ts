@@ -10,7 +10,7 @@ export function getChatClientWeb(params: any = {}, query: any = {}) {
   const pageTitle: any = params.dialog_title || params.system_author || 'Flip-B';
   const pageBackgroundColor: any = params.colors_dialog_bg || '#42de3b';
   const pageForegroundColor: any = params.colors_dialog_fg || '#fff';
-  const pageLanguage: any = query.language || params.global_language || 'en-US';
+  const pageLanguage: any = query.language || params.language || 'en-US';
 
   // Define chat options
   const chatLibrary = query.nominify ? 'chat.js' : 'chat.min.js';

@@ -21,7 +21,8 @@ export class DialogflowPlugin extends Plugin {
         if (!config || !config.enabled) {
           return;
         }
-        return await this.processIncomingMessages({messages, config});
+        await this.processIncomingMessages(messages, config);
+        return true;
       } catch (error: any) {
         return false;
       }
@@ -31,20 +32,20 @@ export class DialogflowPlugin extends Plugin {
   /**
    * Process incoming messages
    */
-  private async processIncomingMessages({messages, config}: any): Promise<any> {
+  private async processIncomingMessages(messages: Message[], config: any): Promise<any> {
     const message: any = messages[0];
-    if (message.intent || (!message.text && !message.action) || ['show_dialog', 'hide_dialog', 'quit_dialog', 'talking', 'silence', 'waiting', 'disconnect'].includes(message.action)) {
+    if (message.holder !== 'robot' || message.status !== 'opened' || message.intent || (!message.text && (!message.action || ['talking', 'silence', 'disconnect'].includes(message.action)))) {
       return;
     }
 
     // Define client
     const client: any = new dialogflow.SessionsClient({
-      credentials: {private_key: config.account_secrets.replace(/\\n/g, '\n'), client_email: config.account_id}
+      credentials: {private_key: config.account_pk.replace(/\\n/g, '\n'), client_email: config.account_id}
     });
 
     // Define client session
     let clientSession: string;
-    if (message.settings.environment) {
+    if (message.settings?.environment) {
       clientSession = `projects/${config.project_id}/agent/environments/${message.settings.environment}/users/-/sessions/${message.ticket}:detectIntent`;
     } else {
       clientSession = `projects/${config.project_id}/agent/sessions/${message.ticket}`;
@@ -52,48 +53,41 @@ export class DialogflowPlugin extends Plugin {
 
     // Define client payload
     const clientPayload: any = {session: clientSession, queryParams: {}, queryInput: {}};
-
     if (message.text) {
       clientPayload.queryInput.text = {text: `${message.text}`, languageCode: `${message.language}`};
     } else if (message.action) {
       clientPayload.queryInput.event = {name: `${message.action}`, languageCode: `${message.language}`};
     }
-
-    if (message.action && message.data.length && clientPayload.queryInput.event) {
-      clientPayload.queryInput.event.parameters = jsonToStructProto(message.getDataObject());
-    }
-
+    // if (message.action && message.data.length && clientPayload.queryInput.event) {
+    //   clientPayload.queryInput.event.parameters = jsonToStructProto(message.getDataObject());
+    // }
     if (message.settings?.contexts?.length) {
       clientPayload.queryParams.contexts = message.settings.contexts;
     }
-
     if (!clientPayload.queryInput.text && !clientPayload.queryInput.event) {
       return;
     }
 
     // Define result
     const result: any = await client.detectIntent(clientPayload);
-
     if (result[0]?.queryResult?.intent?.displayName) {
       message.target = `${this.plugin}`;
       message.intent = result[0]?.queryResult?.intent?.displayName;
     }
-
     if (result[0]?.queryResult?.outputContexts) {
+      message.settings = message.settings || {};
       message.settings.contexts = result[0].queryResult.outputContexts;
     }
 
     // Define values
     const values: any = result[0]?.queryResult?.fulfillmentMessages || [];
     for (const m in values) {
-
       const textItems: any = values[m].text?.text || [];
       for (const t in textItems) {
         if (textItems[t]) {
           messages.push(message.clone({text: `${textItems[t]}`, type: 'outgoing'}));
         }
       }
-
       const listItems: any = values[m].payload?.fields?.richContent?.listValue?.values || [];
       for (const m in listItems) {
         const _text: any = [];
@@ -176,7 +170,7 @@ export class DialogflowPlugin extends Plugin {
 
         // Define outgoing message
         if (_text.length || _file.length || _menu.length || _form.length) {
-          messages.push(message.clone({type: 'outgoing', text: _text[0] || '',  file: _file[0] || '', menu: _menu, form: _form}));
+          messages.push(message.clone({type: 'outgoing', text: _text[0] || undefined, file: _file[0] || undefined, menu: _menu, form: _form}));
         }
       }
     }

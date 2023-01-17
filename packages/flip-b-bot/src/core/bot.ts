@@ -148,6 +148,7 @@ export class Bot {
     this.config.helpers.push('ejs');
     this.config.helpers.push('express');
     this.config.helpers.push('jsonwebtoken');
+    this.config.helpers.push('mime-types');
     this.config.helpers.push('moment');
     this.config.helpers.push('mongoose');
     this.config.helpers.push('redis');
@@ -417,8 +418,12 @@ export class Bot {
   private async executeQueuesJob(job: any, done: any): Promise<any> {
     try {
       (async () => {
+        if (!job.data.messages) {
+          return;
+        }
 
-        let messages: Message[] = [];
+        // Define messages
+        const messages: Message[] = [];
         for (const m of job.data.messages) {
           messages.push(new Message(m));
         }
@@ -426,18 +431,32 @@ export class Bot {
           return;
         }
 
+        // Define settings
+        const settings: any = {};
+
         // Define lock
-        const lock = `lock:${messages[0].ticket}`;
+        const lock = `lock:${settings.ticket}`;
         while (await this.memory.exists(lock)) {
           await this.sleep(1000);
         }
         await this.memory.set(lock, '1', {EX: 60});
 
+        // Process dispatch events
+        for (const event of this.queues._events) {
+          if (event && event.type === 'dispatch' && typeof event.callback === 'function' && messages.length) {
+            try {
+              await event.callback(messages, settings);
+            } catch (error: any) {
+              console.error(`! queues job dispatch error. ${error}`);
+            }
+          }
+        }
+
         // Process incoming events
         for (const event of this.queues._events) {
           if (event && event.type === 'incoming' && typeof event.callback === 'function' && messages.length) {
             try {
-              await event.callback(messages);
+              await event.callback(messages, settings);
             } catch (error: any) {
               console.error(`! queues job incoming error. ${error}`);
             }
@@ -448,7 +467,7 @@ export class Bot {
         for (const event of this.queues._events) {
           if (event && event.type === 'outgoing' && typeof event.callback === 'function' && messages.length) {
             try {
-              await event.callback(messages);
+              await event.callback(messages, settings);
             } catch (error: any) {
               console.error(`! queues job outgoing error. ${error}`);
             }
@@ -459,7 +478,7 @@ export class Bot {
         for (const event of this.queues._events) {
           if (event && event.type === 'shipping' && typeof event.callback === 'function' && messages.length) {
             try {
-              await event.callback(messages);
+              await event.callback(messages, settings);
             } catch (error: any) {
               console.error(`! queues job shipping error. ${error}`);
             }

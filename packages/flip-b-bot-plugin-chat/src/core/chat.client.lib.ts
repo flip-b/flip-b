@@ -8,19 +8,12 @@ export function getChatClientLib(params: any = {}, query: any = {}) {
 
   // Define default global values
   const global: any = {
-    user: query.user || params.global_user || undefined,
-    customer: query.customer || params.global_customer || undefined,
-    settings: query.settings || params.global_settings || undefined,
-    language: query.language || params.global_language || 'en-US',
+    customer: query.customer || params.customer || undefined,
+    operator: query.operator || params.operator || undefined,
+    settings: query.settings || params.settings || undefined,
+    language: query.language || params.language || undefined,
+    timezone: query.timezone || params.timezone || undefined,
     ...(params.global || {})
-  };
-
-  // Define default system values
-  const system: any = {
-    storage: params.system_storage || 'sessionStorage',
-    timeout: params.system_timeout || 0,
-    waiting: params.system_waiting || 0,
-    ...(params.system || {})
   };
 
   // Define default colors values
@@ -38,9 +31,9 @@ export function getChatClientLib(params: any = {}, query: any = {}) {
 
   // Define default images values
   const images: any = {
-    logo: params.images_logo || params.images_avatar_im || '',
-    head: params.images_head || params.images_dialog_im || '',
-    chat: params.images_chat || params.images_button_im || '',
+    logo: params.images_logo || params.images_avatar || '',
+    head: params.images_head || params.images_header || '',
+    chat: params.images_chat || params.images_button || '',
     ...(params.images || {})
   };
 
@@ -104,17 +97,11 @@ window.${prefix}Chat = {
 
     // Define global
     global: {
-      user: ${global.user ? JSON.stringify(global.user) : 'undefined'},
       customer: ${global.customer ? JSON.stringify(global.customer) : 'undefined'},
+      operator: ${global.operator ? JSON.stringify(global.operator) : 'undefined'},
       settings: ${global.settings ? JSON.stringify(global.settings) : 'undefined'},
-      language: ${global.language ? "'" + global.language + "'" : 'undefined'}
-    },
-
-    // Define system
-    system: {
-      storage: ${system.storage ? "'" + system.storage + "'" : 'sessionStorage'},
-      timeout: ${system.timeout ? parseInt(system.timeout) * 1000 : 0},
-      waiting: ${system.waiting ? parseInt(system.waiting) * 1000 : 0}
+      language: ${global.language ? "'" + global.language + "'" : 'undefined'},
+      timezone: ${global.timezone ? "'" + global.timezone + "'" : 'undefined'}
     },
 
     // Define colors
@@ -328,9 +315,8 @@ window.${prefix}Chat = {
       self.dialog.style.display = 'block';
       self.dialog_form_text_control.value = '';
       self.dialog_form_text_control.focus();
-      //self.sendAction('show_dialog');
       if (!self.welcome) {
-        self.sendAction('welcome');
+        self.send({action: 'welcome', ...self.params.global});
         self.welcome = true;
       }
     }, false);
@@ -345,7 +331,6 @@ window.${prefix}Chat = {
     self.dialog_head_hide_control.addEventListener('click', function(event) {
       event.preventDefault();
       self.dialog.style.display = 'none';
-      //self.sendAction('hide_dialog');
     }, false);
 
     // Define dialog head quit control click event
@@ -371,7 +356,6 @@ window.${prefix}Chat = {
     self.window_quit_dialog_positive_control.addEventListener('click', function(event) {
       self.window_quit_dialog.style.display = 'none';
       self.window.style.display = 'none';
-      //self.sendAction('quit_dialog');
       self.__quit();
     }, false);
 
@@ -661,7 +645,8 @@ window.${prefix}Chat = {
     self.client = true;
 
     // Define ticket
-    self.ticket = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    self.ticket = self.system_storage.getItem('ticket');
+    self.ticket = self.ticket || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
@@ -672,18 +657,6 @@ window.${prefix}Chat = {
       if (!self.system_storage.hasItem('ticket')) {
         self.__quit();
         clearInterval(ticketInterval);
-      }
-    }, 1000);
-
-    var timeoutInterval = setInterval(function() {
-      if (self.params.system.timeout && self.last && (new Date().getTime() - self.last) > self.params.system.timeout) {
-        self.last = 0;
-        self.sendAction('timeout');
-        clearInterval(ticketInterval);
-        clearInterval(timeoutInterval);
-        setTimeout(function() {
-          self.__close();
-        }, 5000);
       }
     }, 1000);
   },
@@ -842,39 +815,7 @@ window.${prefix}Chat = {
     // Delete forms
     var forms = document.getElementsByClassName('form');
     for (var f = 0; f < forms.length; f++) {
-      //forms[f].remove();
       forms[f].style.display = 'none';
-    }
-
-    // Verify user
-    if (update.user) {
-      self.params.global.user = update.user;
-    }
-
-    // Verify customer
-    if (update.customer) {
-      self.params.global.customer = update.customer;
-    }
-
-    // Verify settings
-    if (update.settings) {
-      self.params.global.settings = update.settings;
-    }
-
-    // Verify settings
-    if (update.settings) {
-      self.params.global.settings = update.settings;
-    }
-
-    // Verify language
-    if (update.language) {
-      self.params.global.language = update.language;
-    }
-
-    // Verify show button
-    if (update.action === 'show_button') {
-      self.showButton();
-      return;
     }
 
     // Verify hide button
@@ -908,7 +849,7 @@ window.${prefix}Chat = {
       return;
     }
 
-    // Verify talking
+    // Verify silence
     if (update.action === 'silence') {
       self.dialog_body.scrollTop = self.dialog_body.scrollHeight;
       return;
@@ -1307,7 +1248,7 @@ window.${prefix}Chat = {
     var self = this;
 
     // Define adapter
-    var adapter = self.params.system.storage ? window[self.params.system.storage] : window.sessionStorage;
+    var adapter = window.localStorage;
 
     // Define storage
     var storage = {
@@ -2769,9 +2710,6 @@ window.${prefix}Chat = {
     // Define ticket
     this.ticket = null;
 
-    // Remove ticket
-    this.system_storage.removeItem('ticket');
-
     // Define client
     this.client = null;
 
@@ -2810,9 +2748,6 @@ window.${prefix}Chat = {
 
     // Define ticket
     this.ticket = null;
-
-    // Remove ticket
-    this.system_storage.removeItem('ticket');
 
     // Define client
     this.client = null;
@@ -2943,7 +2878,7 @@ window.${prefix}Chat = {
   // @return void
   //
   sendAction: function(action, data) {
-    this.send({action: action, data: data, ...this.params.global});
+    this.send({action: action, data: data});
   },
 
   //
@@ -2955,7 +2890,7 @@ window.${prefix}Chat = {
   // @return void
   //
   sendIntent: function(intent, data) {
-    this.send({intent: intent, data: data, ...this.params.global});
+    this.send({intent: intent, data: data});
   },
 
   //
@@ -2967,7 +2902,7 @@ window.${prefix}Chat = {
   // @return void
   //
   sendText: function(text, data) {
-    this.send({text: text, data: data, ...this.params.global});
+    this.send({text: text, data: data});
   },
 
   //
@@ -2979,7 +2914,7 @@ window.${prefix}Chat = {
   // @return void
   //
   sendFile: function(file, data) {
-    this.send({file: file, data: data, ...this.params.global});
+    this.send({file: file, data: data});
   },
 
   //
@@ -2990,7 +2925,7 @@ window.${prefix}Chat = {
   // @return void
   //
   sendData: function(data) {
-    this.send({data: data, ...this.params.global});
+    this.send({data: data});
   }
 };
 

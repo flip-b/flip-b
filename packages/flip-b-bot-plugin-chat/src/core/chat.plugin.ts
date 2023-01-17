@@ -92,19 +92,12 @@ export class ChatPlugin extends Plugin {
           this.app.queues.pushJob([{ticket, origin, source, target, type: 'incoming', ...message}]);
         });
         socket.on('disconnect', () => {
-          const waiting: number = parseInt(`${configPlugin.system_waiting || 30}`) * 1000;
-          setTimeout(async () => {
-            const sockets: any = await this.app.socket.of(`/${this.plugin}`).in(`${ticket}`).allSockets();
-            if (sockets.size === 0) {
-              this.app.queues.pushJob([{ticket, origin, source, target, type: 'incoming', action: 'waiting'}]);
-            }
-          }, 100);
           setTimeout(async () => {
             const sockets: any = await this.app.socket.of(`/${this.plugin}`).in(`${ticket}`).allSockets();
             if (sockets.size === 0) {
               this.app.queues.pushJob([{ticket, origin, source, target, type: 'incoming', action: 'disconnect'}]);
             }
-          }, 100 + waiting);
+          }, 60000);
         });
       } catch (error: any) {
         console.error(`${error}`);
@@ -119,10 +112,18 @@ export class ChatPlugin extends Plugin {
         if (!config || !config.enabled) {
           return;
         }
+
+        const sockets: any = await this.app.socket.of(`/${this.plugin}`).in(`${messages[0].ticket}`).allSockets();
+
         const values: any = [];
         for (const message of messages) {
           if (message.source === `${this.plugin}` && message.type === 'outgoing') {
-            values.push(message.toObject());
+            if (sockets.size === 0) {
+              message.delivery = 'error';
+            } else {
+              message.delivery = 'success';
+              values.push(message.toObject());
+            }
           }
         }
         if (values.length) {

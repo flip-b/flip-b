@@ -47,47 +47,47 @@ export class Message {
   /**
    * Action
    */
-  private _action = '';
+  private _action: any = undefined;
 
   /**
    * Intent
    */
-  private _intent = '';
+  private _intent: any = undefined;
 
   /**
    * Text
    */
-  private _text = '';
+  private _text: any = undefined;
 
   /**
    * File
    */
-  private _file = '';
+  private _file: any = undefined;
 
   /**
    * Menu
    */
-  private _menu: any[] = [];
+  private _menu: any = undefined;
 
   /**
    * Form
    */
-  private _form: any[] = [];
+  private _form: any = undefined;
 
   /**
    * Data
    */
-  private _data: any[] = [];
+  private _data: any = undefined;
 
   /**
    * Feel
    */
-  private _feel = '';
+  private _feel: any = undefined;
 
   /**
    * Tags
    */
-  private _tags: any[] = [];
+  private _tags: any = undefined;
 
   /**
    * Time
@@ -97,37 +97,37 @@ export class Message {
   /**
    * Type
    */
-  private _type = '';
-
-  /**
-   * Delivery
-   */
-  private _delivery = '';
-
-  /**
-   * User
-   */
-  private _user: any = {};
-
-  /**
-   * Customer
-   */
-  private _customer: any = {};
-
-  /**
-   * Settings
-   */
-  private _settings: any = {};
-
-  /**
-   * Incoming
-   */
-  private _incoming: any = {};
+  private _type: any = undefined;
 
   /**
    * Language
    */
-  private _language = '';
+  private _language: any = undefined;
+
+  /**
+   * Delivery
+   */
+  private _delivery: any = undefined;
+
+  /**
+   * Customer
+   */
+  private _customer: any = undefined;
+
+  /**
+   * Operator
+   */
+  private _operator: any = undefined;
+
+  /**
+   * Settings
+   */
+  private _settings: any = undefined;
+
+  /**
+   * Incoming
+   */
+  private _incoming: any = undefined;
 
   /**
    * Constructor
@@ -141,23 +141,23 @@ export class Message {
     this.target = message.target || '';
     this.holder = message.holder || '';
     this.status = message.status || '';
-    this.action = message.action || '';
-    this.intent = message.intent || '';
-    this.text = message.text || '';
-    this.file = message.file || '';
-    this.menu = message.menu || [];
-    this.form = message.form || [];
-    this.data = message.data || [];
-    this.feel = message.feel || '';
-    this.tags = message.tags || [];
+    this.action = message.action;
+    this.intent = message.intent;
+    this.text = message.text;
+    this.file = message.file;
+    this.menu = message.menu;
+    this.form = message.form;
+    this.data = message.data;
+    this.feel = message.feel;
+    this.tags = message.tags;
     this.time = message.time || Date.now();
-    this.type = message.type || '';
-    this.delivery = message.delivery || 'pending';
-    this.user = message.user || {};
-    this.customer = message.customer || {};
-    this.settings = message.settings || {};
-    this.incoming = message.incoming || {};
+    this.type = message.type;
+    this.delivery = message.delivery;
     this.language = message.language || 'en-US';
+    this.customer = message.customer;
+    this.operator = message.operator;
+    this.settings = message.settings;
+    this.incoming = message.incoming;
   }
 
   /**
@@ -171,11 +171,13 @@ export class Message {
    * Set id
    */
   set id(value: string) {
-    this._id = `${value || ''}`.trim() || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c: any) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
+    this._id =
+      `${value || ''}`.trim() ||
+      'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c: any) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
   }
 
   /**
@@ -307,109 +309,105 @@ export class Message {
   /**
    * Get text
    */
-  get text(): string {
-    return this.formatText(this._text);
+  get text(): any {
+    return this._text;
   }
 
   /**
    * Set text
    */
   set text(value: any) {
-
     if (typeof value === 'object' && Array.isArray(value)) {
       value = value[Math.floor(Math.random() * value.length)];
     }
-
     this._text = `${value || ''}`.trim();
   }
 
   /**
    * Get file
    */
-  get file(): string {
-    return this.formatFile(this._file);
+  get file(): any {
+    return this._file;
   }
 
   /**
    * Set file
    */
   set file(value: any) {
-
     if (typeof value === 'object' && Array.isArray(value)) {
       value = value[Math.floor(Math.random() * value.length)];
     }
-
     this._file = `${value || ''}`.trim();
   }
 
   /**
    * Get menu
    */
-  get menu(): any[] {
-    return this.formatMenu(this._menu);
+  get menu(): any {
+    return this._menu;
   }
 
   /**
    * Set menu
    */
-  set menu(items: any[]) {
-    this._menu = items;
+  set menu(value: any) {
+    this._menu = value;
   }
 
   /**
    * Get form
    */
-  get form(): any[] {
-    return this.formatForm(this._form);
+  get form(): any {
+    return this._form;
   }
 
   /**
    * Set form
    */
-  set form(items: any[]) {
-    this._form = items;
+  set form(value: any) {
+    this._form = value;
   }
 
   /**
    * Get data
    */
-  get data(): any[] {
+  get data(): any {
     return this._data;
   }
 
   /**
    * Set data
    */
-  set data(items: any[]) {
-    this._data = items;
+  set data(value: any) {
+    this._data = value;
   }
 
   /**
    * Get feel
    */
-  get feel(): string {
+  get feel(): any {
     return this._feel;
   }
 
   /**
    * Set feel
    */
-  set feel(value: string) {
-    this._feel = `${value || ''}`.trim();
+  set feel(value: any) {
+    this._feel = value;
   }
 
   /**
    * Get tags
    */
-  get tags(): any[] {
+  get tags(): any {
     return this._tags;
   }
 
   /**
    * Set data
    */
-  set tags(items: any[]) {
-    this._tags = items;
+  set tags(value: any) {
+    this._tags = value;
   }
 
   /**
@@ -441,6 +439,20 @@ export class Message {
   }
 
   /**
+   * Get language
+   */
+  get language(): string {
+    return this._language;
+  }
+
+  /**
+   * Set language
+   */
+  set language(value: string) {
+    this._language = `${value || ''}`.trim();
+  }
+
+  /**
    * Get delivery
    */
   get delivery(): string {
@@ -455,20 +467,6 @@ export class Message {
   }
 
   /**
-   * Get user
-   */
-  get user(): any {
-    return this._user;
-  }
-
-  /**
-   * Set user
-   */
-  set user(value: any) {
-    this._user = value;
-  }
-
-  /**
    * Get customer
    */
   get customer(): any {
@@ -480,6 +478,20 @@ export class Message {
    */
   set customer(value: any) {
     this._customer = value;
+  }
+
+  /**
+   * Get operator
+   */
+  get operator(): any {
+    return this._operator;
+  }
+
+  /**
+   * Set operator
+   */
+  set operator(value: any) {
+    this._operator = value;
   }
 
   /**
@@ -511,20 +523,6 @@ export class Message {
   }
 
   /**
-   * Get language
-   */
-  get language(): string {
-    return this._language;
-  }
-
-  /**
-   * Set language
-   */
-  set language(value: string) {
-    this._language = `${value || ''}`.trim();
-  }
-
-  /**
    * To object
    */
   toObject(): any {
@@ -548,23 +546,27 @@ export class Message {
       tags: this.tags,
       time: this.time,
       type: this.type,
+      language: this.language,
       delivery: this.delivery,
-      user: this.user,
       customer: this.customer,
+      operator: this.operator,
       settings: this.settings,
-      incoming: this.incoming,
-      language: this.language
+      incoming: this.incoming
     };
     for (const k of Object.keys(result)) {
       if (typeof result[`${k}`] === 'undefined') {
         delete result[`${k}`];
-      } if (typeof result[`${k}`] === 'string' && result[`${k}`] === '') {
+      }
+      if (typeof result[`${k}`] === 'string' && result[`${k}`] === '') {
         delete result[`${k}`];
-      } if (typeof result[`${k}`] === 'number' && result[`${k}`] === 0) {
+      }
+      if (typeof result[`${k}`] === 'number' && result[`${k}`] === 0) {
         delete result[`${k}`];
-      } if (typeof result[`${k}`] === 'object' && Array.isArray(result[`${k}`]) && !result[`${k}`].length) {
+      }
+      if (typeof result[`${k}`] === 'object' && Array.isArray(result[`${k}`]) && !result[`${k}`].length) {
         delete result[`${k}`];
-      } if (typeof result[`${k}`] === 'object' && !Object.keys(result[`${k}`]).length) {
+      }
+      if (typeof result[`${k}`] === 'object' && !Object.keys(result[`${k}`]).length) {
         delete result[`${k}`];
       }
     }
@@ -576,6 +578,7 @@ export class Message {
    */
   clone(value: any = {}): Message {
     const message: any = {};
+
     message.parent = value.parent || this.id;
     message.ticket = value.ticket || this.ticket;
     message.origin = value.origin || this.origin;
@@ -583,6 +586,7 @@ export class Message {
     message.target = value.target || this.target;
     message.holder = value.holder || this.holder;
     message.status = value.status || this.status;
+
     message.action = value.action || this.action;
     message.intent = value.intent || this.intent;
 
@@ -591,98 +595,20 @@ export class Message {
     message.menu = value.menu;
     message.form = value.form;
     message.data = value.data;
+
     message.feel = value.feel;
     message.tags = value.tags;
+
     message.time = value.time;
     message.type = value.type;
-
+    message.language = value.language || this.language;
     message.delivery = value.delivery;
 
-    message.user = value.user || this.user;
     message.customer = value.customer || this.customer;
+    message.operator = value.operator || this.operator;
     message.settings = value.settings || this.settings;
     message.incoming = value.incoming || this.toObject();
-    message.language = value.language || this.language;
 
     return new Message(message);
-  }
-
-  /**
-   * Format text
-   */
-  formatText(text: any): any {
-    const data: any = {
-      user: this.user,
-      customer: this.customer
-    };
-    text = text || '';
-    text = text.replace(/\s\s+/g, ' ').trim();
-    text = text.replace(/\{\{(\s+)?([A-Za-z0-9_]+)\.([A-Za-z0-9_]+)(\s+)?\}\}/g, (...match: any): string => {
-      if (data[`${match[2]}`][`${match[3]}`]) {
-        return `${match[1]||''}` + data[`${match[2]}`][`${match[3]}`] + `${match[4]||''}`;
-      }
-      return '';
-    });
-    text = text.replace(/@([A-Za-z0-9_]+)/g, (...match: any): string => {
-      if (data.customer[`${match[1]}`]) {
-        return data.customer[`${match[1]}`];
-      }
-      return '';
-    });
-    text = text.replace(/\s\s+/g, ' ').trim();
-    return text;
-  }
-
-  /**
-   * Format file
-   */
-  formatFile(file: any): any {
-    return file;
-  }
-
-  /**
-   * Format menu
-   */
-  formatMenu(menu: any[]): any[] {
-    if (menu) {
-      for (const item of menu) {
-        if (item) {
-          item.text = this.formatText(item.text || '');
-          item.help = this.formatText(item.help || '');
-          Object.keys(item).forEach((k: any) => (typeof item[k] === 'undefined' ? delete item[k] : {}));
-        }
-      }
-    }
-    return menu;
-  }
-
-  /**
-   * Format form
-   */
-  formatForm(form: any): any {
-    if (form) {
-      for (const item of form) {
-        if (item) {
-          item.text = this.formatText(item.text || '');
-          item.help = this.formatText(item.help || '');
-          Object.keys(item).forEach((k: any) => (typeof item[k] === 'undefined' ? delete item[k] : {}));
-        }
-      }
-    }
-    return form;
-  }
-
-  /**
-   * Get data object
-   */
-  getDataObject(): any {
-    return this.data.reduce((a: any, v: any) => ({...a, [v.index]: v.value}), {}) || {};
-  }
-
-  /**
-   * Get data value by index
-   */
-  getDataValueByIndex(index: string): any {
-    return (this.data.find((o) => o.index === index) || {}).value || '';
   }
 }

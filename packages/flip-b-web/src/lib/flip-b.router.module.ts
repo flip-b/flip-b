@@ -1,5 +1,5 @@
 import {NgModule, ModuleWithProviders} from '@angular/core';
-import {RouterModule, Routes, PreloadAllModules} from '@angular/router';
+import {RouterModule, PreloadAllModules} from '@angular/router';
 import {formatConfig} from './core/data.events';
 
 @NgModule({
