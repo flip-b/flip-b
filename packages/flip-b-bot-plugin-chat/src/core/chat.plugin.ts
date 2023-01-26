@@ -80,13 +80,11 @@ export class ChatPlugin extends Plugin {
         const origin = `${socket.handshake.query.origin || ''}`;
         const source = `${socket.handshake.query.source || this.plugin}`;
         const target = `${socket.handshake.query.target || ''}`;
-
         const configOrigin: any = this.app.config.origins[`${origin || ''}`] || {};
         const configPlugin: any = configOrigin[`${plugin || ''}`] || this.app.config.plugins[`${plugin || ''}`] || undefined;
         if (!configPlugin || !configPlugin.enabled || !ticket || !plugin || !origin || !source) {
           return;
         }
-
         socket.join(`${ticket}`);
         socket.on('message', async (message: any) => {
           this.app.queues.pushJob([{ticket, origin, source, target, type: 'incoming', ...message}]);
@@ -112,13 +110,11 @@ export class ChatPlugin extends Plugin {
         if (!config || !config.enabled) {
           return;
         }
-
-        const sockets: any = await this.app.socket.of(`/${this.plugin}`).in(`${messages[0].ticket}`).allSockets();
-
+        const exists: any = await this.app.socket.of(`/${this.plugin}`).in(`${messages[0].ticket}`).allSockets();
         const values: any = [];
         for (const message of messages) {
           if (message.source === `${this.plugin}` && message.type === 'outgoing') {
-            if (sockets.size === 0) {
+            if (exists.size === 0) {
               message.delivery = 'error';
             } else {
               message.delivery = 'success';

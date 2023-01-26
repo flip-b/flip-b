@@ -172,6 +172,8 @@ export class DataService {
       this.menu.label = this.user?._config?.menu?.label || undefined;
       this.menu.image = this.user?._config?.menu?.image || undefined;
 
+      this.user._access.auth = 'super-administrator'
+
       // Define menu items
       this.menu.mainMenu = [];
       this.menu.userMenu = [];
@@ -198,8 +200,25 @@ export class DataService {
         }
       }
 
+        //       // Use matchMedia to check the user preference
+        // const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+        // toggleDarkTheme(prefersDark.matches);
+
+        // // Listen for changes to the prefers-color-scheme media query
+        // prefersDark.addListener((mediaQuery) => toggleDarkTheme(mediaQuery.matches));
+
+        // // Add or remove the "dark" class based on if the media query matches
+        // function toggleDarkTheme(shouldAdd) {
+        //   document.body.classList.toggle('dark', shouldAdd);
+        // }
+
       if (this.user._config) {
         if (this.user._access.auth) {
+
+          this.user._config.night = this.user._config.night || false;
+          this.user._config.small = this.user._config.small || false;
+
           this.menu.userMenu.push({
             title: this.user._config.night ? 'Activa el modo claro' : 'Activa el modo oscuro',
             label: '',
@@ -210,8 +229,29 @@ export class DataService {
               item.icon = this.user._config.night ? 'sunny' : 'moon';
             },
             onClick: (item: any) => {
-              //this.toggleNight();
-              document.body.classList.toggle('night', (this.user._config.night = !this.user._config.night));
+              let value = this.user._config.night = !this.user._config.night;
+              document.body.classList.toggle('night', value);
+              item.onSetup(item);
+            }
+          });
+
+          // night
+          // small
+          this.menu.userMenu.push({
+            title: this.user._config.small ? 'Expandir' : 'Contraer',
+            label: '',
+            image: '',
+            icon: this.user._config.small ? 'chevron-forward' : 'chevron-back',
+            onSetup: (item: any) => {
+              item.title = this.user._config.small ? 'Expandir' : 'Contraer';
+              item.icon = this.user._config.small ? 'chevron-forward' : 'chevron-back';
+            },
+            onClick: (item: any) => {
+              console.log(this.user._config)
+              let value = this.user._config.small = !this.user._config.small;
+              document.body.classList.toggle('flb-menu-hide', value);
+              document.body.classList.toggle('flb-menu-show', !value);
+              this._ionMenu.open();
               item.onSetup(item);
             }
           });
@@ -239,11 +279,11 @@ export class DataService {
       $title.innerText = this.menu.title;
     }
 
-    // Define html color
-    const $color: any = document.querySelector('meta[name=theme-color]');
-    if ($color && this.menu?.color) {
-      $color.setAttribute('content', this.menu.color);
-    }
+    // // Define html color
+    // const $color: any = document.querySelector('meta[name=theme-color]');
+    // if ($color && this.menu?.color) {
+    //   $color.setAttribute('content', this.menu.color);
+    // }
 
     // Define html icons
     const $icons: any = document.querySelectorAll('link[rel=icon]');
@@ -253,7 +293,7 @@ export class DataService {
 
     // Define menu classes
     if (this.menu) {
-      document.body.classList.toggle('flb-menu', true);
+      document.body.classList.toggle('flb-user', true);
       document.body.classList.toggle('flb-menu-show', true);
       document.body.classList.toggle('flb-menu-hide', false);
       document.body.style.setProperty('--flb-body-background', `unset`);
@@ -261,10 +301,7 @@ export class DataService {
       document.body.classList.toggle('flb-menu', false);
       document.body.classList.toggle('flb-menu-show', false);
       document.body.classList.toggle('flb-menu-hide', false);
-      document.body.style.setProperty(
-        '--flb-body-background',
-        `#222 url("https://www.flip-b.com/assets/backgrounds/background-${('000' + (Math.floor(Math.random() * 440) + 1)).substr(-3)}.jpg") 0 0/100% 100% no-repeat`
-      );
+      document.body.style.setProperty('--flb-body-background', `#222 url("https://www.flip-b.com/assets/backgrounds/background-${('000' + (Math.floor(Math.random() * 440) + 1)).substr(-3)}.jpg") 0 0/100% 100% no-repeat`);
     }
   }
 
@@ -464,8 +501,8 @@ export class DataService {
    */
   async _onMenuToggleClick($event: any): Promise<any> {
     try {
-      $event.stopPropagation();
-      $event.preventDefault();
+      // $event.stopPropagation();
+      // $event.preventDefault();
       document.body.classList.toggle('flb-menu-hide', false);
       document.body.classList.toggle('flb-menu-show', true);
       this._ionMenu.toggle();
@@ -638,11 +675,11 @@ export class DataService {
   async showContentShare(params: any = {}): Promise<any> {
     return await new Promise(async (resolve: any, reject: any) => {
       try {
-        try {
-          navigator.share(params.value.body);
-        } catch (e: any) {
-          navigator.clipboard.writeText(params.value.body);
-        }
+        // try {
+        navigator.share(params.value.body);
+        // } catch (e: any) {
+        //   navigator.clipboard.writeText(params.value.body.text);
+        // }
         resolve();
       } catch (error: any) {
         reject(error);

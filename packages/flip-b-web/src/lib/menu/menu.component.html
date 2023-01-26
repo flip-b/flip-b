@@ -1,35 +1,48 @@
 <ion-app>
   <ion-split-pane contentId="main">
     <ion-menu #ct contentId="main" menuId="main" type="overlay" [disabled]="!data.menu">
-      <ion-header *ngIf="data.menu?.image || data.menu?.title || data.menu?.label">
-        <ion-item lines="none">
-          <img class="flb-menu-image" *ngIf="data.menu.image" [src]="data.menu.image" (error)="data._onMenuImageError($event)" />
-          <ion-label *ngIf="data.menu.title || data.menu.label">
-            <div class="flb-menu-title" *ngIf="data.menu.title">{{ data.menu.title }}</div>
-            <div class="flb-menu-label" *ngIf="data.menu.label">{{ data.menu.label }}</div>
-          </ion-label>
-        </ion-item>
-      </ion-header>
-      <ion-content *ngIf="data.menu?.mainMenu?.length">
-        <ion-item lines="none" button [detail]="false" [title]="item.title" (click)="ct.toggle(); item.onClick ? item.onClick(item) : data.gotoRoot(item.path)" *ngFor="let item of data.menu.mainMenu">
-          <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
-          <ion-label *ngIf="item.title || item.label">
-            <div class="flb-item-title" *ngIf="item.title">{{ item.title }}</div>
-            <div class="flb-item-label" *ngIf="item.label">{{ item.label }}</div>
-          </ion-label>
-        </ion-item>
+      <ion-content>
+        <div style="display: flex; flex-direction: column; flex-wrap: nowrap; height: 100%">
+        
+          <div class="flb-menu-header" *ngIf="data.menu?.image || data.menu?.title || data.menu?.label">
+            <ion-item lines="none">
+              <img class="flb-menu-image" *ngIf="data.menu.image" [src]="data.menu.image" (error)="data._onMenuImageError($event)" />
+              <ion-label *ngIf="data.menu.title || data.menu.label">
+                <div class="flb-menu-title ion-text-wrap" *ngIf="data.menu.title">{{ data.menu.title }}</div>
+                <div class="flb-menu-label ion-text-wrap" *ngIf="data.menu.label">{{ data.menu.label }}</div>
+              </ion-label>
+            </ion-item>
+          </div>
+        
+          <div class="flb-menu-values" *ngIf="data.menu?.mainMenu?.length">
+            <div class="flb-item flb-item-type-button flb-item-name" *ngFor="let item of data.menu.mainMenu" [ngClass]="item.class" [style]="item.style">
+              <ion-item lines="none" button [detail]="false" [title]="item.title" (click)="ct.toggle(); item.onClick ? item.onClick(item) : data.gotoRoot(item.path)">
+                <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
+                <ion-label *ngIf="item.title || item.label">
+                  <div class="flb-item-title" *ngIf="item.title">{{ item.title }}</div>
+                  <div class="flb-item-label" *ngIf="item.label">{{ item.label }}</div>
+                </ion-label>
+              </ion-item>
+            </div>
+          </div>
+
+          <div style="flex: 1"></div>
+
+          <div class="flb-menu-footer" *ngIf="data.menu?.userMenu?.length">
+            <div class="flb-item flb-item-type-button-icon flb-item-name" *ngFor="let item of data.menu.userMenu" [ngClass]="item.class" [style]="item.style">
+              <ion-item lines="none" button [detail]="false" [title]="item.title" (click)="ct.toggle(); item.onClick ? item.onClick(item) : data.gotoRoot(item.path)">
+                <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
+                <ion-label *ngIf="item.title || item.label">
+                  <div class="flb-item-title" *ngIf="item.title">{{ item.title }}</div>
+                  <div class="flb-item-label" *ngIf="item.label">{{ item.label }}</div>
+                </ion-label>
+              </ion-item>
+            </div>
+          </div>
+
+        </div>
       </ion-content>
-      <ion-footer *ngIf="data.menu?.userMenu?.length">
-        <ion-item lines="none" button [detail]="false" [title]="item.title" (click)="ct.toggle(); item.onClick ? item.onClick(item) : data.gotoRoot(item.path)" *ngFor="let item of data.menu.userMenu">
-          <ion-icon *ngIf="item.icon" slot="start" [name]="item.icon"></ion-icon>
-          <ion-label *ngIf="item.title || item.label">
-            <div class="flb-item-title" *ngIf="item.title">{{ item.title }}</div>
-            <div class="flb-item-label" *ngIf="item.label">{{ item.label }}</div>
-          </ion-label>
-        </ion-item>
-      </ion-footer>
     </ion-menu>
-    <ion-router-outlet id="main"></ion-router-outlet>
+    <ion-router-outlet id="main"></ion-router-outlet>    
   </ion-split-pane>
-  <div class="flb-menu-button ion-hide-lg-down" *ngIf="data.menu" (click)="data._onMenuButtonClick($event)"></div>
 </ion-app>

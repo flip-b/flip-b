@@ -90,7 +90,7 @@ export function getChatClientLib(params: any = {}, query: any = {}) {
 window.${prefix}Chat = {
 
   // Define id
-  id: 'chat',
+  id: '_PLUGIN_-_ORIGIN_',
 
   // Define params
   params: {
@@ -244,7 +244,7 @@ window.${prefix}Chat = {
     if (self.system) {
       return;
     }
-
+    
     // Define system
     self.system = true;
     self.system_storage = self.__getStorage();
@@ -427,11 +427,6 @@ window.${prefix}Chat = {
           }, 2500);
         }
       }
-    }, false);
-
-    // Define dialog form text control keyup event
-    self.dialog_form_text_control.addEventListener('input', function(event) {
-      ${prefix}Mask.mask(event, self.dialog_form_text_control.getAttribute('mask') || '');
     }, false);
 
     // Define emojis module
@@ -622,7 +617,7 @@ window.${prefix}Chat = {
         }
         self.dialog_form_text_control.focus();
       }, false);
-    }
+    } 
   },
 
   //
@@ -645,20 +640,38 @@ window.${prefix}Chat = {
     self.client = true;
 
     // Define ticket
-    self.ticket = self.system_storage.getItem('ticket');
+    self.ticket = self.system_storage.getItem('ticket') || null;
     self.ticket = self.ticket || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
     self.system_storage.setItem('ticket', self.ticket);
-
+        
     // Define ticket interval
     var ticketInterval = setInterval(function() {
-      if (!self.system_storage.hasItem('ticket')) {
+      
+      // Verify current ticket
+      var currentTicket = self.system_storage.getItem('ticket');
+      if (currentTicket) {
+        self.ticket = currentTicket;
+      } else {
+        self.ticket = null;
+      }
+
+      // Verify current dialog
+      var currentDialog = self.system_storage.getItem('dialog');
+      if (currentDialog && currentDialog.length > self.dialog_body.innerHTML.length) {
+        self.dialog_body.innerHTML = currentDialog;
+        self.welcome = true;
+        self.__drawMessage({action: 'refresh'});
+      }
+
+      // Verify ticket status
+      if (!self.ticket) {
         self.__quit();
         clearInterval(ticketInterval);
       }
-    }, 1000);
+    }, 250);
   },
 
   //
@@ -818,32 +831,9 @@ window.${prefix}Chat = {
       forms[f].style.display = 'none';
     }
 
-    // Verify hide button
-    if (update.action === 'hide_button') {
-      self.hideButton();
-      return;
-    }
-
-    // Verify show dialog
-    if (update.action === 'show_dialog') {
-      self.showDialog();
-      return;
-    }
-
-    // Verify hide dialog
-    if (update.action === 'hide_dialog') {
-      self.hideDialog();
-      return;
-    }
-
-    // Verify quit dialog
-    if (update.action === 'quit_dialog') {
-      self.quitDialog();
-      return;
-    }
-
     // Verify talking
     if (update.action === 'talking') {
+      console.log('TALKING')
       self.dialog_body.insertAdjacentHTML('beforeend', '<div class="' + type + ' talking">' + logo + '<div class="talk"><span></span><span></span><span></span></div></div>')
       self.dialog_body.scrollTop = self.dialog_body.scrollHeight;
       return;
@@ -851,6 +841,7 @@ window.${prefix}Chat = {
 
     // Verify silence
     if (update.action === 'silence') {
+      console.log('silence')
       self.dialog_body.scrollTop = self.dialog_body.scrollHeight;
       return;
     }
@@ -881,18 +872,11 @@ window.${prefix}Chat = {
       self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + self.id + '-message-' + update.id + '" class="' + type + ' message">' + logo + '<div class="file" onclick="${prefix}Chat.__downloadFile(\'' + update.file + '\', \'' + self.params.dialog.share_attach_name + '\');">' + self.params.dialog.share_attach_link + '' + time + '</div></div>');
     }
 
-    // Verify mask
-    if (update.mask) {
-      self.dialog_form_text_control.setAttribute('mask', update.mask);
-    } else {
-      self.dialog_form_text_control.setAttribute('mask', '');
-    }
-
     // Verify menu
     if (update.menu && update.menu.length) {
       var menu = '';
       var menu_prefix = 'menu_' + new Date().getTime();
-      var menu_format = 'buttons';
+      var menu_format = 'standard';
       var menu_number;
 
       // Define menu items
@@ -930,7 +914,7 @@ window.${prefix}Chat = {
           }
 
           if (item.file) {
-            menu_format = 'slides';
+            menu_format = 'carousel';
             if (item.file.substr(0, 10) === 'data:image') {
               menu += '<div class="slide file file-slide"><img src="' + item.file + '"></div>';
             } else if (item.file.match(/\.(bmp|cur|gif|ico|jpe?g|png|raw|svgz?|tiff|webp)$/i)) {
@@ -952,8 +936,8 @@ window.${prefix}Chat = {
         }
       }
 
-      // Create menu
-      if (menu_format === 'slides') {
+      // Create carousel menu
+      if (menu_format === 'carousel') {
         var arrows = '';
         arrows += '<button id="' + menu_prefix + '.slide-arrow-prev" class="slide-arrow slide-arrow-prev">&#8249;</button>';
         arrows += '<button id="' + menu_prefix + '.slide-arrow-next" class="slide-arrow slide-arrow-next">&#8250;</button>';
@@ -972,8 +956,8 @@ window.${prefix}Chat = {
         });
       }
 
-      // Create menu
-      if (menu_format === 'buttons') {
+      // Create standard menu
+      if (menu_format === 'standard') {
         self.dialog_body.insertAdjacentHTML('beforeend', '<div id="' + menu_prefix + '" class="' + type  + ' buttons"><div class="icon"></div><div class="menu">' + menu + '</div></div>');
 
         // Create menu events
@@ -1163,6 +1147,9 @@ window.${prefix}Chat = {
       self.dialog_form_text_control.value = '';
       self.dialog_form_text_control.focus();
     }
+
+    // Define dialog
+    self.system_storage.setItem('dialog', self.dialog_body.innerHTML);
 
     // Verify dialog
     self.showDialog();
@@ -2687,37 +2674,6 @@ window.${prefix}Chat = {
   },
 
   //
-  // Define close
-  //
-  // @private
-  // @return void
-  //
-  __close: function() {
-
-    // Verify socket
-    if (this.socket) {
-
-      // Disconnect
-      this.socket.disconnect();
-
-      // Remove all listeners
-      this.socket.removeAllListeners();
-    }
-
-    // Define welcome
-    this.welcome = false;
-
-    // Define ticket
-    this.ticket = null;
-
-    // Define client
-    this.client = null;
-
-    // Define socket
-    this.socket = null;
-  },
-
-  //
   // Define quit
   //
   // @private
@@ -2743,17 +2699,23 @@ window.${prefix}Chat = {
       this.socket.removeAllListeners();
     }
 
-    // Define welcome
-    this.welcome = false;
+    // Remove ticket storage
+    this.system_storage.removeItem('ticket');    
 
-    // Define ticket
-    this.ticket = null;
+    // Remove dialog storage
+    this.system_storage.removeItem('dialog');    
 
     // Define client
     this.client = null;
 
     // Define socket
     this.socket = null;
+
+    // Define ticket
+    this.ticket = null;
+
+    // Define welcome
+    this.welcome = false;
   },
 
   //

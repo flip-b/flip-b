@@ -1,4 +1,5 @@
-import {Component, OnInit, Input, ElementRef, HostListener} from '@angular/core';
+import {Component, OnInit, Input, ElementRef, HostListener, ViewChild} from '@angular/core';
+import {IonContent, InfiniteScrollCustomEvent} from '@ionic/angular';
 import {DataService} from '../core/data.service';
 
 @Component({
@@ -7,6 +8,8 @@ import {DataService} from '../core/data.service';
 })
 export class FormComponent implements OnInit {
   // Definitions
+
+  @ViewChild(IonContent) content: IonContent | any;
 
   /**
    * View
@@ -27,6 +30,32 @@ export class FormComponent implements OnInit {
    * Constructor
    */
   constructor(public data: DataService, public _element: ElementRef) {}
+
+
+  handleRefresh(event: any) {
+    setTimeout(() => {
+      // Any calls to load data go here
+      event.target.complete();
+    }, 2000);
+  }
+
+  onIonInfinite(event: any) {
+    setTimeout(() => {
+      (event as InfiniteScrollCustomEvent).target.complete();
+    }, 500);
+  }
+
+  scrollToBottom() {
+    // Passing a duration to the method makes it so the scroll slowly
+    // goes to the bottom instead of instantly
+    this.content.scrollToBottom(500);
+  }
+
+  scrollToTop() {
+    // Passing a duration to the method makes it so the scroll slowly
+    // goes to the top instead of instantly
+    this.content.scrollToTop(500);
+  }  
 
   /**
    * Init angular handler
@@ -350,6 +379,10 @@ export class FormComponent implements OnInit {
       if (typeof item[e] === 'function' && e.match(/^on[A-Z][A-Za-z]+/)) {
         result[e] = item[e];
       }
+    }
+
+    if (typeof result.text === 'string') {
+      result.text = {title: result.text};
     }
 
     // Define i18n

@@ -152,8 +152,8 @@ export class Message {
     this.tags = message.tags;
     this.time = message.time || Date.now();
     this.type = message.type;
+    this.language = message.language;
     this.delivery = message.delivery;
-    this.language = message.language || 'en-US';
     this.customer = message.customer;
     this.operator = message.operator;
     this.settings = message.settings;
@@ -281,29 +281,29 @@ export class Message {
   /**
    * Get action
    */
-  get action(): string {
+  get action(): any {
     return this._action;
   }
 
   /**
    * Set action
    */
-  set action(value: string) {
-    this._action = `${value || ''}`.toLowerCase().trim();
+  set action(value: any) {
+    this._action = `${value || ''}`.toLowerCase().trim() || undefined;
   }
 
   /**
    * Get intent
    */
-  get intent(): string {
+  get intent(): any {
     return this._intent;
   }
 
   /**
    * Set intent
    */
-  set intent(value: string) {
-    this._intent = `${value || ''}`.toLowerCase().trim();
+  set intent(value: any) {
+    this._intent = `${value || ''}`.toLowerCase().trim() || undefined;
   }
 
   /**
@@ -320,7 +320,7 @@ export class Message {
     if (typeof value === 'object' && Array.isArray(value)) {
       value = value[Math.floor(Math.random() * value.length)];
     }
-    this._text = `${value || ''}`.trim();
+    this._text = `${value || ''}`.trim() || undefined;
   }
 
   /**
@@ -337,7 +337,7 @@ export class Message {
     if (typeof value === 'object' && Array.isArray(value)) {
       value = value[Math.floor(Math.random() * value.length)];
     }
-    this._file = `${value || ''}`.trim();
+    this._file = `${value || ''}`.trim() || undefined;
   }
 
   /**
@@ -427,43 +427,43 @@ export class Message {
   /**
    * Get type
    */
-  get type(): string {
+  get type(): any {
     return this._type;
   }
 
   /**
    * Set type
    */
-  set type(value: string) {
-    this._type = `${value || ''}`.toLowerCase().trim();
+  set type(value: any) {
+    this._type = value;
   }
 
   /**
    * Get language
    */
-  get language(): string {
+  get language(): any {
     return this._language;
   }
 
   /**
    * Set language
    */
-  set language(value: string) {
-    this._language = `${value || ''}`.trim();
+  set language(value: any) {
+    this._language = value;
   }
 
   /**
    * Get delivery
    */
-  get delivery(): string {
+  get delivery(): any {
     return this._delivery;
   }
 
   /**
    * Set delivery
    */
-  set delivery(value: string) {
-    this._delivery = `${value || ''}`.toLowerCase().trim();
+  set delivery(value: any) {
+    this._delivery = value;
   }
 
   /**
@@ -578,7 +578,6 @@ export class Message {
    */
   clone(value: any = {}): Message {
     const message: any = {};
-
     message.parent = value.parent || this.id;
     message.ticket = value.ticket || this.ticket;
     message.origin = value.origin || this.origin;
@@ -586,29 +585,23 @@ export class Message {
     message.target = value.target || this.target;
     message.holder = value.holder || this.holder;
     message.status = value.status || this.status;
-
     message.action = value.action || this.action;
     message.intent = value.intent || this.intent;
-
     message.text = value.text;
     message.file = value.file;
     message.menu = value.menu;
     message.form = value.form;
     message.data = value.data;
-
     message.feel = value.feel;
     message.tags = value.tags;
-
     message.time = value.time;
     message.type = value.type;
     message.language = value.language || this.language;
     message.delivery = value.delivery;
-
     message.customer = value.customer || this.customer;
     message.operator = value.operator || this.operator;
     message.settings = value.settings || this.settings;
     message.incoming = value.incoming || this.toObject();
-
     return new Message(message);
   }
 }
