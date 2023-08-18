@@ -1,6 +1,6 @@
 import {NgModule, ModuleWithProviders} from '@angular/core';
 import {RouterModule, PreloadAllModules} from '@angular/router';
-import {formatConfig} from './core/data.events';
+import {formatConfig} from './core/data.config';
 
 @NgModule({
   imports: [RouterModule.forRoot([], {preloadingStrategy: PreloadAllModules})],

@@ -3,10 +3,12 @@ import {CommonModule} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {HttpClientModule} from '@angular/common/http';
 import {IonicModule} from '@ionic/angular';
+
 import {I18nPipe} from './core/i18n.pipe';
 import {FormComponent} from './form/form.component';
 import {MenuComponent} from './menu/menu.component';
-import {formatConfig} from './core/data.events';
+
+import {formatConfig} from './core/data.config';
 
 @NgModule({
   declarations: [I18nPipe, FormComponent, MenuComponent],

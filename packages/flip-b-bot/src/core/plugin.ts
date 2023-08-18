@@ -4,7 +4,7 @@ import {Bot} from './bot';
  * Plugin
  */
 export abstract class Plugin {
-  // Plugin definitions
+  // Definitions
 
   /**
    * Application
@@ -28,8 +28,20 @@ export abstract class Plugin {
    * Register
    */
   async register(): Promise<any> {
-    if (this.plugin) {
-      return true;
-    }
+    return this.plugin ? true : false;
+  }
+
+  /**
+   * Dispatch
+   */
+  async dispatch(message: any): Promise<boolean> {
+    return message ? true : false;
+  }
+
+  /**
+   * Delivery
+   */
+  async delivery(message: any): Promise<boolean> {
+    return message ? true : false;
   }
 }

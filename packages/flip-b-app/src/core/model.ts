@@ -17,6 +17,7 @@ export abstract class Model {
   /**
    * Define getters, setters and plugins
    */
+  options: any = {};
   getters: any = {};
   setters: any = {};
   plugins: any = {};
@@ -34,7 +35,16 @@ export abstract class Model {
    * Get model
    */
   getModel(): any {
-    const schema: any = new mongoose.Schema<Fields>(this.fields);
+    if (typeof this.options.timestamps === 'undefined') {
+      this.options.timestamps = {
+        createdAt: 'created_at',
+        updatedAt: 'updated_at'
+      };
+
+      this.options.versionKey = false;
+    }
+
+    const schema: any = new mongoose.Schema<Fields>(this.fields, this.options);
     for (const v in this.getters) {
       schema.virtual(`${v}`).get(this.getters[`${v}`]);
     }

@@ -4,14 +4,14 @@
 *.tmp.*
 *.log
 *.log.*
-log.txt
+log.*
 
 .DS_Store
 Thumbs.db
 
 node_modules
-lib
 log
 tmp
+lib
 
 !.gitkeep

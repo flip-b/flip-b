@@ -22,7 +22,7 @@ function getPathHandler(): any {
         send.code = Number(test[1]);
         send.data = {message: test[2], url: req.originalUrl};
       } else {
-        console.error(error);
+        console.error(`${error}`);
       }
       res.status(send.code).send(send.data);
     } catch (error) {

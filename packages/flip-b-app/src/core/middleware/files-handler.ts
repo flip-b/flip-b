@@ -8,7 +8,7 @@ export default function filesHandler(app: any): any {
     return;
   }
   app.config.router.files.path = app.config.router.files.path || '/files';
-  app.config.router.files.dest = app.config.router.files.dest || `${app.config.var}/upload`;
+  app.config.router.files.dest = app.config.router.files.dest || `${app.config.var}/upload/files`;
   app.config.router.files.cache = app.config.router.files.cache || '30 days';
   return getRouter(app);
 }

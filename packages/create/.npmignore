@@ -1,7 +1,20 @@
+*~
+*.sw[mnpcod]
+*.tmp
+*.tmp.*
+*.log
+*.log.*
+log.*
+
+.DS_Store
+Thumbs.db
+
 node_modules
-src
 log
 tmp
+src
+
+*config.json
 
 .editorconfig
 .eslintrc
@@ -10,18 +23,5 @@ tmp
 .npmignore
 .npmrc
 .prettierrc
-
-*config.json
-
-*~
-*.sw[mnpcod]
-*.tmp
-*.tmp.*
-*.log
-*.log.*
-log.txt
-
-.DS_Store
-Thumbs.db
 
 !.npmkeep

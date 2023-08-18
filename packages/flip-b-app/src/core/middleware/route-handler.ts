@@ -22,6 +22,7 @@ function getRouter(app: any): any {
       const ctx: any = {};
       ctx.name = app.routes[r].name;
       ctx.path = app.routes[r].path;
+      ctx.type = x;
       ctx.current = app.routes[r].routes[x];
 
       const route: any = app.routes[r].routes[x];
@@ -42,7 +43,7 @@ function getPathHandler(app: any, ctx: any): any {
       params.body = {...req.body, ...req.query, ...req.params};
       params.info = {ctx, req, res, next};
 
-      // Auth
+      // Verify authorization
       if (ctx.current.auth?.length) {
         const [c, m]: string[] = `${app.config.router.route.auth}`.split('.');
         const result: any = await app.controllers[`${c}`][`${m}`](params);
@@ -55,44 +56,35 @@ function getPathHandler(app: any, ctx: any): any {
         params.auth = result;
       }
 
-      // Data
-      if (typeof ctx.current.handler === 'string' && ctx.current.handler.match(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_]+$/)) {
-        const [c, m]: string[] = ctx.current.handler.split('.');
-        const result: any = await app.controllers[`${c}`][`${m}`](params);
-        if (!result) {
-          return next(new Error('#404 Not found'));
-        }
-        if (!result.headers && !result.content) {
-          return res.send(result);
-        }
+      if (!app.controllers?.[ctx.name]?.[ctx.type]) {
+        console.log(ctx.name, ctx.type);
+      }
+
+      // Define result
+      const result: any = await app.controllers[ctx.name][ctx.type](params);
+      if (!result) {
+        return next(new Error('#404 Not found'));
+      }
+
+      // Verify result: headers
+      if (result.headers) {
         for (const h in result.headers) {
           res.set(h, result.headers[h]);
         }
-        return res.send(result.content);
       }
 
-      // File upload
-      if (typeof ctx.current.handler === 'string' && ctx.current.handler.match(/^upload$/)) {
-        const result: any = {};
-        const busboy = app.helper.busboy({headers: req.headers});
-        busboy.on('file', (_name: any, file: any, info: any) => {
-          result.name = app.helper.crypto
-            .createHash('md5')
-            .update(`${Math.round(Math.random() * 1e9)}`)
-            .digest('hex');
-          result.extension = app.helper.mimeTypes.extension(info.mimeType);
-          result.filename = info.filename;
-          result.encoding = info.encoding;
-          result.mimeType = info.mimeType;
-          result.url = `${req.protocol}://${req.get('host')}${app.config.server.path}${app.config.router.files.path}/${result.name}.${result.extension}`;
-          file.pipe(app.helper.fs.createWriteStream(`${app.config.router.files.dest}/${result.name}.${result.extension}`));
-        });
-        busboy.on('close', () => {
-          res.set('Connection', 'close');
-          res.send(result);
-        });
-        return req.pipe(busboy);
+      // Verify result: content pipe
+      if (result.content?.pipe) {
+        return req.pipe(result.content.pipe);
       }
+
+      // Verify result: content send
+      if (result.content?.send) {
+        return res.send(result.content.send);
+      }
+
+      // Send result
+      return res.send(result);
     } catch (error) {
       next(error);
     }
