@@ -16,7 +16,6 @@
   "scripts": {
     "watch": "rimraf lib && tsc -w -p .",
     "build": "rimraf lib && tsc -p .",
-    "test": "jest",
     "lint": "eslint 'src/**/*'"
   },
   "dependencies": {
@@ -34,7 +33,7 @@
     "ioredis": "~5.3.2",
     "jsonwebtoken": "~9.0.1",
     "moment": "~2.29.4",
-    "mongoose": "~7.4.3",
+    "mongoose": "~7.4.5",
     "socket.io": "~4.7.2",
     "uglify-js": "~3.17.4",
     "yargs": "~17.7.2"
@@ -44,11 +43,11 @@
     "@types/compression": "~1.7.2",
     "@types/cors": "~2.8.13",
     "@types/ejs": "~3.1.2",
-    "@types/node": "~20.5.0",
+    "@types/node": "~20.5.6",
     "@types/uglify-js": "~3.17.1",
     "@types/yargs": "~17.0.24",
-    "@typescript-eslint/eslint-plugin": "~6.4.0",
-    "@typescript-eslint/parser": "~6.4.0",
+    "@typescript-eslint/eslint-plugin": "~6.4.1",
+    "@typescript-eslint/parser": "~6.4.1",
     "eslint": "~8.47.0",
     "eslint-config-prettier": "~9.0.0",
     "eslint-plugin-prettier": "~5.0.0",

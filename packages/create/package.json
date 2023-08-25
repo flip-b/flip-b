@@ -16,7 +16,6 @@
   "scripts": {
     "watch": "rimraf lib && tsc -w -p .",
     "build": "rimraf lib && tsc -p .",
-    "test": "jest",
     "lint": "eslint 'src/**/*'"
   },
   "dependencies": {
@@ -25,11 +24,11 @@
     "tar": "~6.1.15"
   },
   "devDependencies": {
-    "@types/node": "~20.5.0",
+    "@types/node": "~20.5.6",
     "@types/prompts": "~2.4.4",
-    "@types/tar": "6.1.5",
-    "@typescript-eslint/eslint-plugin": "~6.4.0",
-    "@typescript-eslint/parser": "~6.4.0",
+    "@types/tar": "~6.1.5",
+    "@typescript-eslint/eslint-plugin": "~6.4.1",
+    "@typescript-eslint/parser": "~6.4.1",
     "eslint": "~8.47.0",
     "eslint-config-prettier": "~9.0.0",
     "eslint-plugin-prettier": "~5.0.0",
