@@ -8,7 +8,7 @@ export default function routeHandler(app: any): any {
     return;
   }
   app.config.router.route.path = app.config.router.route.path || '';
-  app.config.router.route.auth = app.config.router.route.auth || 'users.getAuth';
+  app.config.router.route.auth = app.config.router.route.auth || 'users.auth';
   return getRouter(app);
 }
 
@@ -18,14 +18,14 @@ export default function routeHandler(app: any): any {
 function getRouter(app: any): any {
   const router: any = express.Router();
   for (const r in app.routes) {
-    for (const x in app.routes[r].routes) {
+    for (const m in app.routes[r].routes) {
+      const route: any = app.routes[r].routes[m];
       const ctx: any = {};
-      ctx.name = app.routes[r].name;
-      ctx.path = app.routes[r].path;
-      ctx.type = x;
-      ctx.current = app.routes[r].routes[x];
-
-      const route: any = app.routes[r].routes[x];
+      ctx.name = app.helper.changeCase.camelCase(r);
+      ctx.path = app.helper.changeCase.paramCase(r);
+      ctx.type = app.helper.changeCase.camelCase(m);
+      ctx.call = route.call?.[0] || route.call || ctx.type;
+      ctx.auth = route.call?.[1] || route.auth;
       router[`${route.method}`](`${app.config.server.path}${app.config.router.route.path}/${ctx.path}${route.path}`, getPathHandler(app, ctx));
     }
   }
@@ -41,29 +41,31 @@ function getPathHandler(app: any, ctx: any): any {
       const params: any = {};
       params.auth = {};
       params.body = {...req.body, ...req.query, ...req.params};
-      params.info = {ctx, req, res, next};
+      params.info = {...ctx, req, res, next};
 
       // Verify authorization
-      if (ctx.current.auth?.length) {
-        const [c, m]: string[] = `${app.config.router.route.auth}`.split('.');
-        const result: any = await app.controllers[`${c}`][`${m}`](params);
-        if (!result) {
-          return next(new Error('#402 Invalid authorization'));
-        }
-        if (!ctx.current.auth.includes(result.auth || 'anonymous')) {
+      if (ctx.auth?.length) {
+        const [n, c]: string[] = `${app.config.router.route.auth}`.split('.');
+        const result: any = await app.controllers[`${n}`][`${c}`](params);
+        if (!result || !ctx.auth.includes(result.auth || 'anonymous')) {
           return next(new Error('#401 Unauthorized'));
         }
         params.auth = result;
       }
 
-      if (!app.controllers?.[ctx.name]?.[ctx.type]) {
-        console.log(ctx.name, ctx.type);
-      }
+      // Define result
+      let result: any;
 
       // Define result
-      const result: any = await app.controllers[ctx.name][ctx.type](params);
+      if (typeof ctx.call === 'function') {
+        result = await ctx.call(params);
+      } else {
+        result = await app.controllers[ctx.name][ctx.call](params);
+      }
+
+      // Verify result
       if (!result) {
-        return next(new Error('#404 Not found'));
+        return next(new Error('#404 Not Found'));
       }
 
       // Verify result: headers

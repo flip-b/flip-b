@@ -501,11 +501,11 @@ export class DataService {
     } else if (params.lookup) {
       params.method = 'POST';
       params.url = `${this.http.config.url}`;
-      params.uri = `${this.http.config.uri}/${params.lookup}/lookup`;
+      params.uri = `${this.http.config.uri}/${params.lookup}/lookup/:index`;
     } else if (params.upload) {
       params.method = 'POST';
       params.url = `${this.http.config.url}`;
-      params.uri = `${this.http.config.uri}/${params.upload}/upload`;
+      params.uri = `${this.http.config.uri}/${params.upload}/upload/:index`;
     } else if (params.submit) {
       params.method = 'POST';
       params.url = `${this.http.config.url}`;
@@ -572,23 +572,6 @@ export class DataService {
 
     // Return last value from response
     return lastValueFrom(response$);
-  }
-
-  /**
-   * Http QS Object to String
-   */
-  private _httpQsObject(params: any, prefix: any = ''): any {
-    const result: any = [];
-    for (const p in params) {
-      if (params.hasOwnProperty(p)) {
-        const k = prefix ? prefix + '[' + p + ']' : p;
-        const v = params[p];
-        if (v !== null && v !== false && v !== undefined) {
-          result.push(typeof v === 'object' ? this._httpQsObject(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v));
-        }
-      }
-    }
-    return result.filter((v: any) => !!v).join('&');
   }
 
   /*********************************************************************************************************************
@@ -1150,6 +1133,23 @@ export class DataService {
 
     result = result.replace(new RegExp(match), input);
     return result;
+  }
+
+  /**
+   * Http QS Object to String
+   */
+  private _httpQsObject(params: any, prefix: any = ''): any {
+    const result: any = [];
+    for (const p in params) {
+      if (params.hasOwnProperty(p)) {
+        const k = prefix ? prefix + '[' + p + ']' : p;
+        const v = params[p];
+        if (v !== null && v !== false && v !== undefined) {
+          result.push(typeof v === 'object' ? this._httpQsObject(v, k) : encodeURIComponent(k) + '=' + encodeURIComponent(v));
+        }
+      }
+    }
+    return result.filter((v: any) => !!v).join('&');
   }
 
   /*********************************************************************************************************************

@@ -17,9 +17,6 @@ import filesHandler from './middleware/files-handler';
 import mountHandler from './middleware/mount-handler';
 import routeHandler from './middleware/route-handler';
 
-/**
- * App
- */
 export class App {
   // Definitions
 
@@ -32,6 +29,11 @@ export class App {
    * Helper
    */
   helper: any = {};
+
+  /**
+   * Plugin
+   */
+  plugin: any = {};
 
   /**
    * Database
@@ -202,7 +204,7 @@ export class App {
     try {
       console.info(`> initializing controllers`);
       for (const f of await this.getFiles(path.resolve(`${this.config.src}/controllers`))) {
-        this.controllers[`${f.name}`] = new f.call.default(this).getController();
+        this.controllers[`${f.name}`] = new f.call.default(this).self;
       }
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the controllers module. ${error}`);
@@ -216,7 +218,7 @@ export class App {
     try {
       console.info(`> initializing models`);
       for (const f of await this.getFiles(path.resolve(`${this.config.src}/models`))) {
-        this.models[`${f.name}`] = new f.call.default(this).getModel();
+        this.models[`${f.name}`] = new f.call.default(this).self;
       }
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the models module. ${error}`);
@@ -230,7 +232,7 @@ export class App {
     try {
       console.info(`> initializing routes`);
       for (const f of await this.getFiles(path.resolve(`${this.config.src}/routes`))) {
-        this.routes[`${f.name}`] = new f.call.default(this).getRoute();
+        this.routes[`${f.name}`] = new f.call.default(this).self;
       }
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the routes module. ${error}`);
@@ -244,7 +246,7 @@ export class App {
     try {
       console.info(`> initializing tasks`);
       for (const f of await this.getFiles(path.resolve(`${this.config.src}/tasks`))) {
-        this.tasks[`${f.name}`] = new f.call.default(this).getTask();
+        this.tasks[`${f.name}`] = new f.call.default(this).self;
       }
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the tasks module. ${error}`);
@@ -258,7 +260,7 @@ export class App {
     try {
       console.info(`> initializing tests`);
       for (const f of await this.getFiles(path.resolve(`${this.config.src}/tests`))) {
-        this.tests[`${f.name}`] = new f.call.default(this).getTest();
+        this.tests[`${f.name}`] = new f.call.default(this).self;
       }
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the tests module. ${error}`);
@@ -373,10 +375,19 @@ export class App {
     try {
       const module = camelCase(args.shift() || '');
       const method = camelCase(args.shift() || '');
-      console.info(`> run "${module}.${method}" task`);
-      const result: any = await this.tasks[`${module}`][`${method}`](this.helper.yargs(args).argv);
+      const params: any = {...this.helper.yargs(args).argv};
+      params.auth = {};
+      params.body = {};
+      params.info = {name: module, type: method};
+      delete params['_'];
+      delete params['$0'];
+
+      console.info(`> initializing task ${module}.${method}`);
+      const result: any = await this.tasks[`${module}`][`${method}`](params);
       if (result) {
-        console.log(result);
+        console.info(result);
+      } else {
+        console.info(`! finished`);
       }
     } catch (error: any) {
       console.warn(`> a critical error occurred while runing task. ${error}`);
@@ -391,10 +402,19 @@ export class App {
     try {
       const module = camelCase(args.shift() || '');
       const method = camelCase(args.shift() || '');
-      console.info(`> Run "${module}.${method}" test`);
-      const result: any = await this.tests[`${module}`][`${method}`](this.helper.yargs(args).argv);
+      const params: any = {...this.helper.yargs(args).argv};
+      params.auth = {};
+      params.body = {};
+      params.info = {name: module, type: method};
+      delete params['_'];
+      delete params['$0'];
+
+      console.info(`> initializing test ${module}.${method}`);
+      const result: any = await this.tests[`${module}`][`${method}`](params);
       if (result) {
-        console.log(result);
+        console.info(result);
+      } else {
+        console.info(`! finished`);
       }
     } catch (error: any) {
       console.warn(`> a critical error occurred while runing test. ${error}`);

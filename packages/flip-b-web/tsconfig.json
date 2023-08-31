@@ -1,9 +1,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "target": "es2020",
-    "module": "es2020",
-    "moduleResolution": "node",
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "node16",
     "outDir": "./dist/out-tsc",
     "baseUrl": "./",
     "inlineSources": false,
@@ -15,7 +15,7 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "lib": [
-      "es2018",
+      "es2023",
       "dom"
     ]
   },

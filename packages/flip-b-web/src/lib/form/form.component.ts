@@ -65,7 +65,7 @@ export class FormComponent implements OnInit {
 
 /***********************************************************************************************************************
  *** Events
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 const events: any = {};
 events['form.onStart'] = formStart;
@@ -77,7 +77,7 @@ events['item.onInput'] = itemInput;
 
 /***********************************************************************************************************************
  *** Form Start
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function formStart({form, $event}: any): Promise<any> {
   try {
@@ -124,6 +124,8 @@ async function formStart({form, $event}: any): Promise<any> {
     } else {
       let result: any = {};
 
+      form.body.values = setBodyValue(form, form.fields, result);
+
       if (form.data.select) {
         result = {...form.data.select};
       } else if (form.rest && form.data.index) {
@@ -149,7 +151,7 @@ async function formStart({form, $event}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Setup
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemSetup({form, item, $event}: any): Promise<any> {
   try {
@@ -171,7 +173,7 @@ async function itemSetup({form, item, $event}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Click
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemClick({form, item, $event}: any): Promise<any> {
   try {
@@ -192,7 +194,7 @@ async function itemClick({form, item, $event}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Enter
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemEnter({form, item, $event}: any): Promise<any> {
   try {
@@ -210,7 +212,7 @@ async function itemEnter({form, item, $event}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Leave
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemLeave({form, item, $event}: any): Promise<any> {
   try {
@@ -228,7 +230,7 @@ async function itemLeave({form, item, $event}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Input
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemInput({form, item, $event}: any): Promise<any> {
   try {
@@ -246,7 +248,7 @@ async function itemInput({form, item, $event}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Search Action
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemSearchActionInput({form, item}: any): Promise<any> {
   try {
@@ -264,7 +266,7 @@ async function itemSearchActionInput({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Select Values
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemSelectValuesClick({form, item}: any): Promise<any> {
   try {
@@ -290,7 +292,7 @@ async function itemSelectValuesClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Filter Button
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemFilterButtonClick({form, item}: any): Promise<any> {
   try {
@@ -303,7 +305,7 @@ async function itemFilterButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Create Button
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemCreateButtonClick({form, item}: any): Promise<any> {
   try {
@@ -326,7 +328,7 @@ async function itemCreateButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Delete Button
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemDeleteButtonClick({form, item}: any): Promise<any> {
   try {
@@ -352,7 +354,7 @@ async function itemDeleteButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Cancel Button
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemCancelButtonClick({form, item}: any): Promise<any> {
   try {
@@ -371,7 +373,7 @@ async function itemCancelButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Submit Button
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemSubmitButtonClick({form, item}: any): Promise<any> {
   try {
@@ -405,12 +407,12 @@ async function itemSubmitButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Download Button
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemDownloadButtonClick({form, item}: any): Promise<any> {
   try {
     await form.page.loading({message: item.path});
-    const result: any = await form.http.request({lookup: form.rest, type: 'blob', body: {download: form.name, _id: form.data.index}});
+    const result: any = await form.http.request({select: form.rest, data: {index: form.data.index}, qs: {action: 'download'}, type: 'blob'});
     await form.page.browserDownload(result);
     await form.page.success({message: item.path, value: form.body});
   } catch (error: any) {
@@ -420,12 +422,12 @@ async function itemDownloadButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Print Button
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemPrintButtonClick({form, item}: any): Promise<any> {
   try {
     await form.page.loading({message: item.path});
-    const result: any = await form.http.request({lookup: form.rest, type: 'blob', body: {print: form.name, _id: form.data.index}});
+    const result: any = await form.http.request({select: form.rest, data: {index: form.data.index}, qs: {action: 'print'}, type: 'blob'});
     await form.page.browserPrint(result);
     await form.page.success({message: item.path, value: form.body});
   } catch (error: any) {
@@ -435,12 +437,12 @@ async function itemPrintButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Share Button
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemShareButtonClick({form, item}: any): Promise<any> {
   try {
     await form.page.loading({message: item.path});
-    const result: any = await form.http.request({lookup: form.rest, type: 'blob', body: {shere: form.name, _id: form.data.index}});
+    const result: any = await form.http.request({select: form.rest, data: {index: form.data.index}, qs: {action: 'share'}, type: 'blob'});
     await form.page.browserShare(result);
     await form.page.success({message: item.path, value: form.body});
   } catch (error: any) {
@@ -450,7 +452,7 @@ async function itemShareButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Sendmail Button
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 async function itemSendmailButtonClick({form, item}: any): Promise<any> {
   try {
@@ -459,7 +461,7 @@ async function itemSendmailButtonClick({form, item}: any): Promise<any> {
       return;
     }
     await form.page.loading({message: item.path});
-    const result: any = await form.http.request({lookup: form.rest, type: 'blob', body: {sendmail: form.name, _id: form.data.index, email: params.result.email}});
+    const result: any = await form.http.request({select: form.rest, data: {index: form.data.index}, qs: {action: 'sendmail', email: params.result.email}, type: 'blob'});
     await form.page.browserSendmail(result);
     await form.page.success({message: item.path, value: form.body});
   } catch (error: any) {
@@ -469,7 +471,7 @@ async function itemSendmailButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Set form
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function setForm({form, self}: any): any {
   const copy: any = {...form};
@@ -805,7 +807,7 @@ function setForm({form, self}: any): any {
 
 /***********************************************************************************************************************
  *** Set Item
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function setItem({form, item}: any): any {
   const copy: any = {...item};
@@ -1133,7 +1135,7 @@ function setItem({form, item}: any): any {
 
 /***********************************************************************************************************************
  *** Set Item Value
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function setItemValue({form, item, $event, action, value}: any): any {
   if (action === 'setup') {
@@ -1268,7 +1270,7 @@ function setItemValue({form, item, $event, action, value}: any): any {
     if (!item.data.values && item.data.populate) {
       item.data.values = [];
       form.http
-        .request({lookup: form.rest, qs: {lookup: item.name}})
+        .request({lookup: form.rest, data: {index: item.name}})
         .then((values: any) => {
           window.formValues[`${item.path}`] = values;
           item.data.values = values;
@@ -1426,7 +1428,7 @@ function setItemValue({form, item, $event, action, value}: any): any {
 
 /***********************************************************************************************************************
  *** Set Body Value
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function setBodyValue(form: any, group: any[] = [], value: any = undefined): any {
   const result: any = {};
@@ -1445,7 +1447,7 @@ function setBodyValue(form: any, group: any[] = [], value: any = undefined): any
 
 /***********************************************************************************************************************
  *** Set Slot Value
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function setSlotValue(form: any, value: any = {}): any {
   const flatMap = (items: any, str = '', fresh: any = {}, path = '') => {
@@ -1592,7 +1594,7 @@ function setSlotValue(form: any, value: any = {}): any {
 
 /***********************************************************************************************************************
  *** Get Colorize Popover
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function getColorizePopover(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -1643,7 +1645,7 @@ function getColorizePopover(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Get Datetime Popover
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function getDatetimePopover(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -1687,7 +1689,7 @@ function getDatetimePopover(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Get Document Popover
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function getDocumentPopover(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -1747,7 +1749,7 @@ function getDocumentPopover(form: any, item: any, $el: any): any {
     try {
       const file: any = $event.target.files[0];
       await form.page.loading({message: item.path});
-      const result: any = await form.http.request({submit: form.rest + '/upload', form: {file}});
+      const result: any = await form.http.request({upload: form.rest, data: {index: item.name}, form: {file}});
       contentParse(result?.url);
       await form.page.success({message: item.path});
     } catch (error: any) {
@@ -1779,7 +1781,7 @@ function getDocumentPopover(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Get Location Popover
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function getLocationPopover(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -1836,7 +1838,7 @@ function getLocationPopover(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Get Selector Popover
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function getSelectorPopover(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -1870,7 +1872,7 @@ function getSelectorPopover(form: any, item: any, $el: any): any {
   // Define content fetch
   const contentFetch: any = async () => {
     if (!item.data.values) {
-      item.data.values = await form.http.request({lookup: form.rest, qs: {lookup: item.name}});
+      item.data.values = await form.http.request({lookup: form.rest, data: {index: item.name}});
     }
 
     let values: any = [...(item.data.values || [])];
@@ -1916,7 +1918,7 @@ function getSelectorPopover(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Get Textarea Control
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function getTextareaControl(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -2017,7 +2019,7 @@ function getTextareaControl(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Utils
- **********************************************************************************************************************/
+ ********************************************************************************************************************/
 
 function isIcon(image: string): boolean {
   return !!(image || 'default').match(/^[a-z-]+$/);

@@ -1,8 +1,5 @@
 import {DataGuard} from './data.guard';
 
-/**
- * Format config
- */
 export function formatConfig(config: any): any {
   config = config || {};
 

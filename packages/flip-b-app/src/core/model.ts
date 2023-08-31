@@ -1,13 +1,8 @@
 import {App} from './app';
 import mongoose from 'mongoose';
 
-/**
- * Model
- */
 export abstract class Model {
   app: App;
-  name: string;
-  path: string;
 
   /**
    * Fields
@@ -27,40 +22,43 @@ export abstract class Model {
    */
   constructor(app: App) {
     this.app = app;
-    this.name = this.app.helper.changeCase.snakeCase(`${this.constructor.name}`).replace(/_model$/, '');
-    this.path = this.app.helper.changeCase.paramCase(`${this.constructor.name}`).replace(/-model$/, '');
   }
 
   /**
    * Get model
    */
-  getModel(): any {
+  get self(): any {
     if (typeof this.options.timestamps === 'undefined') {
-      this.options.timestamps = {
-        createdAt: 'created_at',
-        updatedAt: 'updated_at'
-      };
-
+      this.options.timestamps = {createdAt: 'created_at', updatedAt: 'updated_at'};
       this.options.versionKey = false;
     }
 
+    // Define entity
+    const entity: any = this.app.helper.changeCase.snakeCase(`${this.constructor.name}`).replace(/_model$/, '');
+
+    // Define schema
     const schema: any = new mongoose.Schema<Fields>(this.fields, this.options);
+
+    // Define schema getters
     for (const v in this.getters) {
       schema.virtual(`${v}`).get(this.getters[`${v}`]);
     }
+
+    // Define schema setters
     for (const v in this.setters) {
       schema.virtual(`${v}`).set(this.setters[`${v}`]);
     }
+
+    // Define schema plugins
     for (const v in this.plugins) {
       schema.plugin(this.plugins[`${v}`]);
     }
-    return this.app.database.model(`${this.name}`, schema);
+
+    // Return model
+    return this.app.database.model(entity, schema);
   }
 }
 
-/**
- * Fields interface
- */
 export interface Fields {
   [index: string]: any;
 }
