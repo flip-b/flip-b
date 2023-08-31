@@ -153,8 +153,9 @@ export class Bot {
   private async initializeConfig(): Promise<any> {
     try {
       console.info(`> initializing config`);
-      const data: any = await import(path.resolve(`${this.config.src}/config`));
-      this.config = {...this.config, ...data.default};
+      for (const f of await this.getFiles(path.resolve(`${this.config.src}/config`))) {
+        this.config = {...this.config, ...f.call.default};
+      }
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the config module. ${error}`);
     }

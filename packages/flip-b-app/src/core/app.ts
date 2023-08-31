@@ -163,9 +163,9 @@ export class App {
   private async initializeConfig(): Promise<any> {
     try {
       console.info(`> initializing config`);
-      const file = path.resolve(`${this.config.src}/config`);
-      const data = await import(file);
-      this.config = {...this.config, ...data.default};
+      for (const f of await this.getFiles(path.resolve(`${this.config.src}/config`))) {
+        this.config = {...this.config, ...f.call.default};
+      }
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the config module. ${error}`);
     }
