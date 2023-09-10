@@ -1,19 +1,7 @@
 import {Bot} from './bot';
 
-/**
- * Plugin
- */
 export abstract class Plugin {
-  // Definitions
-
-  /**
-   * Application
-   */
   app: Bot;
-
-  /**
-   * Plugin
-   */
   plugin: string;
 
   /**

@@ -2,7 +2,6 @@ import {Injectable, Inject} from '@angular/core';
 import {Router, NavigationEnd} from '@angular/router';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {LoadingController, AlertController, ModalController, ToastController, MenuController, Platform} from '@ionic/angular';
-import {lastValueFrom} from 'rxjs';
 
 declare global {
   interface Window {
@@ -231,12 +230,13 @@ export class DataService {
     Object.defineProperty(this.i18n, 'values', {value: {}, writable: true, enumerable: false});
 
     // Define i18n values
-    if (this.i18n.config.language) {
-      this.i18n.values = await this.http.request({method: 'GET', url: `assets/i18n/${this.i18n.config.language}.json`}).catch(console.error);
-    }
+    //if (!this.i18n.config.language) {
+    //  this.i18n.values = await this.http.request({method: 'GET', url: `assets/i18n/${this.i18n.config.language}.json`}).catch(console.error);
+    //}
+    this.i18n.values = i18nInfo.values || {};
 
     // Define i18n methods
-    this.i18n.text = (value: any, params: any) => this._i18nText(value, params);
+    this.i18n.text = (value: any, params: any, debug: any) => this._i18nText(value, params, debug);
     this.i18n.pipe = (value: any, params: any) => this._i18nPipe(value, params);
     this.i18n.stringValue = (value: any, params: any) => this._i18nStringValue(value, params);
     this.i18n.stringInput = (value: any, params: any) => this._i18nStringInput(value, params);
@@ -427,7 +427,7 @@ export class DataService {
       path = path.replace(new RegExp(':' + p), params[p]);
     }
 
-    for (const view of this._config.views) {
+    for (const view of this._config.page.items) {
       if (view.path === path && view.auth.includes(this.user.access.auth || 'anonymous')) {
         return true;
       }
@@ -545,33 +545,20 @@ export class DataService {
 
     // Define method
     const method: any = `${params.method || 'GET'}`.toUpperCase().trim();
-
-    // Define URL
     const url: any = `${params.url || ''}`.trim();
-
-    // Define URI
     const uri: any = `${params.uri || ''}`.trim();
-
-    // Define QS
     const qs: any = params.qs ? '?' + this._httpQsObject(params.qs) : '';
-
-    // Define body
     const body: any = params.form || params.body;
-
-    // Define headers
     const headers: any = new HttpHeaders(params.headers);
-
-    // Define observe
     const observe: any = params.observe || undefined;
-
-    // Define type
     const responseType: any = params.type || undefined;
 
-    // Define response$
-    const response$ = this._httpClient.request(method, `${url}${uri}${qs}`, {body, headers, observe, responseType});
+    return this._httpClient.request(method, `${url}${uri}${qs}`, {body, headers, observe, responseType}).toPromise();
 
+    // Define response$
+    //const response$ = this._httpClient.request(method, `${url}${uri}${qs}`, {body, headers, observe, responseType});
     // Return last value from response
-    return lastValueFrom(response$);
+    //return lastValueFrom(response$);
   }
 
   /*********************************************************************************************************************
@@ -809,8 +796,8 @@ export class DataService {
     result = result.replace('{SN}', value < 0 ? format['negative-symbol'] : '');
     result = result.replace('{SP}', value > 0 ? format['positive-symbol'] : '');
     result = result.replace('{IV}', parti);
-    result = result.replace('{IS}', format['integer-symbol']);
     result = result.replace('{DV}', partd);
+    result = result.replace(/\{IS\}/g, format['integer-symbol']);
     result = result.replace('{DS}', format['decimal-symbol']);
     result = result.replace('{PS}', format['percent-symbol']);
     result = result.replace('{CS}', format['currency-symbol']);
@@ -938,7 +925,7 @@ export class DataService {
   /**
    * I18n Text
    */
-  private _i18nText(expr: any, data: any = undefined): any {
+  private _i18nText(expr: any, data: any = undefined, debug: any = undefined): any {
     try {
       const parts = `${expr || ''}`.split('.');
 
@@ -987,6 +974,9 @@ export class DataService {
       let result: any = '';
       for (const x of [formName, '$page']) {
         for (const y of search) {
+          if (debug) {
+            console.log(x, y)
+          }
           if (typeof this.i18n.values[x] === 'object' && typeof this.i18n.values[x][y] !== 'undefined') {
             result = this.i18n.values[x][y];
             break;
@@ -996,6 +986,7 @@ export class DataService {
           break;
         }
       }
+
 
       if (typeof result !== 'string') {
         return result;
@@ -1197,22 +1188,23 @@ export class DataService {
       }
     });
 
-    for (const p of this._config.views) {
-      if (p.menu && p.auth?.includes(this.user.access.auth || 'anonymous')) {
-        const item: any = {};
+
+    for (const p of this._config.menu.items) {
+      if (p.type && p.auth?.includes(this.user.access.auth || 'anonymous')) {
+        const item: any = {name: p.name, path: p.path, type: p.type};
         item.onSetup = async (item: any): Promise<any> => {
-          item.title = p.title || item.title || this.i18n.text(`${p.name}.menu.$content-title`) || p.name;
-          item.label = p.label || item.label || this.i18n.text(`${p.name}.menu.$content-label`);
-          item.image = p.image || item.image || this.i18n.text(`${p.name}.menu.$picture-image`);
-          item.class = p.menu === 'user' ? 'flb-item-type-button button circle' : 'flb-item-type-button button';
-          item.path = item.path || p.path;
+          item.title = item.title || this.i18n.text(`${item.name}.menu.$content-title`) || item.name;
+          item.label = item.label || this.i18n.text(`${item.name}.menu.$content-label`);
+          item.image = item.image || this.i18n.text(`${item.name}.menu.$picture-image`);
+          item.class = item.type === 'user' ? 'flb-item-type-button button circle' : 'flb-item-type-button button';
+          item.path = item.path;
         };
         item.onClick = async (item: any): Promise<any> => {
           await this.user.goto(item.path);
           await item.onSetup(item);
         };
-        this.menu.values[`${p.menu}`] = this.menu.values[`${p.menu}`] || [];
-        this.menu.values[`${p.menu}`].push(item);
+        this.menu.values[`${item.type}`] = this.menu.values[`${item.type}`] || [];
+        this.menu.values[`${item.type}`].push(item);
       }
     }
 
@@ -1461,7 +1453,8 @@ export function loadTelLib(): Promise<any> {
       return resolve(libphonenumber);
     }
     const element: any = document.createElement('script');
-    element.src = 'https://cdnjs.cloudflare.com/ajax/libs/libphonenumber-js/1.10.28/libphonenumber-js.min.js';
+    element.src = 'https://cdnjs.cloudflare.com/ajax/libs/libphonenumber-js/1.10.43/libphonenumber-js.min.js';
+    //element.src = '/assets/libs/libphonenumber-js.min.js';
     element.type = 'text/javascript';
     element.addEventListener('load', () => resolve(libphonenumber));
     element.addEventListener('error', () => reject());
@@ -1477,12 +1470,13 @@ export function loadMapLib(): Promise<any> {
     if (typeof google === 'object' && typeof google.maps === 'object') {
       return resolve(google.maps);
     }
-    const element: any = document.createElement('script');
-    element.src = 'https://maps.googleapis.com/maps/api/js?key=' + 'AIzaSyAHirNhGiN8ueynTCX-ki2RAI1wSRZM5no' + '&callback=Function.prototype';
-    element.type = 'text/javascript';
-    element.addEventListener('load', () => resolve(google.maps));
-    element.addEventListener('error', () => reject());
-    document.body.append(element);
+    //const element: any = document.createElement('script');
+    //element.src = 'https://maps.googleapis.com/maps/api/js?key=' + 'AIzaSyAHirNhGiN8ueynTCX-ki2RAI1wSRZM5no' + '&callback=Function.prototype';
+    //element.type = 'text/javascript';
+    //element.addEventListener('load', () => resolve(google.maps));
+    //element.addEventListener('error', () => reject());
+    //document.body.append(element);
+    return {};
   });
 }
 

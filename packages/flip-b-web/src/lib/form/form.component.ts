@@ -32,21 +32,17 @@ export class FormComponent implements OnInit {
   async ngOnInit(): Promise<any> {
     if (typeof this.form === 'undefined') {
       const snap: any = await this.data.page.snap();
-      this.form = {};
-      this.form.name = snap.data.name || undefined;
-      this.form.type = snap.data.type || undefined;
-      this.form.rest = snap.data.rest || undefined;
-      this.form.meta = snap.data.meta || undefined;
-      this.form.body = snap.data.body || undefined;
-      this.form.data = snap.data.data || {...snap.params, ...snap.queryParams, ...history.state};
-      this.form.load = snap.data.load || undefined;
+      this.form = {...snap.data};
+      this.form.data = this.form.data || {...snap.params, ...snap.queryParams, ...history.state};
     }
 
-    // Define form from load function
-    if (typeof this.form.load === 'function') {
-      this.form = {...this.form, ...(await this.form.load())};
-    }
-
+    //// Define form from load function
+    //if (typeof this.form.load === 'function') {
+    //  this.form = {...this.form, ...(await this.form.load())};
+    //} else if (typeof this.form.load === 'object') {
+    //  this.form = {...this.form, ...this.form.load};
+    //}
+    //
     // Define form
     window.form = setForm({form: this.form, self: this});
   }
@@ -65,7 +61,7 @@ export class FormComponent implements OnInit {
 
 /***********************************************************************************************************************
  *** Events
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 const events: any = {};
 events['form.onStart'] = formStart;
@@ -77,7 +73,7 @@ events['item.onInput'] = itemInput;
 
 /***********************************************************************************************************************
  *** Form Start
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function formStart({form, $event}: any): Promise<any> {
   try {
@@ -151,7 +147,7 @@ async function formStart({form, $event}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Setup
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemSetup({form, item, $event}: any): Promise<any> {
   try {
@@ -168,12 +164,13 @@ async function itemSetup({form, item, $event}: any): Promise<any> {
     }
   } catch (error: any) {
     await form.page.warning({message: item.path, value: form.body, error});
+    console.error('itemSetup', item, error);
   }
 }
 
 /***********************************************************************************************************************
  *** Item Click
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemClick({form, item, $event}: any): Promise<any> {
   try {
@@ -189,12 +186,13 @@ async function itemClick({form, item, $event}: any): Promise<any> {
     }
   } catch (error: any) {
     await form.page.warning({message: item.path, value: form.body, error});
+    console.error('itemClick', item, error);
   }
 }
 
 /***********************************************************************************************************************
  *** Item Enter
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemEnter({form, item, $event}: any): Promise<any> {
   try {
@@ -207,12 +205,13 @@ async function itemEnter({form, item, $event}: any): Promise<any> {
     }
   } catch (error: any) {
     await form.page.warning({message: item.path, value: form.body, error});
+    console.error('itemEnter', item, error);
   }
 }
 
 /***********************************************************************************************************************
  *** Item Leave
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemLeave({form, item, $event}: any): Promise<any> {
   try {
@@ -225,12 +224,13 @@ async function itemLeave({form, item, $event}: any): Promise<any> {
     }
   } catch (error: any) {
     await form.page.warning({message: item.path, value: form.body, error});
+    console.error('itemLeave', item, error);
   }
 }
 
 /***********************************************************************************************************************
  *** Item Input
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemInput({form, item, $event}: any): Promise<any> {
   try {
@@ -243,12 +243,13 @@ async function itemInput({form, item, $event}: any): Promise<any> {
     }
   } catch (error: any) {
     await form.page.warning({message: item.path, value: form.body, error});
+    console.error('itemInput', item, error);
   }
 }
 
 /***********************************************************************************************************************
  *** Item Search Action
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemSearchActionInput({form, item}: any): Promise<any> {
   try {
@@ -266,7 +267,7 @@ async function itemSearchActionInput({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Select Values
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemSelectValuesClick({form, item}: any): Promise<any> {
   try {
@@ -292,7 +293,7 @@ async function itemSelectValuesClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Filter Button
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemFilterButtonClick({form, item}: any): Promise<any> {
   try {
@@ -305,7 +306,7 @@ async function itemFilterButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Create Button
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemCreateButtonClick({form, item}: any): Promise<any> {
   try {
@@ -328,7 +329,7 @@ async function itemCreateButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Delete Button
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemDeleteButtonClick({form, item}: any): Promise<any> {
   try {
@@ -354,7 +355,7 @@ async function itemDeleteButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Cancel Button
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemCancelButtonClick({form, item}: any): Promise<any> {
   try {
@@ -373,7 +374,7 @@ async function itemCancelButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Submit Button
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemSubmitButtonClick({form, item}: any): Promise<any> {
   try {
@@ -407,7 +408,7 @@ async function itemSubmitButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Download Button
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemDownloadButtonClick({form, item}: any): Promise<any> {
   try {
@@ -422,7 +423,7 @@ async function itemDownloadButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Print Button
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemPrintButtonClick({form, item}: any): Promise<any> {
   try {
@@ -437,7 +438,7 @@ async function itemPrintButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Share Button
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemShareButtonClick({form, item}: any): Promise<any> {
   try {
@@ -452,7 +453,7 @@ async function itemShareButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Item Sendmail Button
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 async function itemSendmailButtonClick({form, item}: any): Promise<any> {
   try {
@@ -471,7 +472,7 @@ async function itemSendmailButtonClick({form, item}: any): Promise<any> {
 
 /***********************************************************************************************************************
  *** Set form
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function setForm({form, self}: any): any {
   const copy: any = {...form};
@@ -584,8 +585,12 @@ function setForm({form, self}: any): any {
   // Define events
   // @param {Funtion}
   for (const e in copy) {
-    if (typeof copy[e] === 'function' && e.match(/^on[A-Z][A-Za-z]+/)) {
-      form[e] = copy[e];
+    if (e?.match(/^on[A-Z][A-Za-z]+/)) {
+      if (typeof copy[e] === 'function') {
+        form[e] = copy[e];
+      } else if (typeof copy[e] === 'string') {
+        form[e] = new Function('{form, item}', `return (${copy[e]});`);
+      }
     }
   }
 
@@ -681,7 +686,7 @@ function setForm({form, self}: any): any {
     if (!form.self.modal) {
       form.header.push({name: 'header', type: 'button', class: {circle: true, 'ion-hide-lg-up': true}});
     } else {
-      form.header.push({name: 'cancel', type: 'button', class: {circle: true}});
+      form.header.push({name: 'cancel', type: 'button', icon: 'close-circle', class: {circle: true}});
     }
   }
 
@@ -695,12 +700,12 @@ function setForm({form, self}: any): any {
   }
 
   // Define button: filter
-  if (form.type === 'search' && form.uses.includes('filter')) {
+  if (form.type === 'search' && form.uses.includes('search') && form.filter.length) {
     form.navbar.push({name: 'filter', type: 'button', class: {circle: true}});
   }
 
   // Define expand: expand
-  if (form.type === 'search') {
+  if (form.type === 'search' && form.uses.includes('create')) {
     form.navbar.push({name: 'expand', type: 'expand'});
   }
 
@@ -710,7 +715,7 @@ function setForm({form, self}: any): any {
   }
 
   // Define fields
-  if (form.type === 'search' && form.filter.length) {
+  if (form.type === 'search' && form.uses.includes('search') && form.filter.length) {
     for (const item of form.filter) {
       item.onInput = () => form.self.trigger('form.onStart');
     }
@@ -721,22 +726,22 @@ function setForm({form, self}: any): any {
   //
 
   // Define button: download
-  if (form.type === 'update' && form.uses.includes('download')) {
+  if (form.type === 'update' && form.uses.includes('shares')) {
     form.navbar.push({name: 'download', type: 'button', class: {circle: true}});
   }
 
   // Define button: print
-  if (form.type === 'update' && form.uses.includes('print') && typeof navigator.share === 'undefined') {
+  if (form.type === 'update' && form.uses.includes('shares') && typeof navigator.share === 'undefined') {
     form.navbar.push({name: 'print', type: 'button', class: {circle: true}});
   }
 
   // Define button: share
-  if (form.type === 'update' && form.uses.includes('share') && typeof navigator.share !== 'undefined') {
+  if (form.type === 'update' && form.uses.includes('shares') && typeof navigator.share !== 'undefined') {
     form.navbar.push({name: 'share', type: 'button', class: {circle: true}});
   }
 
   // Define button: sendmail
-  if (form.type === 'update' && form.uses.includes('sendmail')) {
+  if (form.type === 'update' && form.uses.includes('shares')) {
     form.navbar.push({name: 'sendmail', type: 'button', class: {circle: true}});
   }
 
@@ -807,7 +812,7 @@ function setForm({form, self}: any): any {
 
 /***********************************************************************************************************************
  *** Set Item
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function setItem({form, item}: any): any {
   const copy: any = {...item};
@@ -904,8 +909,13 @@ function setItem({form, item}: any): any {
   // Define events
   // @param {Funtion}
   for (const e in copy) {
-    if (typeof copy[e] === 'function' && e.match(/^on[A-Z][A-Za-z]+/)) {
-      item[e] = copy[e];
+    if (e?.match(/^on[A-Z][A-Za-z]+/)) {
+      if (typeof copy[e] === 'function') {
+        item[e] = copy[e];
+      } else if (typeof copy[e] === 'string') {
+        item[e] = new Function('{form, item}', `return (${copy[e]});`);
+        //item[e] = new Function('{form, item}', copy[e]);
+      }
     }
   }
 
@@ -1135,7 +1145,7 @@ function setItem({form, item}: any): any {
 
 /***********************************************************************************************************************
  *** Set Item Value
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function setItemValue({form, item, $event, action, value}: any): any {
   if (action === 'setup') {
@@ -1264,19 +1274,24 @@ function setItemValue({form, item, $event, action, value}: any): any {
     if (typeof item.data.populate === 'undefined' && !item.data.editable) {
       item.data.populate = false;
     }
-    if (!item.data.values && window.formValues[`${item.path}`]) {
-      item.data.values = window.formValues[`${item.path}`];
+    //if (!item.data.values && window.formValues[`${item.path}`]) {
+    //  item.data.values = window.formValues[`${item.path}`];
+    //}
+    if (!item.data.values) {
+      console.log('x', item.name, item.data)
+
+      item.data.values = form.i18n.text(`${item.path}.$content-items`, undefined, true) || undefined;
     }
     if (!item.data.values && item.data.populate) {
       item.data.values = [];
-      form.http
-        .request({lookup: form.rest, data: {index: item.name}})
-        .then((values: any) => {
-          window.formValues[`${item.path}`] = values;
-          item.data.values = values;
-          setValue();
-        })
-        .catch(console.warn);
+      //form.http
+      //  .request({lookup: form.rest, data: {index: item.name}})
+      //  .then((values: any) => {
+      //    window.formValues[`${item.path}`] = values;
+      //    item.data.values = values;
+      //    setValue();
+      //  })
+      //  .catch(console.warn);
     }
     function setValue() {
       if (typeof value === 'object' && value._id && value.name) {
@@ -1390,24 +1405,19 @@ function setItemValue({form, item, $event, action, value}: any): any {
     if (item.$ctrl.popover) {
       item.$ctrl.popoverOpen = !item.$ctrl.popoverOpen;
     }
-
     if (item.type === 'website' && item.$ctrl.currentValue && item.$ctrl.currentValid) {
       window.open(`${item.$ctrl.currentValue}`, '_system');
     }
-
     if (item.type === 'phone' && item.$ctrl.currentValue && item.$ctrl.currentValid) {
       window.open(`https://wa.me/${item.$ctrl.currentValue}`, '_system');
     }
-
     if (item.type === 'email' && item.$ctrl.currentValue && item.$ctrl.currentValid) {
       window.open(`mailto://${item.$ctrl.currentValue}`, '_system');
     }
-
     if (item.type === 'username') {
       item.$ctrl.triggerImage = item.$ctrl.contentInput === 'text' ? 'eye' : 'person';
       item.$ctrl.contentInput = item.$ctrl.contentInput === 'text' ? 'password' : 'text';
     }
-
     if (item.type === 'password') {
       item.$ctrl.triggerImage = item.$ctrl.contentInput === 'text' ? 'eye' : 'eye-off';
       item.$ctrl.contentInput = item.$ctrl.contentInput === 'text' ? 'password' : 'text';
@@ -1428,7 +1438,7 @@ function setItemValue({form, item, $event, action, value}: any): any {
 
 /***********************************************************************************************************************
  *** Set Body Value
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function setBodyValue(form: any, group: any[] = [], value: any = undefined): any {
   const result: any = {};
@@ -1447,7 +1457,7 @@ function setBodyValue(form: any, group: any[] = [], value: any = undefined): any
 
 /***********************************************************************************************************************
  *** Set Slot Value
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function setSlotValue(form: any, value: any = {}): any {
   const flatMap = (items: any, str = '', fresh: any = {}, path = '') => {
@@ -1539,8 +1549,8 @@ function setSlotValue(form: any, value: any = {}): any {
     if (typeof value === 'object') {
       value = form.i18n.objectInput(value, {type: item.type});
     }
-    if (value) {
-      label.push(value);
+    if (value && item.title && item.value) {
+      label.push(`<span class="notes"><span class="title">${item.title}: </span><span class="value">${value}</span></span>`);
     }
   }
   result.label = label.join(', ');
@@ -1558,16 +1568,11 @@ function setSlotValue(form: any, value: any = {}): any {
     if (typeof value === 'object') {
       value = form.i18n.objectInput(value, {type: item.type});
     }
-    if (value) {
-      let block = '';
-      block += `<div class="notes">`;
-      block += item.title ? `<span class="field ion-hide-lg-down">${item.title}: </span>` : '';
-      block += item.value ? `<span class="value">${value}</span>` : '';
-      block += `</div>`;
-      notes.push(block);
+    if (value && item.title && item.value) {
+      notes.push(`<span class="notes"><span class="title">${item.title}: </span><span class="value">${value}</span></span>`);
     }
   }
-  result.notes = notes.join('');
+  result.notes = notes.join(', ');
 
   // Define image
   const image: any = [];
@@ -1594,7 +1599,7 @@ function setSlotValue(form: any, value: any = {}): any {
 
 /***********************************************************************************************************************
  *** Get Colorize Popover
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function getColorizePopover(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -1645,7 +1650,7 @@ function getColorizePopover(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Get Datetime Popover
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function getDatetimePopover(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -1689,7 +1694,7 @@ function getDatetimePopover(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Get Document Popover
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function getDocumentPopover(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -1781,7 +1786,7 @@ function getDocumentPopover(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Get Location Popover
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function getLocationPopover(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -1838,7 +1843,7 @@ function getLocationPopover(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Get Selector Popover
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function getSelectorPopover(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -1872,7 +1877,7 @@ function getSelectorPopover(form: any, item: any, $el: any): any {
   // Define content fetch
   const contentFetch: any = async () => {
     if (!item.data.values) {
-      item.data.values = await form.http.request({lookup: form.rest, data: {index: item.name}});
+      item.data.values = await form.http.request({select: form.rest, data: {index: 'lookup'}, qs: {fields: item.path.replace(/\.\$[^.]+/g, '').trim()}});
     }
 
     let values: any = [...(item.data.values || [])];
@@ -1918,7 +1923,7 @@ function getSelectorPopover(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Get Textarea Control
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function getTextareaControl(form: any, item: any, $el: any): any {
   if ($el.loaded) {
@@ -2019,7 +2024,7 @@ function getTextareaControl(form: any, item: any, $el: any): any {
 
 /***********************************************************************************************************************
  *** Utils
- ********************************************************************************************************************/
+ **********************************************************************************************************************/
 
 function isIcon(image: string): boolean {
   return !!(image || 'default').match(/^[a-z-]+$/);

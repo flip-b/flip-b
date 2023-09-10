@@ -7,6 +7,8 @@ import path from 'path';
 import dotenv from 'dotenv';
 import {camelCase, paramCase} from 'change-case';
 
+import mongoose from 'mongoose';
+
 import Bull from 'bull';
 import {Server as SocketIo} from 'socket.io';
 import {createAdapter as socketIoAdapter} from '@socket.io/redis-adapter';
@@ -14,85 +16,22 @@ import {Redis} from 'ioredis';
 
 import {Plugin} from './plugin';
 
-/**
- * Bot
- */
 export class Bot {
-  // Definitions
-
-  /**
-   * Config
-   */
   config: any = {};
-
-  /**
-   * Helper
-   */
   helper: any = {};
-
-  /**
-   * Database
-   */
+  plugin: any = {};
   database: any;
-
-  /**
-   * Controllers
-   */
   controllers: any = {};
-
-  /**
-   * Models
-   */
   models: any = {};
-
-  /**
-   * Routes
-   */
   routes: any = {};
-
-  /**
-   * Router
-   */
   router: any;
-
-  /**
-   * Server
-   */
   server: any;
-
-  /**
-   * Worker
-   */
   worker: any;
-
-  /**
-   * Queues
-   */
   queues: any;
-
-  /**
-   * Memory
-   */
   memory: any;
-
-  /**
-   * Pub
-   */
   pub: any;
-
-  /**
-   * Sub
-   */
   sub: any;
-
-  /**
-   * Socket
-   */
   socket: any;
-
-  /**
-   * Plugins
-   */
   plugins: {[key: string]: Plugin} = {};
 
   /**
@@ -148,12 +87,11 @@ export class Bot {
   }
 
   /**
-   * Initialize config
+   * Initialize Config
    */
   private async initializeConfig(): Promise<any> {
     try {
-      console.info(`> initializing config`);
-      for (const f of await this.getFiles(path.resolve(`${this.config.src}/config`))) {
+      for (const f of await this.getFiles(`${this.config.src}/config`)) {
         this.config = {...this.config, ...f.call.default};
       }
     } catch (error: any) {
@@ -162,11 +100,10 @@ export class Bot {
   }
 
   /**
-   * Initialize helper
+   * Initialize Helper
    */
   private async initializeHelper(): Promise<any> {
     try {
-      console.info(`> initializing helper`);
       for (const i of await this.getItems()) {
         this.helper[`${i.name}`] = i.call.default || i.call;
       }
@@ -176,24 +113,22 @@ export class Bot {
   }
 
   /**
-   * Initialize database
+   * Initialize Database
    */
   private async initializeDatabase(): Promise<any> {
     try {
-      console.info(`> initializing database`);
-      this.database = await this.helper.mongoose.connect(`${this.config.mongo.url}`, this.config.mongo.options);
+      this.database = await mongoose.connect(`${this.config.mongo.url}`, this.config.mongo.options);
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the database module. ${error}`);
     }
   }
 
   /**
-   * Initialize controllers
+   * Initialize Controllers
    */
   private async initializeControllers(): Promise<any> {
     try {
-      console.info(`> initializing controllers`);
-      for (const f of await this.getFiles(path.resolve(`${this.config.src}/controllers`))) {
+      for (const f of await this.getFiles(`${this.config.src}/controllers`)) {
         this.controllers[`${f.name}`] = f.call.default(this);
       }
     } catch (error: any) {
@@ -202,12 +137,11 @@ export class Bot {
   }
 
   /**
-   * Initialize models
+   * Initialize Models
    */
   private async initializeModels(): Promise<any> {
     try {
-      console.info(`> initializing models`);
-      for (const f of await this.getFiles(path.resolve(`${this.config.src}/models`))) {
+      for (const f of await this.getFiles(`${this.config.src}/models`)) {
         this.models[`${f.name}`] = f.call.default(this);
       }
     } catch (error: any) {
@@ -216,12 +150,11 @@ export class Bot {
   }
 
   /**
-   * Initialize routes
+   * Initialize Routes
    */
   private async initializeRoutes(): Promise<any> {
     try {
-      console.info(`> initializing routes`);
-      for (const f of await this.getFiles(path.resolve(`${this.config.src}/routes`))) {
+      for (const f of await this.getFiles(`${this.config.src}/routes`)) {
         this.routes[`${f.name}`] = f.call.default(this);
       }
     } catch (error: any) {
@@ -234,7 +167,6 @@ export class Bot {
    */
   private async initializeServer(): Promise<any> {
     try {
-      console.info(`> initializing server`);
       this.router = express();
       this.server = http.createServer(this.router);
       this.router.set('trust proxy', true);
@@ -252,59 +184,64 @@ export class Bot {
   }
 
   /**
-   * Initialize queues
+   * Initialize Worker
    */
   private async initializeWorker(): Promise<any> {
     try {
-      console.info(`> initializing worker`);
       this.worker = {};
-      this.worker.queue = new Bull('worker', `${this.config.redis.url}`, {prefix: `${this.config.app}`});
-      this.worker.queue.on('failed', (job: any) => job.remove());
-      this.worker.queue.on('completed', (job: any) => job.remove());
-      this.worker.queue.process('default', 1, async (job: any, done: any) => {
-        for (const event of this.worker.event) {
-          await event.callback(job).catch(console.error);
+      this.worker.events = [];
+      this.worker.object = new Bull('worker', `${this.config.redis.url}`, {prefix: `${this.config.app}`});
+      this.worker.object.on('failed', (job: any) => job.remove());
+      this.worker.object.on('completed', (job: any) => job.remove());
+      this.worker.object.process('default', 1, async (job: any, done: any) => {
+        for (const event of this.worker.events) {
+          await event(job).catch(console.error);
         }
         done();
       });
-      this.worker.event = [];
-      this.worker.register = (callback: any) => this.worker.event.push({callback});
-      this.worker.pushJob = async (messages: any): Promise<any> => await this.worker.add('default', {messages}, {jobId: 'default'});
+      this.worker.register = (callback: any) => {
+        this.worker.events.push(callback);
+      };
+      this.worker.pushJob = async (messages: any): Promise<any> => {
+        await this.worker.object.add('default', {messages}, {jobId: 'default'});
+      };
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the worker module. ${error}`);
     }
   }
 
   /**
-   * Initialize queues
+   * Initialize Queues
    */
   private async initializeQueues(): Promise<any> {
     try {
-      console.info(`> initializing queues`);
       this.queues = {};
-      this.queues.queue = new Bull('queues', `${this.config.redis.url}`, {prefix: `${this.config.app}`});
-      this.queues.queue.on('failed', (job: any) => job.remove());
-      this.queues.queue.on('completed', (job: any) => job.remove());
-      this.queues.queue.process('default', 1, async (job: any, done: any) => {
-        for (const event of this.queues.event) {
+      this.queues.events = [];
+      this.queues.object = new Bull('queues', `${this.config.redis.url}`, {prefix: `${this.config.app}`});
+      this.queues.object.on('failed', (job: any) => job.remove());
+      this.queues.object.on('completed', (job: any) => job.remove());
+      this.queues.object.process('default', 1, async (job: any, done: any) => {
+        for (const event of this.queues.events) {
           await event.callback(job).catch(console.error);
         }
         done();
       });
-      this.queues.event = [];
-      this.queues.register = (callback: any) => this.queues.event.push({callback});
-      this.queues.pushJob = async (messages: any): Promise<any> => await this.queues.queue.add('default', {messages});
+      this.queues.register = (callback: any) => {
+        this.queues.events.push(callback);
+      };
+      this.queues.pushJob = async (messages: any): Promise<any> => {
+        await this.queues.object.add('default', {messages});
+      };
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the queues module. ${error}`);
     }
   }
 
   /**
-   * Initialize memory
+   * Initialize Memory
    */
   private async initializeMemory(): Promise<any> {
     try {
-      console.info(`> initializing memory`);
       this.memory = new Redis(`${this.config.redis.url}`);
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the memory module. ${error}`);
@@ -312,11 +249,10 @@ export class Bot {
   }
 
   /**
-   * Initialize pub
+   * Initialize Pub
    */
   private async initializePub(): Promise<any> {
     try {
-      console.info(`> initializing pub`);
       this.pub = new Redis(`${this.config.redis.url}`);
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the pub module. ${error}`);
@@ -324,11 +260,10 @@ export class Bot {
   }
 
   /**
-   * Initialize sub
+   * Initialize Sub
    */
   private async initializeSub(): Promise<any> {
     try {
-      console.info(`> initializing sub`);
       this.sub = new Redis(`${this.config.redis.url}`);
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the sub module. ${error}`);
@@ -336,11 +271,10 @@ export class Bot {
   }
 
   /**
-   * Initialize socket
+   * Initialize Socket
    */
   private async initializeSocket(): Promise<any> {
     try {
-      console.info(`> initializing socket`);
       this.socket = new SocketIo(this.server, {path: `${this.config.socket.path}`, transports: ['websocket', 'polling']});
       this.socket.adapter(socketIoAdapter(this.pub, this.sub));
     } catch (error: any) {
@@ -349,11 +283,10 @@ export class Bot {
   }
 
   /**
-   * Initialize system
+   * Initialize System
    */
   private async initializeSystem(): Promise<any> {
     try {
-      console.info(`> initializing system`);
       if (this.config.use?.length) {
         for (const callback of this.config.use) {
           const name = camelCase(`${callback.name}`).replace(/Plugin$/, '');
@@ -367,7 +300,7 @@ export class Bot {
   }
 
   /**
-   * Get items
+   * Get Items
    */
   private async getItems(): Promise<any[]> {
     const values: any = [
@@ -402,7 +335,7 @@ export class Bot {
   }
 
   /**
-   * Get files
+   * Get Files
    */
   private async getFiles(base: string): Promise<any[]> {
     if (!fs.existsSync(base)) {
@@ -462,11 +395,11 @@ export class Bot {
 
     // Verify worker
     const check = async () => {
-      const job = await this.worker.queue.getJob('default');
+      const job = await this.worker.object.getJob('default');
       if (!job) {
         const c = parseInt((await this.memory.get(`${this.config.app}:worker-check`)) || 0) + 1;
         await this.memory.set(`${this.config.app}:worker-check`, `${c}`);
-        await this.worker.queue.add('default', {check: `${c}`}, {jobId: 'default'});
+        await this.worker.object.add('default', {check: `${c}`}, {jobId: 'default'});
       }
       await this.sleep(1000);
       check();
@@ -536,15 +469,6 @@ export class Bot {
    */
   async sleep(time: number): Promise<any> {
     return await new Promise((resolve) => setTimeout(resolve, time));
-  }
-
-  /**
-   * Debug
-   */
-  async debug(...args: any): Promise<any> {
-    if (this.config.env === 'development') {
-      console.info(...args);
-    }
   }
 }
 

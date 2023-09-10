@@ -2,10 +2,6 @@ import {App} from './app';
 
 export abstract class Route {
   app: App;
-
-  /**
-   * Routes
-   */
   abstract routes: Routes;
 
   /**
@@ -16,7 +12,7 @@ export abstract class Route {
   }
 
   /**
-   * Get Self
+   * Self
    */
   get self(): any {
     return this;

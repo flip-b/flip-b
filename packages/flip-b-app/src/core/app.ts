@@ -7,10 +7,15 @@ import path from 'path';
 import dotenv from 'dotenv';
 import {camelCase} from 'change-case';
 
+import mongoose from 'mongoose';
+
 import Bull from 'bull';
 import {Server as SocketIo} from 'socket.io';
 import {createAdapter as socketIoAdapter} from '@socket.io/redis-adapter';
 import {Redis} from 'ioredis';
+
+import yargs from 'yargs';
+import {hideBin} from 'yargs/helpers';
 
 import errorHandler from './middleware/error-handler';
 import filesHandler from './middleware/files-handler';
@@ -18,98 +23,27 @@ import mountHandler from './middleware/mount-handler';
 import routeHandler from './middleware/route-handler';
 
 export class App {
-  // Definitions
-
-  /**
-   * Config
-   */
   config: any = {};
-
-  /**
-   * Helper
-   */
   helper: any = {};
-
-  /**
-   * Plugin
-   */
   plugin: any = {};
-
-  /**
-   * Database
-   */
   database: any;
-
-  /**
-   * Controllers
-   */
   controllers: any = {};
-
-  /**
-   * Models
-   */
   models: any = {};
-
-  /**
-   * Routes
-   */
   routes: any = {};
-
-  /**
-   * Tasks
-   */
-  tasks: any = {};
-
-  /**
-   * Tests
-   */
-  tests: any = {};
-
-  /**
-   * Router
-   */
   router: any;
-
-  /**
-   * Server
-   */
   server: any;
-
-  /**
-   * Worker
-   */
   worker: any;
-
-  /**
-   * Queues
-   */
   queues: any;
-
-  /**
-   * Memory
-   */
   memory: any;
-
-  /**
-   * Pub
-   */
   pub: any;
-
-  /**
-   * Sub
-   */
   sub: any;
-
-  /**
-   * Socket
-   */
   socket: any;
 
   /**
    * Constructor
    */
   constructor(config: any = {}) {
-    const folder = path.dirname((require.main || {}).filename || './src/index.ts');
+    const folder: any = path.dirname((require.main || {}).filename || './src/index.ts');
     dotenv.config();
 
     // Define global options
@@ -136,10 +70,10 @@ export class App {
     this.config.router.cors = this.config.router.cors || {};
     this.config.router.json = this.config.router.json || {};
     this.config.router.urlencoded = this.config.router.urlencoded || {extended: true};
-    this.config.router.route = this.config.router.route || {path: '/api'};
-    this.config.router.files = this.config.router.files || {path: ''};
-    this.config.router.mount = this.config.router.mount || {path: ''};
-    this.config.router.error = this.config.router.error || {path: ''};
+    this.config.router.route = this.config.router.route || undefined;
+    this.config.router.files = this.config.router.files || undefined;
+    this.config.router.mount = this.config.router.mount || undefined;
+    this.config.router.error = this.config.router.error || undefined;
 
     // Define mongo options
     this.config.mongo = this.config.mongo || {};
@@ -162,8 +96,7 @@ export class App {
    */
   private async initializeConfig(): Promise<any> {
     try {
-      console.info(`> initializing config`);
-      for (const f of await this.getFiles(path.resolve(`${this.config.src}/config`))) {
+      for (const f of await this.getFiles(`${this.config.src}/config`)) {
         this.config = {...this.config, ...f.call.default};
       }
     } catch (error: any) {
@@ -172,26 +105,11 @@ export class App {
   }
 
   /**
-   * Initialize Helper
-   */
-  private async initializeHelper(): Promise<any> {
-    try {
-      console.info(`> initializing helper`);
-      for (const i of await this.getItems()) {
-        this.helper[`${i.name}`] = i.call.default || i.call;
-      }
-    } catch (error: any) {
-      console.warn(`> a critical error occurred while initializing the helper module. ${error}`);
-    }
-  }
-
-  /**
    * Initialize Database
    */
   private async initializeDatabase(): Promise<any> {
     try {
-      console.info(`> initializing database`);
-      this.database = await this.helper.mongoose.connect(`${this.config.mongo.url}`, this.config.mongo.options);
+      this.database = await mongoose.connect(`${this.config.mongo.url}`, this.config.mongo.options);
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the database module. ${error}`);
     }
@@ -202,8 +120,7 @@ export class App {
    */
   private async initializeControllers(): Promise<any> {
     try {
-      console.info(`> initializing controllers`);
-      for (const f of await this.getFiles(path.resolve(`${this.config.src}/controllers`))) {
+      for (const f of await this.getFiles(`${this.config.src}/controllers`)) {
         this.controllers[`${f.name}`] = new f.call.default(this).self;
       }
     } catch (error: any) {
@@ -216,8 +133,7 @@ export class App {
    */
   private async initializeModels(): Promise<any> {
     try {
-      console.info(`> initializing models`);
-      for (const f of await this.getFiles(path.resolve(`${this.config.src}/models`))) {
+      for (const f of await this.getFiles(`${this.config.src}/models`)) {
         this.models[`${f.name}`] = new f.call.default(this).self;
       }
     } catch (error: any) {
@@ -230,8 +146,7 @@ export class App {
    */
   private async initializeRoutes(): Promise<any> {
     try {
-      console.info(`> initializing routes`);
-      for (const f of await this.getFiles(path.resolve(`${this.config.src}/routes`))) {
+      for (const f of await this.getFiles(`${this.config.src}/routes`)) {
         this.routes[`${f.name}`] = new f.call.default(this).self;
       }
     } catch (error: any) {
@@ -240,43 +155,14 @@ export class App {
   }
 
   /**
-   * Initialize Tasks
-   */
-  private async initializeTasks(): Promise<any> {
-    try {
-      console.info(`> initializing tasks`);
-      for (const f of await this.getFiles(path.resolve(`${this.config.src}/tasks`))) {
-        this.tasks[`${f.name}`] = new f.call.default(this).self;
-      }
-    } catch (error: any) {
-      console.warn(`> a critical error occurred while initializing the tasks module. ${error}`);
-    }
-  }
-
-  /**
-   * Initialize Tests
-   */
-  private async initializeTests(): Promise<any> {
-    try {
-      console.info(`> initializing tests`);
-      for (const f of await this.getFiles(path.resolve(`${this.config.src}/tests`))) {
-        this.tests[`${f.name}`] = new f.call.default(this).self;
-      }
-    } catch (error: any) {
-      console.warn(`> a critical error occurred while initializing the tests module. ${error}`);
-    }
-  }
-
-  /**
    * Initialize Server
    */
   private async initializeServer(): Promise<any> {
     try {
-      console.info(`> initializing server`);
       this.router = express();
       this.server = http.createServer(this.router);
       this.router.set('trust proxy', true);
-      this.router.set('views', `${this.config.var}/views`);
+      this.router.set('views', `${this.config.var}/app/views`);
       this.router.set('view engine', 'ejs');
       this.router.set('etag', false);
       this.router.set('x-powered-by', false);
@@ -290,41 +176,66 @@ export class App {
   }
 
   /**
-   * Initialize Queues
+   * Initialize Worker
    */
   private async initializeWorker(): Promise<any> {
     try {
-      console.info(`> initializing worker`);
       this.worker = {};
-      this.worker.queue = new Bull('worker', `${this.config.redis.url}`, {prefix: `${this.config.app}`});
-      this.worker.queue.on('failed', (job: any) => job.remove());
-      this.worker.queue.on('completed', (job: any) => job.remove());
+      this.worker.events = {};
+      this.worker.object = new Bull('worker', `${this.config.redis.url}`, {prefix: `${this.config.app}`});
+      this.worker.object.on('failed', (job: any) => job.remove());
+      this.worker.object.on('completed', (job: any) => job.remove());
+      this.worker.object.process('default', 1, async (job: any, done: any) => {
+        await this.worker.events[job.data.name](job).catch(console.error);
+        done();
+      });
+      this.worker.add = async (name: string, call: any) => {
+        this.worker.events[name] = call;
+        this.worker.job(name);
+      };
+      this.worker.job = async (name: any) => {
+        const job = await this.worker.object.getJob(name);
+        if (!job) {
+          this.worker.object.add('default', {name}, {jobId: name});
+        }
+        await this.sleep(5000);
+        this.worker.job(name);
+      };
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the worker module. ${error}`);
     }
   }
 
   /**
-   * Initialize queues
+   * Initialize Queues
    */
   private async initializeQueues(): Promise<any> {
     try {
-      console.info(`> initializing queues`);
       this.queues = {};
-      this.queues.queue = new Bull('queues', `${this.config.redis.url}`, {prefix: `${this.config.app}`});
-      this.queues.queue.on('failed', (job: any) => job.remove());
-      this.queues.queue.on('completed', (job: any) => job.remove());
+      this.queues.events = {};
+      this.queues.object = new Bull('queues', `${this.config.redis.url}`, {prefix: `${this.config.app}`});
+      this.queues.object.on('failed', (job: any) => job.remove());
+      this.queues.object.on('completed', (job: any) => job.remove());
+      this.queues.object.process('default', 1, async (job: any, done: any) => {
+        await this.worker.events[job.data.name](job).catch(console.error);
+        done();
+      });
+      this.queues.add = async (name: string, call: any) => {
+        this.worker.events[name] = call;
+      };
+      this.queues.job = async (name: string, data: any) => {
+        await this.queues.object.add('default', {name, data});
+      };
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the queues module. ${error}`);
     }
   }
 
   /**
-   * Initialize memory
+   * Initialize Memory
    */
   private async initializeMemory(): Promise<any> {
     try {
-      console.info(`> initializing memory`);
       this.memory = new Redis(`${this.config.redis.url}`);
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the memory module. ${error}`);
@@ -332,11 +243,10 @@ export class App {
   }
 
   /**
-   * Initialize pub
+   * Initialize Pub
    */
   private async initializePub(): Promise<any> {
     try {
-      console.info(`> initializing pub`);
       this.pub = new Redis(`${this.config.redis.url}`);
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the pub module. ${error}`);
@@ -344,11 +254,10 @@ export class App {
   }
 
   /**
-   * Initialize sub
+   * Initialize Sub
    */
   private async initializeSub(): Promise<any> {
     try {
-      console.info(`> initializing sub`);
       this.sub = new Redis(`${this.config.redis.url}`);
     } catch (error: any) {
       console.warn(`> a critical error occurred while initializing the sub module. ${error}`);
@@ -356,11 +265,10 @@ export class App {
   }
 
   /**
-   * Initialize socket
+   * Initialize Socket
    */
   private async initializeSocket(): Promise<any> {
     try {
-      console.info(`> initializing socket`);
       this.socket = new SocketIo(this.server, {path: `${this.config.socket.path}`, transports: ['websocket', 'polling']});
       this.socket.adapter(socketIoAdapter(this.pub, this.sub));
     } catch (error: any) {
@@ -369,93 +277,67 @@ export class App {
   }
 
   /**
-   * Run task
+   * Run
    */
-  private async runTask(args: string[]): Promise<any> {
+  async run(...a: any[]): Promise<any> {
     try {
-      const module = camelCase(args.shift() || '');
-      const method = camelCase(args.shift() || '');
-      const params: any = {...this.helper.yargs(args).argv};
-      params.auth = {};
-      params.body = {};
-      params.info = {name: module, type: method};
-      delete params['_'];
-      delete params['$0'];
-
-      console.info(`> initializing task ${module}.${method}`);
-      const result: any = await this.tasks[`${module}`][`${method}`](params);
-      if (result) {
-        console.info(result);
+      let args: any;
+      if (typeof a[0] === 'string') {
+        args = {name: a[0], type: a[1], ...(a[2] || {})};
       } else {
-        console.info(`! finished`);
+        args = a[0] || {};
       }
+      const name: any = camelCase(args.name);
+      const type: any = camelCase(args.type || 'handle');
+
+      const params: any = {};
+      params.auth = {};
+      params.body = {...args, data: args._};
+      params.info = {name, type};
+
+      delete params.body.name;
+      delete params.body.type;
+      delete params.body._;
+      delete params.body.$0;
+
+      return await this.controllers[name][type](params);
     } catch (error: any) {
       console.warn(`> a critical error occurred while runing task. ${error}`);
     }
-    await this.stop();
   }
 
   /**
-   * Run test
+   * Get Files
    */
-  private async runTest(args: string[]): Promise<any> {
-    try {
-      const module = camelCase(args.shift() || '');
-      const method = camelCase(args.shift() || '');
-      const params: any = {...this.helper.yargs(args).argv};
-      params.auth = {};
-      params.body = {};
-      params.info = {name: module, type: method};
-      delete params['_'];
-      delete params['$0'];
-
-      console.info(`> initializing test ${module}.${method}`);
-      const result: any = await this.tests[`${module}`][`${method}`](params);
-      if (result) {
-        console.info(result);
-      } else {
-        console.info(`! finished`);
-      }
-    } catch (error: any) {
-      console.warn(`> a critical error occurred while runing test. ${error}`);
+  async getFiles(base: string): Promise<any[]> {
+    if (!fs.existsSync(base)) {
+      return [];
     }
-    await this.stop();
-  }
-
-  /**
-   * Get items
-   */
-  private async getItems(): Promise<any[]> {
-    const values: any = ['mongoose', 'express', 'axios', 'bull', 'busboy', 'change-case', 'ejs', 'fs', 'path', 'http', 'https', 'yargs', 'crypto', 'bcryptjs', 'jsonwebtoken', 'mime-types'];
     const result: any[] = [];
+    const values: any = fs.readdirSync(base);
     for (const v of values) {
-      try {
-        result.push({name: camelCase(v), call: await import(v)});
-      } catch (error: any) {
-        console.error(`${v} ${error}`);
+      if (!v.match(/\.(ts|js)$/) || v.match(/\.(d|test|spec)\./)) {
+        continue;
       }
+      result.push({name: camelCase(v.split('.')[0]), call: await import(`${base}/${v}`)});
     }
     return result;
   }
 
   /**
-   * Get files
+   * Get Views
    */
-  private async getFiles(base: string): Promise<any[]> {
+  async getViews(base: string): Promise<any[]> {
     if (!fs.existsSync(base)) {
       return [];
     }
     const result: any[] = [];
-    const values = fs.readdirSync(base);
+    const values: any = fs.readdirSync(base);
     for (const v of values) {
-      if (!v.match(/\.(ts|js)$/) || v.match(/\.(d|test|spec)\./)) {
+      if (!v.match(/\.(ejs)$/)) {
         continue;
       }
-      try {
-        result.push({name: camelCase(v.split('.')[0]), call: await import(`${base}/${v}`)});
-      } catch (error: any) {
-        console.error(`${error}`);
-      }
+      result.push({name: camelCase(v.split('.')[0]), view: fs.readFileSync(`${base}/${v}`).toString()});
     }
     return result;
   }
@@ -465,13 +347,10 @@ export class App {
    */
   async start(): Promise<any> {
     await this.initializeConfig();
-    await this.initializeHelper();
     await this.initializeDatabase();
     await this.initializeControllers();
     await this.initializeModels();
     await this.initializeRoutes();
-    await this.initializeTasks();
-    await this.initializeTests();
     await this.initializeServer();
     await this.initializeWorker();
     await this.initializeQueues();
@@ -498,25 +377,24 @@ export class App {
       this.stop();
     });
 
-    // Listen task
-    if (process.argv.includes('task')) {
-      await this.runTask(process.argv.slice(process.argv.indexOf('task') + 1));
+    // Verify task
+    const argv: any = yargs(hideBin(process.argv)).argv;
+    if (argv.name) {
+      const result: any = await this.run(argv);
+      if (result) {
+        console.info(result);
+      }
+      await this.stop();
       return;
     }
 
-    // Listen test
-    if (process.argv.includes('test')) {
-      await this.runTest(process.argv.slice(process.argv.indexOf('test') + 1));
-      return;
-    }
+    // Listen router
+    routeHandler(this);
+    filesHandler(this);
+    mountHandler(this);
+    errorHandler(this);
 
-    // Router
-    this.router.use(routeHandler(this));
-    this.router.use(filesHandler(this));
-    this.router.use(mountHandler(this));
-    this.router.use(errorHandler(this));
-
-    // Listen http
+    // Listen server
     this.server.listen(this.config.server.port, () => {
       console.info(`> listening server on port ${this.config.server.port} (#${process.pid})`);
     });
@@ -526,23 +404,16 @@ export class App {
    * Stop
    */
   async stop(): Promise<any> {
-    try {
-      if (this.database) {
-        await this.database.disconnect();
-      }
-      process.exit(0);
-    } catch (error: any) {
-      console.warn(`> a critical error occurred while stopped the application. ${error}`);
-      process.exit(1);
+    if (this.database) {
+      await this.database.disconnect();
     }
+    process.exit(0);
   }
 
   /**
-   * Debug
+   * Sleep
    */
-  async debug(...args: any): Promise<any> {
-    if (this.config.env === 'development') {
-      console.info(...args);
-    }
+  async sleep(time: number): Promise<any> {
+    return await new Promise((resolve) => setTimeout(resolve, time));
   }
 }

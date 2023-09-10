@@ -11,7 +11,7 @@ export abstract class Controller {
   }
 
   /**
-   * Get Self
+   * Self
    */
   get self(): any {
     return this;

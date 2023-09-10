@@ -144,6 +144,15 @@
         </div>
       </div>
     </div>
+    <div class="flb-list" *ngIf="!item.$ctrl.currentItems?.length">
+      <div class="flb-list label">
+        <div class="flb-item">
+          <div class="flb-item-content">
+            <div class="flb-item-content-label">{{ item.$ctrl.contentPlace }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="flb-list" *ngFor="let list of item.$ctrl.currentItems; let index = index">
       <div class="flb-list value">
         <ng-container [ngTemplateOutlet]="listContent" [ngTemplateOutletContext]="{list}" />
