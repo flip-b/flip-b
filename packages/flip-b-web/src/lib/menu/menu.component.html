@@ -1,38 +1,19 @@
 <ion-app>
   <ion-split-pane contentId="main">
-    <ion-menu #ct contentId="main" menuId="main" type="overlay" [disabled]="!data.menu.enable">
-      <ion-content *ngIf="data.menu.enable">
+    <ion-menu #ct contentId="main" menuId="main" type="overlay" [disabled]="!data.info.menu.enable || !data.info.menu.values.length">
+      <ion-content *ngIf="data.info.menu.enable && data.info.menu.values.length">
         <div class="flb-menu-content">
-          <div class="flb-menu-header flb-list" *ngIf="data.menu.values.head?.length">
-            <div class="flb-item" *ngFor="let item of data.menu.values.head" [ngClass]="item.class" [style]="item.style" [title]="item.title" [tabindex]="item.onClick ? 1 : -1" (click)="ct.toggle(); item.onClick ? item.onClick(item) : null">
-              <div class="flb-item-picture" *ngIf="item.image">
-                <ion-img class="flb-item-picture-image" [src]="item.image" [alt]="item.title" (ionError)="data._onFormImageError($event)" />
+          <div class="flb-menu-values">
+            <div class="flb-item" *ngFor="let item of data.info.menu.values" [ngClass]="item.info.class" [style]="item.info.style" [title]="item.info.title" [tabindex]="item.onClick ? 1 : -1" (click)="ct.toggle(); item.onClick ? item.onClick({data, item}) : null">
+              <div class="flb-item-picture" *ngIf="item.info.image && !item.info.image.startsWith('/')">
+                <ion-icon class="flb-item-picture-image" [name]="item.info.image" />
               </div>
-              <div class="flb-item-content" *ngIf="item.title || item.label">
-                <div class="flb-item-content-title" *ngIf="item.title">{{ item.title }}</div>
-                <div class="flb-item-content-label" *ngIf="item.label">{{ item.label }}</div>
+              <div class="flb-item-picture" *ngIf="item.info.image && item.info.image.startsWith('/')">
+                <ion-img class="flb-item-picture-image" [src]="item.info.image" [alt]="item.info.title" (ionError)="data._onFormImageError($event)" />
               </div>
-            </div>
-          </div>
-          <div class="flb-menu-values flb-list" *ngIf="data.menu.values.main?.length">
-            <div class="flb-item" *ngFor="let item of data.menu.values.main" [ngClass]="item.class" [style]="item.style" [title]="item.title" [tabindex]="item.onClick ? 1 : -1" (click)="ct.toggle(); item.onClick ? item.onClick(item) : null">
-              <div class="flb-item-picture" *ngIf="item.image">
-                <ion-icon class="flb-item-picture-image" [name]="item.image" />
-              </div>
-              <div class="flb-item-content" *ngIf="item.title || item.label">
-                <div class="flb-item-content-title" *ngIf="item.title">{{ item.title }}</div>
-                <div class="flb-item-content-label" *ngIf="item.label">{{ item.label }}</div>
-              </div>
-            </div>
-          </div>
-          <div class="flb-menu-footer flb-list" *ngIf="data.menu.values.user?.length">
-            <div class="flb-item" *ngFor="let item of data.menu.values.user" [ngClass]="item.class" [style]="item.style" [title]="item.title" [tabindex]="item.onClick ? 1 : -1" (click)="ct.toggle(); item.onClick ? item.onClick(item) : null">
-              <div class="flb-item-picture" *ngIf="item.image">
-                <ion-icon class="flb-item-picture-image" [name]="item.image" />
-              </div>
-              <div class="flb-item-content" *ngIf="item.title || item.label">
-                <div class="flb-item-content-title" *ngIf="item.title">{{ item.title }}</div>
-                <div class="flb-item-content-label" *ngIf="item.label">{{ item.label }}</div>
+              <div class="flb-item-content" *ngIf="item.info?.title || item.info?.label">
+                <div class="flb-item-content-title" *ngIf="item.info?.title">{{ item.info.title }}</div>
+                <div class="flb-item-content-label" *ngIf="item.info?.label">{{ item.info.label }}</div>
               </div>
             </div>
           </div>

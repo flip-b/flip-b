@@ -20,9 +20,9 @@ html.md body.flb-theme {
 } */
 
 
-/***********************************************************************************************************************
- *** Light Theme
- **********************************************************************************************************************/
+/**
+ * Light Theme
+ */
 
 body.flb-theme,
 body.flb-theme.flb-theme-light {
@@ -135,16 +135,20 @@ body.flb-theme.flb-theme-light {
   /* Border Color */
   --ion-border-color: rgba(var(--ion-text-color-rgb), .1);
 
+  /* Margin */
+  --flb-margin: 5px;
+  --flb-radius: 5px;
+
   /* Image */
-  --flb-image-size: 24px;
-  --flb-image-size-sm: 24px;
-  --flb-image-size-md: 36px;
-  --flb-image-size-lg: 48px;
+  --flb-image-size: 25px;
+  --flb-image-size-sm: 25px;
+  --flb-image-size-md: 35px;
+  --flb-image-size-lg: 45px;
 }
 
-/***********************************************************************************************************************
- *** Night Theme
- **********************************************************************************************************************/
+/**
+ * Night Theme
+ */
 
 body.flb-theme.flb-theme-night {
 
@@ -262,9 +266,9 @@ body.flb-theme.flb-theme-night {
   --ion-card-background: #1e1e1e;
 }
 
-/***********************************************************************************************************************
- *** Pane
- **********************************************************************************************************************/
+/**
+ * Pane
+ */
 
 flb-menu>ion-app>ion-split-pane {
   --side-min-width: 0;
@@ -272,9 +276,9 @@ flb-menu>ion-app>ion-split-pane {
   --border: 1px solid var(--ion-border-color);
 }
 
-/***********************************************************************************************************************
- *** Form
- **********************************************************************************************************************/
+/**
+ * Form
+ */
 
 flb-form {
   display: flex;
@@ -291,36 +295,15 @@ flb-form {
   position: absolute;
 }
 
-/***********************************************************************************************************************
- *** Menu Content
- **********************************************************************************************************************/
-
-.flb-menu-content {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  flex: none;
-  max-width: var(--flb-menu-content-width);
-  height: 100%;
-  border: 0;
-  margin: 0 auto;
-  padding: 0;
-  outline: 0;
-  overflow: hidden;
-  position: relative;
-}
-
-/***********************************************************************************************************************
- *** Form Content
- **********************************************************************************************************************/
+/**
+ * Form Content
+ */
 
 .flb-form-content {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
   flex: none;
-  max-width: var(--flb-form-content-width);
-  min-height: 100%;
   border: 0;
   margin: 0 auto;
   padding: 0;
@@ -329,9 +312,9 @@ flb-form {
   position: relative;
 }
 
-/***********************************************************************************************************************
- *** List
- **********************************************************************************************************************/
+/**
+ * List
+ */
 
 .flb-list {
   display: flex;
@@ -341,16 +324,15 @@ flb-form {
   align-items: flex-start;
   border: 0;
   margin: 0;
-  padding: 8px;
+  padding: var(--flb-margin);
   outline: 0;
   overflow: hidden;
   position: relative;
-  transition: background-color 200ms ease-in-out, color 400ms ease-in-out, transform 600ms ease-in-out, visibility 800ms ease-in-out;
 }
 
-/***********************************************************************************************************************
- *** Item
- **********************************************************************************************************************/
+/**
+ * Item
+ */
 
 .flb-item {
   display: flex;
@@ -360,16 +342,15 @@ flb-form {
   align-items: center;
   border: 0;
   margin: 0;
-  padding: 8px;
+  padding: var(--flb-margin);
   outline: 0;
   overflow: hidden;
   position: relative;
-  transition: background-color 200ms ease-in-out, color 400ms ease-in-out, transform 600ms ease-in-out, visibility 800ms ease-in-out;
 }
 
-/***********************************************************************************************************************
- *** Item Picture
- **********************************************************************************************************************/
+/**
+ * Item Picture
+ */
 
 .flb-item>.flb-item-picture {
   display: flex;
@@ -392,9 +373,9 @@ flb-form {
   height: var(--flb-image-size);
 }
 
-/***********************************************************************************************************************
- *** Item Trigger
- **********************************************************************************************************************/
+/**
+ * Item Trigger
+ */
 
 .flb-item>.flb-item-trigger {
   display: flex;
@@ -413,6 +394,11 @@ flb-form {
   color: rgba(var(--ion-text-color-rgb), .55)
 }
 
+.flb-item>.flb-item-trigger>.flb-item-trigger-image {
+  width: var(--flb-image-size);
+  height: var(--flb-image-size);
+}
+
 .flb-item>.flb-item-trigger:focus,
 .flb-item>.flb-item-trigger:hover {
   color: rgba(var(--ion-text-color-rgb), .75)
@@ -422,18 +408,9 @@ flb-form {
   color: rgba(var(--ion-text-color-rgb), .95)
 }
 
-.flb-item>.flb-item-trigger.rotate {
-  transform: scaleX(-1);
-}
-
-.flb-item>.flb-item-trigger>.flb-item-trigger-image {
-  width: var(--flb-image-size);
-  height: var(--flb-image-size);
-}
-
-/***********************************************************************************************************************
- *** Item Content
- **********************************************************************************************************************/
+/**
+ * Item Content
+ */
 
 .flb-item>.flb-item-content {
   display: flex;
@@ -448,20 +425,19 @@ flb-form {
   outline: 0;
   overflow: hidden;
   position: relative;
-  --xborder: 1px solid rgba(0, 255, 0, .35) !important;
 }
 
 .flb-item>.flb-item-picture+.flb-item-content {
-  margin-left: 8px;
+  margin-left: var(--flb-margin);
 }
 
 .flb-item>.flb-item-content+.flb-item-trigger {
-  margin-left: 4px;
+  margin-left: var(--flb-margin);
 }
 
-/***********************************************************************************************************************
- *** Item Content Title
- **********************************************************************************************************************/
+/**
+ * Item Content Title
+ */
 
 .flb-item>.flb-item-content>.flb-item-content-title {
   overflow: hidden;
@@ -473,9 +449,9 @@ flb-form {
   opacity: .9;
 }
 
-/***********************************************************************************************************************
- *** Item Content Label
- **********************************************************************************************************************/
+/**
+ * Item Content Label
+ */
 
 .flb-item>.flb-item-content>.flb-item-content-label {
   overflow: hidden;
@@ -487,9 +463,9 @@ flb-form {
   opacity: .7;
 }
 
-/***********************************************************************************************************************
- *** Item Content Notes
- **********************************************************************************************************************/
+/**
+ * Item Content Notes
+ */
 
 .flb-item>.flb-item-content>.flb-item-content-notes {
   overflow: hidden;
@@ -501,9 +477,9 @@ flb-form {
   opacity: .5;
 }
 
-/***********************************************************************************************************************
- *** Item Content Input
- **********************************************************************************************************************/
+/**
+ * Item Content Input
+ */
 
 .flb-item>.flb-item-content>.flb-item-content-input {
   font-size: 14px;
@@ -542,9 +518,18 @@ flb-form {
   height: 20px;
 }
 
-/***********************************************************************************************************************
- *** Item Type Array
- **********************************************************************************************************************/
+
+
+
+
+
+
+
+
+
+/**
+ * Item Type Array
+ */
 
 .flb-item.flb-item-type-array {
   width: 100%;
@@ -552,9 +537,9 @@ flb-form {
   border-bottom: 1px solid var(--ion-border-color);
 }
 
-/***********************************************************************************************************************
- *** Item Type Group
- **********************************************************************************************************************/
+/**
+ * Item Type Group
+ */
 
 .flb-item.flb-item-type-group {
   width: 100%;
@@ -562,265 +547,303 @@ flb-form {
   border-bottom: 1px solid var(--ion-border-color);
 }
 
-/***********************************************************************************************************************
- *** Item Type Id
- **********************************************************************************************************************/
+/**
+ * Item Type Id
+ */
 
 .flb-item.flb-item-type-id {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Text
- **********************************************************************************************************************/
+/**
+ * Item Type Text
+ */
 
 .flb-item.flb-item-type-text {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Textarea
- **********************************************************************************************************************/
+/**
+ * Item Type Textarea
+ */
 
 .flb-item.flb-item-type-textarea {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Richtext
- **********************************************************************************************************************/
+/**
+ * Item Type Richtext
+ */
 
 .flb-item.flb-item-type-richtext {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Decimal
- **********************************************************************************************************************/
+/**
+ * Item Type Decimal
+ */
 
 .flb-item.flb-item-type-decimal {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Integer
- **********************************************************************************************************************/
+/**
+ * Item Type Integer
+ */
 
 .flb-item.flb-item-type-integer {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Percent
- **********************************************************************************************************************/
+/**
+ * Item Type Percent
+ */
 
 .flb-item.flb-item-type-percent {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Currency
- **********************************************************************************************************************/
+/**
+ * Item Type Currency
+ */
 
 .flb-item.flb-item-type-currency {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Quantity
- **********************************************************************************************************************/
+/**
+ * Item Type Quantity
+ */
 
 .flb-item.flb-item-type-quantity {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Date
- **********************************************************************************************************************/
+/**
+ * Item Type Date
+ */
 
 .flb-item.flb-item-type-date {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Datetime
- **********************************************************************************************************************/
+/**
+ * Item Type Datetime
+ */
 
 .flb-item.flb-item-type-datetime {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Time
- **********************************************************************************************************************/
+/**
+ * Item Type Time
+ */
 
 .flb-item.flb-item-type-time {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Year
- **********************************************************************************************************************/
+/**
+ * Item Type Year
+ */
 
 .flb-item.flb-item-type-year {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Year-Month
- **********************************************************************************************************************/
+/**
+ * Item Type Year-Month
+ */
 
 .flb-item.flb-item-type-year-month {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Search
- **********************************************************************************************************************/
+/**
+ * Item Type Search
+ */
 
 .flb-item.flb-item-type-search {
   width: 50%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Select
- **********************************************************************************************************************/
+.flb-item.flb-item-type-search>.flb-item-content>.flb-item-content-title,
+.flb-item.flb-item-type-search>.flb-item-content>.flb-item-content-label,
+.flb-item.flb-item-type-search>.flb-item-content>.flb-item-content-notes {
+  display: none;
+}
+
+/**
+ * Item Type Select
+ */
 
 .flb-item.flb-item-type-select {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Switch
- **********************************************************************************************************************/
+/**
+ * Item Type Switch
+ */
 
 .flb-item.flb-item-type-switch {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Toggle
- **********************************************************************************************************************/
+.flb-item.flb-item-type-switch>.flb-item-trigger>.flb-item-trigger-image {
+  transition: transform 250ms ease-in-out;
+}
+
+.flb-item.flb-item-type-switch>.flb-item-trigger>.flb-item-trigger-image.ion-color-default {
+  transform: scaleX(-1);
+}
+
+/**
+ * Item Type Toggle
+ */
 
 .flb-item.flb-item-type-toggle {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Attachment
- **********************************************************************************************************************/
+.flb-item.flb-item-type-toggle>.flb-item-trigger>.flb-item-trigger-image {
+  transition: transform 250ms ease-in-out;
+}
+
+.flb-item.flb-item-type-toggle>.flb-item-trigger>.flb-item-trigger-image.ion-color-default {
+  transform: scaleX(-1);
+}
+
+/**
+ * Item Type Attachment
+ */
 
 .flb-item.flb-item-type-attachment {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Document
- **********************************************************************************************************************/
+/**
+ * Item Type Document
+ */
 
 .flb-item.flb-item-type-document {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Image
- **********************************************************************************************************************/
+/**
+ * Item Type Image
+ */
 
 .flb-item.flb-item-type-image {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Audio
- **********************************************************************************************************************/
+/**
+ * Item Type Audio
+ */
 
 .flb-item.flb-item-type-audio {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Video
- **********************************************************************************************************************/
+/**
+ * Item Type Video
+ */
 
 .flb-item.flb-item-type-video {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type File
- **********************************************************************************************************************/
+/**
+ * Item Type File
+ */
 
 .flb-item.flb-item-type-file {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Selfie
- **********************************************************************************************************************/
+/**
+ * Item Type Selfie
+ */
 
 .flb-item.flb-item-type-selfie {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Website
- **********************************************************************************************************************/
+/**
+ * Item Type Website
+ */
 
 .flb-item.flb-item-type-website {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Address
- **********************************************************************************************************************/
+/**
+ * Item Type Address
+ */
 
 .flb-item.flb-item-type-address {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Phone
- **********************************************************************************************************************/
+/**
+ * Item Type Phone
+ */
 
 .flb-item.flb-item-type-phone {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Email
- **********************************************************************************************************************/
+/**
+ * Item Type Email
+ */
 
 .flb-item.flb-item-type-email {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Color
- **********************************************************************************************************************/
+/**
+ * Item Type Color
+ */
 
 .flb-item.flb-item-type-color {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Username
- **********************************************************************************************************************/
+/**
+ * Item Type Username
+ */
 
 .flb-item.flb-item-type-username {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Password
- **********************************************************************************************************************/
+.flb-item.flb-item-type-username>.flb-item-trigger>.flb-item-trigger-image {
+  transition: transform 250ms ease-in-out;
+}
+
+.flb-item.flb-item-type-username>.flb-item-trigger>.flb-item-trigger-image.ion-color-default {
+  transform: scaleX(-1);
+}
+
+/**
+ * Item Type Password
+ */
 
 .flb-item.flb-item-type-password {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Type Expand
- **********************************************************************************************************************/
+.flb-item.flb-item-type-password>.flb-item-trigger>.flb-item-trigger-image {
+  transition: transform 250ms ease-in-out;
+}
+
+.flb-item.flb-item-type-password>.flb-item-trigger>.flb-item-trigger-image.ion-color-default {
+  transform: scaleX(-1);
+}
+
+/**
+ * Item Type Expand
+ */
 
 .flb-item.flb-item-type-expand {
   flex: auto;
@@ -833,25 +856,51 @@ flb-form {
   display: none;
 }
 
-/***********************************************************************************************************************
- *** Item Type Header
- **********************************************************************************************************************/
+
+
+
+
+
+
+
+
+
+/**
+ * Item Type Header
+ */
 
 .flb-item.flb-item-type-header {
   flex: auto;
+  border-bottom: 1px solid var(--ion-border-color);
 }
 
-/***********************************************************************************************************************
- *** Item Type Footer
- **********************************************************************************************************************/
+.flb-item.flb-item-type-header>.flb-item-content>.flb-item-content-title {
+  font-size: 18px;
+}
+
+.flb-item.flb-item-type-header>.flb-item-content>.flb-item-content-label {
+  font-size: 16px;
+}
+
+.flb-item.flb-item-type-header>.flb-item-content>.flb-item-content-notes {
+  display: none;
+}
+
+.flb-item.flb-item-type-header>.flb-item-picture>.flb-item-picture-image {
+  --flb-image-size: var(--flb-image-size-lg);
+}
+
+/**
+ * Item Type Footer
+ */
 
 .flb-item.flb-item-type-footer {
   flex: auto;
 }
 
-/***********************************************************************************************************************
- *** Item Type Legend
- **********************************************************************************************************************/
+/**
+ * Item Type Legend
+ */
 
 .flb-item.flb-item-type-legend {
   width: 100%;
@@ -859,28 +908,122 @@ flb-form {
   border-bottom: 1px solid var(--ion-border-color);
 }
 
-/***********************************************************************************************************************
- *** Item Type Values
- **********************************************************************************************************************/
 
-.flb-item.flb-item-type-values {
-  width: 100%;
-  align-items: center;
-  border-bottom: 1px solid var(--ion-border-color);
-}
 
-/***********************************************************************************************************************
- *** Item Type Button
- **********************************************************************************************************************/
+
+
+
+
+
+
+
+/**
+ * Item Type Button
+ */
 
 .flb-item.flb-item-type-button {
   width: auto;
   align-items: center;
+  cursor: pointer !important;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
 }
 
-/***********************************************************************************************************************
- *** Item Popover
- **********************************************************************************************************************/
+.flb-item.flb-item-type-button * {
+  cursor: pointer !important;
+  pointer-events: none !important;
+}
+
+.flb-item.flb-item-type-button>.flb-item-trigger {
+  display: none;
+}
+
+.flb-item.flb-item-type-button:focus,
+.flb-item.flb-item-type-button:hover {
+  background-color: rgba(var(--ion-text-color-rgb), .15)
+}
+
+.flb-item.flb-item-type-button.active {
+  background-color: rgba(var(--ion-text-color-rgb), .55)
+}
+
+/**
+ * Item Type Circle
+ */
+
+.flb-item.flb-item-type-circle {
+  width: unset;
+  align-items: center;
+  cursor: pointer !important;
+  border: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.flb-item.flb-item-type-circle * {
+  cursor: pointer !important;
+  pointer-events: none !important;
+}
+
+.flb-item.flb-item-type-circle>.flb-item-content,
+.flb-item.flb-item-type-circle>.flb-item-trigger {
+  display: none;
+}
+
+.flb-item.flb-item-type-circle:focus,
+.flb-item.flb-item-type-circle:hover {
+  background-color: rgba(var(--ion-text-color-rgb), .15)
+}
+
+.flb-item.flb-item-type-circle.active {
+  background-color: rgba(var(--ion-text-color-rgb), .55)
+}
+
+/**
+ * Item Type Values
+ */
+
+.flb-item.flb-item-type-values {
+  width: 100%;
+  align-items: center;
+  cursor: pointer !important;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--ion-border-color);
+  overflow: hidden;
+}
+
+.flb-item.flb-item-type-values * {
+  cursor: unset !important;
+  pointer-events: unset !important;
+}
+
+.flb-item.flb-item-type-values>.flb-item-trigger {
+  display: none;
+}
+
+.flb-item.flb-item-type-values:focus,
+.flb-item.flb-item-type-values:hover {
+  background-color: rgba(var(--ion-text-color-rgb), .15)
+}
+
+.flb-item.flb-item-type-values.active {
+  background-color: rgba(var(--ion-text-color-rgb), .55)
+}
+
+
+
+
+
+
+
+
+
+
+/**
+ * Item Popover
+ */
 
 .flb-item-popover {
   display: block;
@@ -894,9 +1037,9 @@ flb-form {
   overflow: hidden;
 }
 
-/***********************************************************************************************************************
- *** Item Popover Colorize
- **********************************************************************************************************************/
+/**
+ * Item Popover Colorize
+ */
 
 .flb-item-popover>.flb-item-popover-colorize {
   display: block;
@@ -939,9 +1082,9 @@ flb-form {
   padding-bottom: 10%;
 }
 
-/***********************************************************************************************************************
- *** Item Popover Datetime
- **********************************************************************************************************************/
+/**
+ * Item Popover Datetime
+ */
 
 .flb-item-popover>.flb-item-popover-datetime {
   display: block;
@@ -961,9 +1104,9 @@ flb-form {
   border-top: 1px solid var(--ion-border-color);
 }
 
-/***********************************************************************************************************************
- *** Item Popover Document
- **********************************************************************************************************************/
+/**
+ * Item Popover Document
+ */
 
 .flb-item-popover>.flb-item-popover-document {
   display: block;
@@ -995,9 +1138,9 @@ flb-form {
   width: 100%;
 }
 
-/***********************************************************************************************************************
- *** Item Popover Location
- **********************************************************************************************************************/
+/**
+ * Item Popover Location
+ */
 
 .flb-item-popover>.flb-item-popover-location {
   display: block;
@@ -1050,9 +1193,9 @@ body.flb-theme.flb-theme-night .flb-item-popover>.flb-item-popover-location>.fra
   filter: invert(1);
 }
 
-/***********************************************************************************************************************
- *** Item Popover Selector
- **********************************************************************************************************************/
+/**
+ * Item Popover Selector
+ */
 
 .flb-item-popover>.flb-item-popover-selector {
   display: block;
@@ -1105,9 +1248,18 @@ body.flb-theme.flb-theme-night .flb-item-popover>.flb-item-popover-location>.fra
 }
 */
 
-/***********************************************************************************************************************
- *** Item Control
- **********************************************************************************************************************/
+
+
+
+
+
+
+
+
+
+/**
+ * Item Control
+ */
 
 .flb-item-control {
   display: block;
@@ -1118,9 +1270,9 @@ body.flb-theme.flb-theme-night .flb-item-popover>.flb-item-popover-location>.fra
   outline: 0;
 }
 
-/***********************************************************************************************************************
- *** Item Control Textarea
- **********************************************************************************************************************/
+/**
+ * Item Control Textarea
+ */
 
 .flb-item-control>.flb-item-control-textarea>.input {
   display: block;
@@ -1132,9 +1284,6 @@ body.flb-theme.flb-theme-night .flb-item-popover>.flb-item-popover-location>.fra
   padding: 0;
   outline: 0;
   overflow: auto;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 18px;
   min-height: calc(var(--flb-image-size) - 4px);
 }
 
@@ -1199,45 +1348,14 @@ body.flb-theme.flb-theme-night .flb-item-popover>.flb-item-popover-location>.fra
   text-decoration: line-through;
 }
 
-/***********************************************************************************************************************
- *** Item Button
- **********************************************************************************************************************/
 
-.flb-item.button {
-  cursor: pointer !important;
-}
 
-.flb-item.button * {
-  cursor: pointer !important;
-  pointer-events: none !important;
-}
 
-.flb-item.button>.flb-item-trigger {
-  display: none;
-}
 
-.flb-item.button:focus,
-.flb-item.button:hover {
-  background-color: rgba(var(--ion-text-color-rgb), .15)
-}
 
-.flb-item.button.active {
-  background-color: rgba(var(--ion-text-color-rgb), .55)
-}
 
-/***********************************************************************************************************************
- *** Item Circle
- **********************************************************************************************************************/
 
-.flb-item.circle {
-  border-radius: 50%;
-  overflow: hidden;
-}
 
-.flb-item.circle>.flb-item-content,
-.flb-item.circle>.flb-item-trigger {
-  display: none;
-}
 
 /********************************************************************************************************************/
 /********************************************************************************************************************/
@@ -1247,14 +1365,14 @@ body.flb-theme.flb-theme-night .flb-item-popover>.flb-item-popover-location>.fra
 .flb-item.flb-item-type-legend>.flb-item-content>.flb-item-content-title {
   font-size: 16px;
   font-weight: 700;
-  line-height: 22px;
+  line-height: 25px;
   text-transform: uppercase;
-  margin-top: 32px;
+  margin-top: 25px;
 }
 
-/***********************************************************************************************************************
- *** Item Group
- **********************************************************************************************************************/
+/**
+ * Item Group
+ */
 
 .flb-item-group {
   width: 100%;
@@ -1280,9 +1398,9 @@ body.flb-theme.flb-theme-night .flb-item-popover>.flb-item-popover-location>.fra
   padding: 0;
 }
 
-/***********************************************************************************************************************
- *** Item Array
- **********************************************************************************************************************/
+/**
+ * Item Array
+ */
 
 .flb-item-array {
   width: 100%;
@@ -1308,8 +1426,6 @@ body.flb-theme.flb-theme-night .flb-item-popover>.flb-item-popover-location>.fra
 
 .flb-item-array>.flb-list>.flb-list.label {
   flex: auto;
-  border-bottom: 1px solid var(--ion-border-color);
-  margin: 0;
   padding: 0;
 }
 
@@ -1333,14 +1449,15 @@ body.flb-theme.flb-theme-night .flb-item-popover>.flb-item-popover-location>.fra
   display: none;
 }
 
-.flb-item-array>.flb-list>.flb-list.title>.flb-item>.flb-item-content>div.flb-item-content-title,
-.flb-item-array>.flb-list>.flb-list.label>.flb-item>.flb-item-content>div.flb-item-content-label,
-.flb-item-array>.flb-list>.flb-list.value>.flb-item>.flb-item-content>div.flb-item-content-input {
+.flb-item-array>.flb-list>.flb-list.title>.flb-item>.flb-item-content>.flb-item-content-title,
+.flb-item-array>.flb-list>.flb-list.label>.flb-item>.flb-item-content>.flb-item-content-label,
+.flb-item-array>.flb-list>.flb-list.value>.flb-item>.flb-item-content>.flb-item-content-input {
   display: flex;
 }
 
-.flb-item-array>.flb-list:nth-child(even) {
-  background-color: rgba(128, 128, 128, .05);
+.flb-item-array>.flb-list>.flb-list.value>.flb-item>.flb-item-content>.flb-item-content-input {
+  border-bottom: 0;
+  font-size: 12px !important;
 }
 
 .flb-item-array>.flb-list:nth-child(odd) {
@@ -1352,187 +1469,186 @@ body.flb-theme.flb-theme-night .flb-item-popover>.flb-item-popover-location>.fra
 }
 
 .flb-item-array>.flb-list:hover {
-  background-color: rgba(128, 128, 128, .15);
+  background-color: rgba(128, 128, 128, .35);
 }
 
 
-/***********************************************************************************************************************
- *** Headers and Footers
- **********************************************************************************************************************/
 
-.flb-menu-content>.flb-menu-header,
+
+
+
+
+
+/**
+ * Form Header
+ */
+
 .flb-form-content>.flb-form-header {
-  flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--ion-border-color);
 }
 
-.flb-menu-content>.flb-menu-footer,
-.flb-form-content>.flb-form-footer {
-  align-items: center;
-  gap: 8px;
-}
 
-.flb-menu-content>.flb-menu-navbar,
+/**
+ * Form Navbar
+ */
+
 .flb-form-content>.flb-form-navbar {
   align-items: center;
-  gap: 8px;
-}
-
-.flb-menu-content>.flb-menu-header>.flb-item.flb-item-type-header>.flb-item-picture>.flb-item-picture-image,
-.flb-form-content>.flb-form-header>.flb-item.flb-item-type-header>.flb-item-picture>.flb-item-picture-image {
-  --flb-image-size: var(--flb-image-size-lg);
-}
-
-.flb-menu-content>.flb-menu-header>.flb-item.flb-item-type-header>.flb-item-content>.flb-item-content-title,
-.flb-form-content>.flb-form-header>.flb-item.flb-item-type-header>.flb-item-content>.flb-item-content-title {
-  font-size: 18px;
-}
-
-.flb-menu-content>.flb-menu-header>.flb-item.flb-item-type-header>.flb-item-content>.flb-item-content-label,
-.flb-form-content>.flb-form-header>.flb-item.flb-item-type-header>.flb-item-content>.flb-item-content-label {
-  font-size: 16px;
-}
-
-.flb-menu-content>.flb-menu-header>.flb-item.flb-item-type-header>.flb-item-content>.flb-item-content-notes,
-.flb-form-content>.flb-form-header>.flb-item.flb-item-type-header>.flb-item-content>.flb-item-content-notes {
-  display: none;
 }
 
 /**
- * Menu Hide
+ * Form Fields
  */
 
-body.flb-user.flb-menu.flb-menu-hide .flb-menu-content>.flb-menu-header {
-  flex-direction: column;
-  flex-wrap: nowrap;
-  flex: none;
-  align-items: center;
-}
-
-body.flb-user.flb-menu.flb-menu-hide .flb-menu-content>.flb-menu-footer {
-  flex-direction: column;
-  flex-wrap: nowrap;
-  flex: none;
-  align-items: center;
-}
-
-body.flb-user.flb-menu.flb-menu-hide .flb-menu-content>.flb-menu-values {
-  flex-direction: column;
-  flex-wrap: nowrap;
-  flex: auto;
-  align-items: center;
-}
-
-body.flb-user.flb-menu.flb-menu-hide .flb-menu-content>.flb-list>.flb-item.button {
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-body.flb-user.flb-menu.flb-menu-hide .flb-menu-content>.flb-list>.flb-item.flb-item>.flb-item-content,
-body.flb-user.flb-menu.flb-menu-hide .flb-menu-content>.flb-list>.flb-item.flb-item>.flb-item-trigger,
-body.flb-user.flb-menu.flb-menu-hide .flb-menu-content>.flb-list>.flb-item.flb-item>.flb-item-include {
-  display: none;
+.flb-form-content>.flb-form-fields {
+  border: 1px solid var(--ion-border-color);
+  border-radius: var(--flb-radius);
+  margin: var(--flb-margin);
+  padding: 0;
 }
 
 /**
- * Menu Show
+ * Form Values
  */
 
-body.flb-user.flb-menu.flb-menu-show .flb-menu-content>.flb-menu-footer {
-  justify-content: center;
-}
-
-body.flb-user.flb-menu.flb-menu-show .flb-menu-content>.flb-menu-values {
-  flex-direction: column;
-  flex-wrap: nowrap;
-  flex: auto;
-  align-items: stretch;
-}
-
-
-
-/**
- * Botones del f
- *
- */
-.flb-form-content>.flb-form-footer>.flb-item.flb-item-type-button {
-  border: 0;
-  border-radius: 4px;
-}
-
-.flb-form-content>.flb-form-fields .flb-item.flb-item.flb-item-type-button,
-.flb-form-content>.flb-form-fields>.flb-item.flb-item.flb-item-type-button {
-  margin-top: 20px;
+.flb-form-content>.flb-form-values {
+  border: 1px solid var(--ion-border-color);
+  border-radius: var(--flb-radius);
+  margin: var(--flb-margin);
+  padding: 0;
 }
 
 .flb-form-content>.flb-form-values>.flb-item.flb-item-type-values>.flb-item-picture>.flb-item-picture-image {
   --flb-image-size: var(--flb-image-size-md);
 }
 
-
-
-
-
+.flb-form-content>.flb-form-values>.flb-item.flb-item-type-values:last-child {
+  border: 0;
+}
 
 /**
- * Item Name Cancel
+ * Form Footer
  */
+
+.flb-form-content>.flb-form-footer>.flb-item.flb-item-type-button {
+  border: 1px solid transparent;
+  border-radius: var(--flb-radius);
+}
 
 .flb-form-content>.flb-form-footer>.flb-item.flb-item-type-button.flb-item-name-cancel {
   border: 1px solid var(--ion-border-color);
-  border-radius: 4px;
 }
-
-/**
- * Item Name Submit
- */
 
 .flb-form-content>.flb-form-footer>.flb-item.flb-item-type-button.flb-item-name-submit {
   border: 1px solid var(--ion-border-color);
-  border-radius: 4px;
 }
 
+
+
+
+
+
+
+
 /**
- * Item Name Search
+ * Menu Content
  */
 
-.flb-form-content>.flb-form-navbar>.flb-item.flb-item-type-search.flb-item-name-search>.flb-item-content>.flb-item-content-title,
-.flb-form-content>.flb-form-navbar>.flb-item.flb-item-type-search.flb-item-name-search>.flb-item-content>.flb-item-content-label,
-.flb-form-content>.flb-form-navbar>.flb-item.flb-item-type-search.flb-item-name-search>.flb-item-content>.flb-item-content-notes {
+.flb-menu-content {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  flex: none;
+  border: 0;
+  margin: 0 auto;
+  padding: 0;
+  outline: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.flb-menu-content>.flb-menu-values {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  flex: none;
+  justify-content: center;
+  border: 0;
+  margin: 0;
+  padding: var(--flb-margin);
+  outline: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.flb-menu-content>.flb-menu-values>.flb-item.flb-item-type-header {
+  order: 10;
+  width: 100%;
+  margin-bottom: var(--flb-margin);
+}
+
+.flb-menu-content>.flb-menu-values>.flb-item.flb-item-type-circle {
+  order: 20;
+  width: unset;
+  margin-top: var(--flb-margin);
+}
+
+.flb-menu-content>.flb-menu-values>.flb-item.flb-item-type-button {
+  order: 30;
+  width: 100%;
+  margin-top: var(--flb-margin);
+}
+
+body.flb-menu-hide .flb-menu-content>.flb-menu-values>.flb-item.flb-item-type-button {
+  width: unset;
+  border-radius: 50%;
+}
+
+body.flb-menu-hide .flb-menu-content>.flb-menu-values>.flb-item.flb-item-type-button>.flb-item-content,
+body.flb-menu-hide .flb-menu-content>.flb-menu-values>.flb-item.flb-item-type-button>.flb-item-trigger,
+body.flb-menu-hide .flb-menu-content>.flb-menu-values>.flb-item.flb-item-type-button>.flb-item-include {
   display: none;
 }
 
-/*******************************************************************************************************/
-/*******************************************************************************************************/
+body.flb-menu-show .flb-menu-content>.flb-menu-values>.flb-item.flb-item-type-circle.flb-item-name-menu_toggle {
+  margin-left: auto;
+}
+
+body.flb-menu-hide .flb-menu-content>.flb-menu-values>.flb-item.flb-item-type-circle.flb-item-name-menu_toggle {
+  order: 11;
+  transform: scaleX(-1);
+}
+
+
+
+
+
+
+
+
+
 
 /**
  * Responsive XS
  */
 
 @media all and (max-width: 575px) {
-  body.flb-user-anonymous .flb-form-content>.flb-form-footer .flb-item {
+  body.flb-anon .flb-form-content>.flb-form-footer .flb-item {
     width: 100% !important;
   }
-
-  body.flb-user-anonymous .flb-form-content>.flb-form-fields .flb-item {
+  body.flb-anon .flb-form-content>.flb-form-fields .flb-item {
     width: 100% !important;
   }
-
   body.flb-user {
     --flb-menu-content-width: 300px;
     --flb-form-content-width: 100vw;
   }
-
   body.flb-user .flb-form-content>.flb-form-footer .flb-item {
     flex: auto;
   }
-
   body.flb-user .flb-form-content>.flb-form-filter .flb-item {
     width: 100% !important;
   }
-
   body.flb-user .flb-form-content>.flb-form-fields .flb-item {
     width: 100% !important;
   }
@@ -1545,7 +1661,7 @@ body.flb-user.flb-menu.flb-menu-show .flb-menu-content>.flb-menu-values {
 @media all and (min-width: 576px) and (max-width: 767px) {
   body.flb-user {
     --flb-menu-content-width: 300px;
-    --flb-form-content-width: calc(100vw - 16px);
+    --flb-form-content-width: calc(100vw - 15px);
   }
 }
 
@@ -1556,7 +1672,7 @@ body.flb-user.flb-menu.flb-menu-show .flb-menu-content>.flb-menu-values {
 @media all and (min-width: 768px) and (max-width: 991px) {
   body.flb-user {
     --flb-menu-content-width: 300px;
-    --flb-form-content-width: calc(100vw - 32px);
+    --flb-form-content-width: calc(100vw - 30px);
   }
 }
 
@@ -1565,14 +1681,13 @@ body.flb-user.flb-menu.flb-menu-show .flb-menu-content>.flb-menu-values {
  */
 
 @media all and (min-width: 992px) and (max-width: 1199px) {
-  body.flb-user.flb-menu.flb-menu-show {
+  body.flb-menu-show {
     --flb-menu-content-width: 250px;
-    --flb-form-content-width: calc(100vw - var(--flb-menu-content-width) - 16px);
+    --flb-form-content-width: calc(100vw - var(--flb-menu-content-width) - 30px);
   }
-
-  body.flb-user.flb-menu.flb-menu-hide {
-    --flb-menu-content-width: 60px;
-    --flb-form-content-width: calc(100vw - var(--flb-menu-content-width) - 16px);
+  body.flb-menu-hide {
+    --flb-menu-content-width: 65px;
+    --flb-form-content-width: calc(100vw - var(--flb-menu-content-width) - 30px);
   }
 }
 
@@ -1581,14 +1696,13 @@ body.flb-user.flb-menu.flb-menu-show .flb-menu-content>.flb-menu-values {
  */
 
 @media all and (min-width: 1200px) and (max-width: 1365px) {
-  body.flb-user.flb-menu.flb-menu-show {
+  body.flb-menu-show {
     --flb-menu-content-width: 275px;
-    --flb-form-content-width: calc(1200px - var(--flb-menu-content-width) - 32px);
+    --flb-form-content-width: calc(100vw - var(--flb-menu-content-width) - 30px);
   }
-
-  body.flb-user.flb-menu.flb-menu-hide {
+  body.flb-menu-hide {
     --flb-menu-content-width: 65px;
-    --flb-form-content-width: calc(1200px - var(--flb-menu-content-width) - 32px);
+    --flb-form-content-width: calc(100vw - var(--flb-menu-content-width) - 30px);
   }
 }
 
@@ -1597,14 +1711,13 @@ body.flb-user.flb-menu.flb-menu-show .flb-menu-content>.flb-menu-values {
  */
 
 @media all and (min-width: 1366px) {
-  body.flb-user.flb-menu.flb-menu-show {
+  body.flb-menu-show {
     --flb-menu-content-width: 300px;
-    --flb-form-content-width: calc(1366px - var(--flb-menu-content-width) - 64px);
+    --flb-form-content-width: calc(1366px - var(--flb-menu-content-width) - 30px);
   }
-
-  body.flb-user.flb-menu.flb-menu-hide {
-    --flb-menu-content-width: 70px;
-    --flb-form-content-width: calc(1366px - var(--flb-menu-content-width) - 64px);
+  body.flb-menu-hide {
+    --flb-menu-content-width: 65px;
+    --flb-form-content-width: calc(1366px - var(--flb-menu-content-width) - 30px);
   }
 }
 
@@ -1613,42 +1726,53 @@ body.flb-user.flb-menu.flb-menu-show .flb-menu-content>.flb-menu-values {
  */
 
 @media all and (min-width: 992px) {
-  body.flb-user-anonymous {
+  body.flb-anon {
     background-image: var(--flb-background-image);
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
   }
-
-  body.flb-user-anonymous flb-form {
+  body.flb-anon flb-form {
     width: 400px;
-    opacity: .75;
+    opacity: .8;
   }
-
-  body.flb-user-anonymous .flb-form-content {
+  body.flb-anon .flb-form-content {
     padding: 50px;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
   }
-
-  body.flb-user-anonymous .flb-form-content>.flb-form-header .flb-item {
+  body.flb-anon .flb-form-content>.flb-form-header .flb-item {
     width: 100% !important;
   }
-
-  body.flb-user-anonymous .flb-form-content>.flb-form-footer .flb-item {
+  body.flb-anon .flb-form-content>.flb-form-footer .flb-item {
     width: 100% !important;
   }
-
-  body.flb-user-anonymous .flb-form-content>.flb-form-fields .flb-item {
+  body.flb-anon .flb-form-content>.flb-form-fields .flb-item {
     width: 100% !important;
   }
-
   body.flb-user .flb-form-content>.flb-form-footer {
     justify-content: right;
   }
+  body.flb-user .flb-form-content>.flb-form-footer .flb-item {
+    margin-left: var(--flb-margin);
+  }
+}
 
+
+/**
+ * Modal
+ */
+
+ion-modal.flb {
+  --box-shadow: none;
+  --width: 100% !important;
+  --height: 100% !important;
+}
+
+@media all and (min-width: 992px) {
   ion-modal.flb {
-    --box-shadow: none;
-    --width: 100% !important;
-    --height: 100% !important;
     padding-left: var(--flb-menu-content-width);
   }
 }
@@ -1664,11 +1788,11 @@ ion-alert.flb {
 }
 
 ion-alert.flb.danger {
-  --background: var(--ion-color-warning-tint);
-  --ion-text-color: var(--ion-color-warning-contrast);
-  --ion-color-step-550: var(--ion-color-warning-contrast);
-  --ion-color-step-600: rgba(var(--ion-color-warning-contrast-rgb), .75);
-  --ion-color-primary: var(--ion-color-warning-contrast);
+  --background: var(--ion-color-danger-tint);
+  --ion-text-color: var(--ion-color-danger-contrast);
+  --ion-color-step-550: var(--ion-color-danger-contrast);
+  --ion-color-step-600: rgba(var(--ion-color-danger-contrast-rgb), .75);
+  --ion-color-primary: var(--ion-color-danger-contrast);
 }
 
 /**
@@ -1683,10 +1807,28 @@ ion-toast.flb {
   text-align: center;
 }
 
+/**
+ * Popver
+ */
+
+ion-popover.flb::part(content) {
+  --xbackdrop-opacity: 0;
+  --xbackground: var(--ion-background-color);
+  --xbox-shadow: none;
+  --xwidth: 300px;
+  --xmin-width: var(--width);
+  --xmax-width: var(--width);
+  --xheight: auto !important;
+  --xmin-height: var(--height);
+  --xmax-height: var(--height);
+  border: 1px solid var(--ion-border-color);
+  border-radius: var(--flb-radius);
+}
+
 @media all and (max-width: 575px) {
   ion-popover.flb::part(content) {
     --backdrop-opacity: 0;
-    --xbackground: var(--ion-background-color);
+    --background: var(--ion-background-color);
     --box-shadow: none;
     --width: 100%;
     --min-width: var(--width);
@@ -1698,38 +1840,28 @@ ion-toast.flb {
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
+    border: 0);
     border-radius: 0;
     transform-origin: center !important;
   }
 }
+/*******************************************************************************************************/
+/*******************************************************************************************************/
 
-@media all and (min-width: 576px) {
-  ion-popover.flb::part(content) {
-    --backdrop-opacity: 0;
-    --xbackground: var(--ion-background-color);
-    --box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
-    --width: 300px;
-    --min-width: var(--width);
-    --max-width: var(--width);
-    --height: auto !important;
-    --min-height: var(--height);
-    --max-height: var(--height);
-  }
+
+.flb-list {
+  transition: opacity 350ms ease-in-out;
 }
-
-
-
-
-
-
-/*******************************************************************************************************/
-/*******************************************************************************************************/
-
-
 .flb-list.hide {
-  display: none !important;
+  visibility: hidden;
+  position: absolute;
+  opacity: 0;
+  top: -10000px;
 }
 
+.flb-item {
+  transition: background-color 350ms ease-in-out, color 350ms ease-in-out, transform 350ms ease-in-out;
+}
 .flb-item.hide {
   display: none !important;
 }
@@ -1738,18 +1870,17 @@ ion-toast.flb {
   background-color: rgba(var(--ion-color-primary-rgb), .5) !important;
 }
 
+.flb-item.cancel {
+  background-color: rgba(var(--ion-color-primary-rgb), .5) !important;
+  transform: translateX(0.1vw);
+}
+
+.flb-item.submit {
+  background-color: rgba(var(--ion-color-success-rgb), .5) !important;
+  transform: translateX(0.1vw);
+}
+
 .flb-item.delete {
   background-color: rgba(var(--ion-color-warning-rgb), .5) !important;
   transform: translateX(100vw);
-}
-
-.flb-item.update {
-  background-color: rgba(var(--ion-color-success-rgb), .5) !important;
-  transform: translateX(1vw);
-}
-
-.flb-item.create {
-  background-color: rgba(var(--ion-color-success-rgb), .5) !important;
-  transform: translateX(100vw);
-  visibility: 0;
 }

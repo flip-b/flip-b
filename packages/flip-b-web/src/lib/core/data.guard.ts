@@ -6,17 +6,9 @@ import {DataService} from './data.service';
   providedIn: 'root'
 })
 export class DataGuard implements CanActivate {
-  // Definitions
-
-  /**
-   * Constructor
-   */
   constructor(private data: DataService) {}
 
-  /**
-   * Can activate
-   */
-  async canActivate(next: ActivatedRouteSnapshot): Promise<boolean> {
-    return await this.data.user.auth(next.data.path);
+  canActivate(next: ActivatedRouteSnapshot): boolean {
+    return this.data.auth(next.data.path);
   }
 }

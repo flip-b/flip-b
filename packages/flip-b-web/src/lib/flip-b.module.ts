@@ -1,7 +1,7 @@
 import {NgModule, Injector, ModuleWithProviders, CUSTOM_ELEMENTS_SCHEMA, APP_INITIALIZER} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RouterModule, Router} from '@angular/router';
-import {HttpClientModule, HttpClient} from '@angular/common/http';
+import {HttpClientModule, HttpClientJsonpModule, HttpClient} from '@angular/common/http';
 import {IonicModule} from '@ionic/angular';
 
 import {DataGuard} from './core/data.guard';
@@ -14,78 +14,64 @@ const ROUTER: any = APP_INITIALIZER;
 
 @NgModule({
   declarations: [I18nPipe, FormComponent, MenuComponent],
-  imports: [CommonModule, RouterModule, HttpClientModule, IonicModule],
-  exports: [CommonModule, RouterModule, HttpClientModule, IonicModule, I18nPipe, FormComponent, MenuComponent],
+  imports: [CommonModule, RouterModule, HttpClientModule, HttpClientJsonpModule, IonicModule],
+  exports: [CommonModule, RouterModule, HttpClientModule, HttpClientJsonpModule, IonicModule, I18nPipe, FormComponent, MenuComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class FlipBModule {
-  static forRoot(flipb: any): ModuleWithProviders<FlipBModule> {
+  static forRoot(config: any): ModuleWithProviders<FlipBModule> {
     return {
       ngModule: FlipBModule,
       providers: [
-        {provide: CONFIG, useValue: flipb},
+        {provide: CONFIG, useValue: config},
         {provide: ROUTER, useFactory: routerFactory, deps: [CONFIG, Injector, HttpClient], multi: true}
       ]
     };
   }
 }
 
+declare global {
+  interface Window {
+    libs: any;
+    form: any;
+  }
+}
+
+declare const window: any;
+
 function routerFactory(config: any, injector: Injector, http: HttpClient): any {
   return async (): Promise<any> => {
-    const flipb: any = await http.get(config.url + '/api/v1/rest/config').toPromise();
+    config.app = config.app || 'flip-b';
+    config.url = config.url || '';
+    config.uri = config.uri || '';
+    config.headers = config.headers || {};
 
-    // Define info
-    // @param {Object}
-    config.info = flipb.info || {};
+    const flipb: any = await http.get(`${config.url}/api/v1/rest/settings`).toPromise();
 
-    // Define user
-    // @param {Object}
-    config.user = flipb.user || {};
+    config.i18n = {...(config.i18n || {}), ...(flipb.i18n || {})};
+    config.i18n.config = config.i18n.config || {};
+    config.i18n.values = config.i18n.values || {};
 
-    // Define http
-    // @param {Object}
-    config.http = {...config.http || {}, ...flipb.http || {}};
-    config.http.url = config.http.url || config.url;
+    config.menu = {...(config.menu || {}), ...(flipb.menu || {})};
+    config.menu.config = config.menu.config || {};
+    config.menu.values = config.menu.values || [];
 
-    // Define i18n
-    // @param {Object}
-    config.i18n = {...config.i18n || {}, ...flipb.i18n || {}};
-    config.i18n.items = config.i18n.items || {};
+    config.page = {...(config.page || {}), ...(flipb.page || {})};
+    config.page.config = config.page.config || {};
+    config.page.values = config.page.values || [];
 
-    // Define menu
-    // @param {Object}
-    config.menu = {...config.menu || {}, ...flipb.menu || {}};
-    config.menu.title = config.menu.title || '';
-    config.menu.label = config.menu.label || '';
-    config.menu.image = config.menu.image || '';
-    config.menu.items = config.menu.items || [];
+    config.libs = [...(config.libs || []), ...(flipb.libs || [])];
 
-    // Define page
-    // @param {Object}
-    config.page = {...config.page || {}, ...flipb.page || {}};
-    config.page.title = config.page.title || '';
-    config.page.label = config.page.label || '';
-    config.page.image = config.page.image || '';
-    config.page.items = config.page.items || [];
-
-    // Define routes
     const routes: any = config.routes || [];
-    for (const form of config.page.items || []) {
+    for (const form of config.page.values || []) {
       form.name = form.name || '';
-
-      // Define view data
-      form.path = form.path || '';
-      form.menu = form.menu || '';
+      form.path = form.path || undefined;
+      form.type = form.type || undefined;
+      form.rest = form.rest || undefined;
       form.meta = form.meta || {};
       form.auth = form.auth || Object.keys(form.meta);
 
-      // Define view form
-      form.type = form.type || undefined;
-      form.rest = form.rest || undefined;
-      form.load = form.load || undefined;
-
-      // Define view page
-      if (!form.page && form.path) {
+      if (form.path && !form.page) {
         routes.push({
           path: form.path,
           data: form,
@@ -94,9 +80,18 @@ function routerFactory(config: any, injector: Injector, http: HttpClient): any {
         });
       }
     }
+    console.log(routes);
 
-    // Define router
     const router: Router = injector.get(Router);
     router.resetConfig(routes);
+
+    for (const lib of config.libs) {
+      await http
+        .jsonp(lib.url, 'callback')
+        .toPromise()
+        .catch(() => true);
+      window.libs = window.libs || {};
+      window.libs[lib.key] = window[lib.key];
+    }
   };
 }

@@ -24,16 +24,16 @@
     "tar": "~6.2.0"
   },
   "devDependencies": {
-    "@types/node": "~20.6.0",
-    "@types/prompts": "~2.4.4",
-    "@types/tar": "~6.1.5",
-    "@typescript-eslint/eslint-plugin": "~6.6.0",
-    "@typescript-eslint/parser": "~6.6.0",
-    "eslint": "~8.49.0",
+    "@types/node": "~20.8.0",
+    "@types/prompts": "~2.4.5",
+    "@types/tar": "~6.1.6",
+    "@typescript-eslint/eslint-plugin": "~6.7.3",
+    "@typescript-eslint/parser": "~6.7.3",
+    "eslint": "~8.50.0",
     "eslint-config-prettier": "~9.0.0",
     "eslint-plugin-prettier": "~5.0.0",
     "prettier": "~3.0.3",
-    "rimraf": "~5.0.1",
+    "rimraf": "~5.0.5",
     "typescript": "~5.1.6"
   },
   "bin": {

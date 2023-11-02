@@ -6,10 +6,5 @@ import {DataService} from '../core/data.service';
   templateUrl: './menu.component.html'
 })
 export class MenuComponent {
-  // Definitions
-
-  /**
-   * Constructor
-   */
   constructor(public data: DataService) {}
 }
